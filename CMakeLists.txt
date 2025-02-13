@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(EcoTaxiQt VERSION 0.3.7 LANGUAGES CXX)
+project(EcoTaxiQt VERSION 0.4.17.9 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -56,6 +56,17 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         classes/user.h classes/user.cpp
         scripts/hash.h scripts/hash.cpp
         pages/removedb.h pages/removedb.cpp pages/removedb.ui
+        pages/nointernet.h pages/nointernet.cpp pages/nointernet.ui
+        managers/logger.h managers/logger.cpp
+        managers/encryptionmanager.h managers/encryptionmanager.cpp
+        scripts/greenbackgrounddelegate.h scripts/greenbackgrounddelegate.cpp
+        pages/editablereport.h pages/editablereport.cpp pages/editablereport.ui
+        pages/addupdaterepair.h pages/addupdaterepair.cpp pages/addupdaterepair.ui
+        scripts/columnselectiondialog.h scripts/columnselectiondialog.cpp
+        enums/eSetting.h
+        scripts/awss3uploader.h scripts/awss3uploader.cpp
+
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET EcoTaxiQt APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -88,6 +99,10 @@ target_link_libraries(EcoTaxiQt PRIVATE Qt6::PrintSupport)
 # add sql library
 find_package(Qt6 REQUIRED COMPONENTS Sql)
 target_link_libraries(EcoTaxiQt PRIVATE Qt6::Sql)
+
+# add network library
+find_package(Qt6 REQUIRED COMPONENTS Network)
+target_link_libraries(EcoTaxiQt PRIVATE Qt6::Network)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

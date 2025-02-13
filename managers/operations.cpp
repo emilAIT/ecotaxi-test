@@ -7,7 +7,7 @@ Operations::Operations() {}
 QList<Investor> Operations::selectAllInvestors()
 {
     dbManager &db = dbManager::getInstance();
-    QVariantList data = db.executeGet("SELECT * FROM investors");
+    QVariantList data = db.executeGet("SELECT * FROM investors ORDER BY name");
     QList<Investor> investors;
     foreach (QVariant row, data)
     {
@@ -20,7 +20,7 @@ QList<Investor> Operations::selectAllInvestors()
 QList<Car> Operations::selectAllCars()
 {
     dbManager &db = dbManager::getInstance();
-    QVariantList data = db.executeGet("SELECT * FROM cars");
+    QVariantList data = db.executeGet("SELECT * FROM cars ORDER BY sid");
     QList<Car> cars;
     foreach (QVariant row, data)
     {
@@ -30,10 +30,26 @@ QList<Car> Operations::selectAllCars()
     return cars;
 }
 
+QVariantList Operations::selectAllCarsQuick()
+{
+    dbManager &db = dbManager::getInstance();
+    QVariantList data = db.executeGet("SELECT cars.id, cars.sid, cars.brand, cars.model, cars.licensePlate, cars.year, investors.name AS investorName, cars.mileage, cars.percentage, cars.description "
+                                     "FROM cars "
+                                     "INNER JOIN investors ON cars.investorId = investors.id "
+                                     "ORDER BY cars.sid");
+    QVariantList cars;
+    foreach (QVariant row, data)
+    {
+        cars.append(row);
+    }
+    return cars;
+}
+
+
 QList<Driver> Operations::selectAllDrivers()
 {
     dbManager &db = dbManager::getInstance();
-    QVariantList data = db.executeGet("SELECT * FROM drivers");
+    QVariantList data = db.executeGet("SELECT * FROM drivers ORDER BY name");
     QList<Driver> drivers;
     foreach (QVariant row, data)
     {
@@ -56,16 +72,31 @@ QList<Event> Operations::selectAllEvents()
     return events;
 }
 
-QList<Event> Operations::selectEventsByDate(QDate date)
+QVariantList Operations::selectEventsByDate(QDate date)
 {
     QDate toDate = date.addDays(1);
     dbManager &db = dbManager::getInstance();
-    QVariantList data = db.executeGet("SELECT * FROM events WHERE date BETWEEN '" + date.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'");
-    QList<Event> events;
+    QString query = "SELECT "
+            "events.id, "
+            "events.date as time, "
+            "CASE WHEN types.id IS NULL OR events.typeId = 0 THEN '-' ELSE CASE WHEN types.id IS NULL THEN 'удален' ELSE types.name END END as typeName, "
+            "CASE WHEN drivers.id IS NULL OR events.driverId = 0 THEN '-' ELSE CASE WHEN drivers.id IS NULL THEN 'удален' ELSE drivers.name END END as driverId, "
+            "CASE WHEN cars.id IS NULL OR events.carId = 0 THEN '-' ELSE CASE WHEN cars.id IS NULL THEN 'удалена' ELSE cars.sid END END as carId, "
+            "events.amount, "
+            "events.description "
+            "FROM events "
+            "LEFT JOIN cars ON cars.id = events.carId "
+            "LEFT JOIN drivers ON drivers.id = events.driverId "
+            "LEFT JOIN types ON types.id = events.typeId "
+            "WHERE events.date BETWEEN '" + date.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'";
+    userSession &us = userSession::getInstance();
+    if (!us.checkIsAdmin())
+        query += " AND (types.id IS NULL OR types.forAdmin IS FALSE)";
+    QVariantList data = db.executeGet(query);
+    QVariantList events;
     foreach (QVariant row, data)
     {
-        Event event(row.toList());
-        events.append(event);
+        events.append(row);
     }
     return events;
 }
@@ -83,24 +114,41 @@ QList<Charge> Operations::selectAllCharges()
     return charges;
 }
 
-QList<Charge> Operations::selectChargesByDate(QDate date)
+QVariantList Operations::selectChargesByDate(QDate date)
 {
     QDate toDate = date.addDays(1);
     dbManager &db = dbManager::getInstance();
-    QVariantList data = db.executeGet("SELECT * FROM charges WHERE date BETWEEN '" + date.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'");
-    QList<Charge> charges;
+    QVariantList data = db.executeGet("SELECT "
+                                     "charges.id, "
+                                     "charges.date AS 'Время', "
+                                     "CASE WHEN cars.id IS NULL OR charges.carId = 0 THEN '-' ELSE CASE WHEN cars.id IS NULL THEN 'удалена' ELSE cars.sid END END as 'ID Машины', "
+                                     "CASE WHEN drivers.id IS NULL OR charges.driverId = 0 THEN '-' ELSE CASE WHEN drivers.id IS NULL THEN 'удален' ELSE drivers.name END END as 'ID Водителя', "
+                                     "CASE WHEN locations.id IS NULL OR charges.locationId = 0 THEN '-' ELSE CASE WHEN locations.id IS NULL THEN 'удален' ELSE locations.name END END as 'Локация', "
+                                     "charges.kwh AS 'КВТ', "
+                                     "charges.duration AS 'Время' "
+                                     "FROM charges "
+                                     "LEFT JOIN cars ON cars.id = charges.carId "
+                                     "LEFT JOIN drivers ON drivers.id = charges.driverId "
+                                     "LEFT JOIN locations ON locations.id = charges.locationId "
+                                     "WHERE charges.date BETWEEN '" + date.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'");
+    QVariantList charges;
     foreach (QVariant row, data)
     {
-        Charge charge(row.toList());
-        charges.append(charge);
+        charges.append(row);
     }
     return charges;
 }
 
+
 QList<Type> Operations::selectAllTypes()
 {
     dbManager &db = dbManager::getInstance();
-    QVariantList data = db.executeGet("SELECT * FROM types");
+    QVariantList data;
+    userSession &us = userSession::getInstance();
+    if (us.checkIsAdmin())
+        data = db.executeGet("SELECT * FROM types ORDER BY name");
+    else
+        data = db.executeGet("SELECT * FROM types WHERE forAdmin = false ORDER BY name");
     QList<Type> types;
     foreach (QVariant row, data)
     {
@@ -113,7 +161,7 @@ QList<Type> Operations::selectAllTypes()
 QList<Location> Operations::selectAllLocations()
 {
     dbManager &db = dbManager::getInstance();
-    QVariantList data = db.executeGet("SELECT * FROM locations");
+    QVariantList data = db.executeGet("SELECT * FROM locations ORDER BY name");
     QList<Location> locations;
     foreach (QVariant row, data)
     {
@@ -126,7 +174,7 @@ QList<Location> Operations::selectAllLocations()
 QList<User> Operations::selectAllUsers()
 {
     dbManager &db = dbManager::getInstance();
-    QVariantList data = db.executeGet("SELECT * FROM users");
+    QVariantList data = db.executeGet("SELECT * FROM users ORDER BY name");
     QList<User> users;
     foreach (QVariant row, data)
     {
@@ -142,14 +190,20 @@ bool Operations::addInvestor(Investor investor)
     dbManager &db = dbManager::getInstance();
     QString name = investor.getName();
     QString description = investor.getDescription();
-    return db.executeSet("INSERT INTO investors (name, description) VALUES ('" + name + "', '" + description + "')");
+    if (investor.getPassword() == "ffc68d3e87de7154c716e486f7b1dedb42dd3d7782e8dfef44498bd30b24aa67")
+        return db.executeSet("INSERT INTO investors (name, description) VALUES ('" + name + "', '" + description + "')");
+    else
+        return db.executeSet("INSERT INTO investors (name, description, password) VALUES ('" + name + "', '" + description + "', '" + investor.getPassword() + "')");
 }
 bool Operations::updateInvestor(Investor newInvestor)
 {
     dbManager &db = dbManager::getInstance();
     QString name = newInvestor.getName();
     QString description = newInvestor.getDescription();
-    return db.executeSet("UPDATE investors SET name = '" + name + "', description = '" + description + "' WHERE id = " + QString::number(newInvestor.getId()));
+    if (newInvestor.getPassword() == "ffc68d3e87de7154c716e486f7b1dedb42dd3d7782e8dfef44498bd30b24aa67")
+        return db.executeSet("UPDATE investors SET name = '" + name + "', description = '" + description + "'" + " WHERE id = " + QString::number(newInvestor.getId()));
+    else
+        return db.executeSet("UPDATE investors SET name = '" + name + "', description = '" + description + "'," + "password = '" + newInvestor.getPassword() + "'" + " WHERE id = " + QString::number(newInvestor.getId()));
 }
 bool Operations::deleteInvestor(int id)
 {
@@ -183,12 +237,12 @@ bool Operations::addCar(Car car)
     int investor = car.getInvestorId();
     float milleage = car.getMilleage();
     QString description = car.getDescription();
-    return db.executeSet("INSERT INTO cars (sid, brand, model, licensePlate, year, investorId, mileage, description) VALUES (" + QString::number(car.getSid()) + ", '" + brand + "','" + model + "','" + licensePlate + "'," + QString::number(year) + "," + QString::number(investor) + "," + QString::number(milleage) + ",'" + description + "')");
+    return db.executeSet("INSERT INTO cars (sid, brand, model, licensePlate, year, investorId, mileage, description, percentage) VALUES ('" + car.getSid() + "', '" + brand + "','" + model + "','" + licensePlate + "'," + QString::number(year) + "," + QString::number(investor) + "," + QString::number(milleage) + ",'" + description + "'," + QString::number(car.getPercentage()) + ")");
 }
 bool Operations::updateCar(int id, Car newCar)
 {
     dbManager &db = dbManager::getInstance();
-    QString query = "UPDATE cars SET sid = " + QString::number(newCar.getSid()) + ", brand = '" + newCar.getBrand() + "', model = '" + newCar.getModel() + "', licensePlate = '" + newCar.getLicensePlate() + "', year = " + QString::number(newCar.getYear()) + ", investorId = " + QString::number(newCar.getInvestorId()) + ", mileage = " + QString::number(newCar.getMilleage()) + ", description = '" + newCar.getDescription() + "' WHERE id = " + QString::number(id);
+    QString query = "UPDATE cars SET sid = '" + newCar.getSid() + "', brand = '" + newCar.getBrand() + "', model = '" + newCar.getModel() + "', licensePlate = '" + newCar.getLicensePlate() + "', year = " + QString::number(newCar.getYear()) + ", investorId = " + QString::number(newCar.getInvestorId()) + ", mileage = " + QString::number(newCar.getMilleage()) + ", description = '" + newCar.getDescription() + "', percentage = " + QString::number(newCar.getPercentage()) + " WHERE id = " + QString::number(id);
     return db.executeSet(query);
 }
 bool Operations::deleteCar(int id)
@@ -242,19 +296,20 @@ Driver Operations::getDriver(int id)
 // Event
 bool Operations::addEvent(Event event)
 {
+    userSession &us = userSession::getInstance();
     dbManager &db = dbManager::getInstance();
     int driverId = event.getDriverId();
     int typeId = event.getTypeId();
     float amount = event.getAmount();
     QDateTime date = event.getDate();
     QString description = event.getDescription();
-    return db.executeSet("INSERT INTO events (driverId, carId, typeId, amount, description, date) VALUES (" + QString::number(driverId) + "," + QString::number(event.getCarId()) + "," + QString::number(typeId) + "," + QString::number(amount) + ",'" + description + "','" + date.toString("yyyy-MM-dd hh:mm:ss") + "')");
+    return db.executeSet("INSERT INTO events (driverId, carId, typeId, amount, description, date, userId) VALUES (" + QString::number(driverId) + "," + QString::number(event.getCarId()) + "," + QString::number(typeId) + "," + QString::number(amount) + ",'" + description + "','" + date.toString("yyyy-MM-dd hh:mm:ss") + "'," + QString::number(us.getId()) + ")");
 }
 
 bool Operations::updateEvent(Event event)
 {
     dbManager &db = dbManager::getInstance();
-    return db.executeSet("UPDATE events SET driverId = " + QString::number(event.getDriverId()) + ", carId = " + QString::number(event.getCarId()) + ", typeId = " + QString::number(event.getTypeId()) + ", amount = " + QString::number(event.getAmount()) + ", description = '" + event.getDescription() + "' WHERE id = " + QString::number(event.getId()));
+    return db.executeSet("UPDATE events SET driverId = " + QString::number(event.getDriverId()) + ", carId = " + QString::number(event.getCarId()) + ", typeId = " + QString::number(event.getTypeId()) + ", amount = " + QString::number(event.getAmount()) + ", description = '" + event.getDescription() + "', date = '" + event.getDate().toString("yyyy-MM-dd hh:mm:ss") + "' WHERE id = " + QString::number(event.getId()));
 }
 
 bool Operations::deleteEvent(int id)
@@ -273,6 +328,7 @@ Event Operations::getEvent(int id)
 // Charge
 bool Operations::addCharge(Charge charge)
 {
+    userSession &us = userSession::getInstance();
     dbManager &db = dbManager::getInstance();
     int carId = charge.getCarId();
     int driverId = charge.getDriverId();
@@ -280,13 +336,13 @@ bool Operations::addCharge(Charge charge)
     float kwh = charge.getKwh();
     float duration = charge.getDuration();
     QDateTime date = charge.getDate();
-    return db.executeSet("INSERT INTO charges (carId, driverId, locationId, kwh, duration, date) VALUES (" + QString::number(carId) + "," + QString::number(driverId) + "," + QString::number(locationId) + "," + QString::number(kwh) + "," + QString::number(duration) + ",'" + date.toString("yyyy-MM-dd hh:mm:ss") + "')");
+    return db.executeSet("INSERT INTO charges (carId, driverId, locationId, kwh, duration, date, userId) VALUES (" + QString::number(carId) + "," + QString::number(driverId) + "," + QString::number(locationId) + "," + QString::number(kwh) + "," + QString::number(duration) + ",'" + date.toString("yyyy-MM-dd hh:mm:ss") + "'," + QString::number(us.getId()) + ")");
 }
 
 bool Operations::updateCharge(Charge charge)
 {
     dbManager &db = dbManager::getInstance();
-    return db.executeSet("UPDATE charges SET carId = " + QString::number(charge.getCarId()) + ", driverId = " + QString::number(charge.getDriverId()) + ", locationId = " + QString::number(charge.getLocationId()) + ", kwh = " + QString::number(charge.getKwh()) + ", duration = " + QString::number(charge.getDuration()) + " WHERE id = " + QString::number(charge.getId()));
+    return db.executeSet("UPDATE charges SET carId = " + QString::number(charge.getCarId()) + ", driverId = " + QString::number(charge.getDriverId()) + ", locationId = " + QString::number(charge.getLocationId()) + ", kwh = " + QString::number(charge.getKwh()) + ", duration = " + QString::number(charge.getDuration()) + ", date = '" + charge.getDate().toString("yyyy-MM-dd hh:mm:ss") + "' WHERE id = " + QString::number(charge.getId()));
 }
 
 bool Operations::deleteCharge(int id)
@@ -307,13 +363,13 @@ bool Operations::addType(Type type)
     dbManager &db = dbManager::getInstance();
     QString name = type.getName();
     QString description = type.getDescription();
-    return db.executeSet("INSERT INTO types (name, description) VALUES ('" + name + "','" + description + "')");
+    return db.executeSet("INSERT INTO types (name, description, forAdmin) VALUES ('" + name + "','" + description + "'," + QString::number(type.getForAdmin()) + ")");
 }
 
 bool Operations::updateType(Type type)
 {
     dbManager &db = dbManager::getInstance();
-    return db.executeSet("UPDATE types SET name = '" + type.getName() + "', description = '" + type.getDescription() + "' WHERE id = " + QString::number(type.getId()));
+    return db.executeSet("UPDATE types SET name = '" + type.getName() + "', description = '" + type.getDescription() + "', forAdmin = " + QString::number(type.getForAdmin()) + " WHERE id = " + QString::number(type.getId()));
 }
 
 bool Operations::deleteType(int id)
@@ -370,13 +426,19 @@ bool Operations::addUser(User user)
     QString name = user.getName();
     QString password = user.getPassword();
     QString description = user.getDescription();
-    return db.executeSet("INSERT INTO users (name, password, description) VALUES ('" + name + "','" + password + "','" + description + "')");
+    if (user.getPassword() == "ffc68d3e87de7154c716e486f7b1dedb42dd3d7782e8dfef44498bd30b24aa67")
+        return db.executeSet("INSERT INTO users (name, description, isAdmin) VALUES ('" + name + "','" + description + "', " + QString::number(user.getIsAdmin()) + ")");
+    else
+        return db.executeSet("INSERT INTO users (name, password, description, isAdmin) VALUES ('" + name + "','" + password + "','" + description + "', " + QString::number(user.getIsAdmin()) + ")");
 }
 
 bool Operations::updateUser(User user)
 {
     dbManager &db = dbManager::getInstance();
-    return db.executeSet("UPDATE users SET name = '" + user.getName() + "', password = '" + user.getPassword() + "', description = '" + user.getDescription() + "' WHERE id = " + QString::number(user.getId()));
+    if (user.getPassword() == "ffc68d3e87de7154c716e486f7b1dedb42dd3d7782e8dfef44498bd30b24aa67")
+        return db.executeSet("UPDATE users SET name = '" + user.getName() + "', description = '" + user.getDescription() + "', isAdmin = " + QString::number(user.getIsAdmin()) + " WHERE id = " + QString::number(user.getId()));
+    else
+        return db.executeSet("UPDATE users SET name = '" + user.getName() + "', password = '" + user.getPassword() + "', description = '" + user.getDescription() + "', isAdmin = " + QString::number(user.getIsAdmin()) + " WHERE id = " + QString::number(user.getId()));
 }
 
 bool Operations::deleteUser(int id)
@@ -396,16 +458,17 @@ User Operations::getUser(int id)
         return User(data[0].toList());
 }
 
-bool Operations::checkLoginUser(QString password)
+QList<int> Operations::checkLoginUser(QString password)
 {
     dbManager &db = dbManager::getInstance();
-    QVariantList data = db.executeGet("SELECT * FROM users WHERE password = '" + password + "'");
-    if (!data.isEmpty())
+    QVariantList data = db.executeGet("SELECT id, isAdmin FROM users WHERE password = '" + password + "'");
+    if (data.size() != 0)
     {
-        db.executeSet("INSERT INTO logins (userId) VALUES (" + QString::number(data[0].toList()[0].toInt()) + ")");
-        return true;
+        data = data.toList()[0].toList();
+        db.executeSet("INSERT INTO logins (userId) VALUES (" + QString::number(data[0].toInt()) + ")");
+        return *new QList<int>({data[0].toInt(), data[1].toInt()});
     }
-    return false;
+    return *new QList<int>({-9, 0});
 }
 
 
@@ -414,9 +477,12 @@ QVariantList Operations::getAllEventsReport(QDate fromDate) {
     QDate toDate = fromDate.addDays(1);
     QVariantList result;
     dbManager &db = dbManager::getInstance();
-    QString query = "SELECT SUM(amount) FROM events WHERE date BETWEEN '" +
+    QString query = "SELECT SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as income, SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) as outcome, SUM(amount) FROM events WHERE date BETWEEN '" +
                     fromDate.toString("yyyy-MM-dd") + "' AND '" +
                     toDate.toString("yyyy-MM-dd") + "'";
+    userSession &u = userSession::getInstance();
+    if (!u.checkIsAdmin())
+        query += " AND (typeId IS NULL OR typeId IN (SELECT id FROM types WHERE forAdmin = false))";
     QVariantList data = db.executeGet(query);
     if (!data.isEmpty())
     {
@@ -424,6 +490,7 @@ QVariantList Operations::getAllEventsReport(QDate fromDate) {
     }
     return result;
 }
+
 
 QVariantList Operations::getAllChargesReport(QDate fromDate) {
     QDate toDate = fromDate.addDays(1);
@@ -440,3 +507,83 @@ QVariantList Operations::getAllChargesReport(QDate fromDate) {
     return result;
 }
 
+bool Operations::addRepair(int carId, QDate fromDate, QDate toDate, QString description) {
+    dbManager &db = dbManager::getInstance();
+    if (toDate.isNull())
+        return db.executeSet("INSERT INTO repairs (carId, fromDate, description) VALUES (" +
+                         QString::number(carId) + ",'" +
+                         fromDate.toString("yyyy-MM-dd") + "','" +
+                         description + "')");
+    else
+        return db.executeSet("INSERT INTO repairs (carId, fromDate, toDate, description) VALUES (" +
+                         QString::number(carId) + ",'" +
+                         fromDate.toString("yyyy-MM-dd") + "','" +
+                         toDate.toString("yyyy-MM-dd") + "','" +
+                         description + "')");
+}
+
+bool Operations::updateRepair(int id, int carId, QDate fromDate, QDate toDate, QString description) {
+    dbManager &db = dbManager::getInstance();
+    if (toDate.isNull())
+        return db.executeSet("UPDATE repairs SET carId = " + QString::number(carId) +
+                         ", fromDate = '" + fromDate.toString("yyyy-MM-dd") +
+                         "', toDate = " + "NULL" +
+                         ",description = '" + description +
+                         "' WHERE id = " + QString::number(id));
+    else
+        return db.executeSet("UPDATE repairs SET carId = " + QString::number(carId) +
+                             ", fromDate = '" + fromDate.toString("yyyy-MM-dd") +
+                             "', toDate = '" + toDate.toString("yyyy-MM-dd") +
+                             "',description = '" + description +
+                             "' WHERE id = " + QString::number(id));
+}
+
+bool Operations::deleteRepair(int id) {
+    dbManager &db = dbManager::getInstance();
+    return db.executeSet("DELETE FROM repairs WHERE id = " + QString::number(id));
+}
+
+QVariantList Operations::getRepair(int id) {
+    dbManager &db = dbManager::getInstance();
+    QVariantList data = db.executeGet("SELECT * FROM repairs WHERE id = " + QString::number(id));
+    if (data.isEmpty())
+        return QVariantList();
+    else
+        return data[0].toList();
+}
+
+bool Operations::addFine(QDate date, int carId, int driverId, int amount, bool isPaid, QString description) {
+    dbManager &db = dbManager::getInstance();
+    return db.executeSet("INSERT INTO fines (date, carId, driverId, amount, isPaid, description) VALUES ('" +
+                         date.toString("yyyy-MM-dd") + "'," +
+                         QString::number(carId) + "," +
+                         QString::number(driverId) + "," +
+                         QString::number(amount) + "," +
+                         QString::number(isPaid) + ",'" +
+                         description + "')");
+}
+
+bool Operations::updateFine(int id, QDate date, int carId, int driverId, int amount, bool isPaid, QString description) {
+    dbManager &db = dbManager::getInstance();
+    return db.executeSet("UPDATE fines SET date = '" + date.toString("yyyy-MM-dd") +
+                         "', carId = " + QString::number(carId) +
+                         ", driverId = " + QString::number(driverId) +
+                         ", amount = " + QString::number(amount) +
+                         ", isPaid = " + QString::number(isPaid) +
+                         ", description = '" + description +
+                         "' WHERE id = " + QString::number(id));
+}
+
+bool Operations::deleteFine(int id) {
+    dbManager &db = dbManager::getInstance();
+    return db.executeSet("DELETE FROM fines WHERE id = " + QString::number(id));
+}
+
+QVariantList Operations::getFine(int id) {
+    dbManager &db = dbManager::getInstance();
+    QVariantList data = db.executeGet("SELECT * FROM fines WHERE id = " + QString::number(id));
+    if (data.isEmpty())
+        return QVariantList();
+    else
+        return data[0].toList();
+}

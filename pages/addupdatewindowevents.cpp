@@ -21,7 +21,7 @@ addupdatewindowEvents::addupdatewindowEvents(Events mode, int id, QWidget *paren
 
     if (id > 0)
     {
-        ui->pushButton->setText("Готово");
+        ui->pushButton->setText("Сохранить");
     }
     else
     {
@@ -39,7 +39,7 @@ addupdatewindowEvents::addupdatewindowEvents(Events mode, int id, QWidget *paren
     ui->CarIdBox->addItem("-");
     carsId_list = Operations::selectAllCars();
     foreach (Car car, carsId_list) {
-        QString show = QString::number(car.getSid());
+        QString show = car.getSid();
         carsId.insert(show, car.getId());
         ui->CarIdBox->addItem(show);
     }
@@ -49,6 +49,7 @@ addupdatewindowEvents::addupdatewindowEvents(Events mode, int id, QWidget *paren
         ui->LocationFrame->hide();
         ui->KWTFrame->hide();
         ui->DurationFrame->hide();
+        ui->DateTimeLabel->setProperty("color", "white");
         ui->TypeLabel->setProperty("color", "white");
         ui->CarIdLabel->setProperty("color", "white");
         ui->DriverIdLabel->setProperty("color", "white");
@@ -66,8 +67,9 @@ addupdatewindowEvents::addupdatewindowEvents(Events mode, int id, QWidget *paren
             ui->Header->setText("Редактировать событие");
             Event event = Operations::getEvent(id);
             this->date = event.getDate();
+            ui->DateTimeEdit->setDateTime(event.getDate());
             ui->TypeBox->setCurrentText(Operations::getType(event.getTypeId()).getName());
-            ui->CarIdBox->setCurrentText(QString::number(Operations::getCar(event.getCarId()).getSid()));
+            ui->CarIdBox->setCurrentText(Operations::getCar(event.getCarId()).getSid());
             ui->DriverIdBox->setCurrentText(Operations::getDriver(event.getDriverId()).getName());
             ui->AmountEdit->setText(QString::number(event.getAmount()));
             ui->DescEdit->setText(event.getDescription());
@@ -78,6 +80,7 @@ addupdatewindowEvents::addupdatewindowEvents(Events mode, int id, QWidget *paren
         ui->AmountFrame->hide();
         ui->DescEdit->hide();
         ui->DescLabel->hide();
+        ui->DateTimeLabel->setProperty("color", "white");
         ui->KWTLabel->setProperty("color", "white");
         ui->DurationLabel->setProperty("color", "white");
         ui->LocationLabel->setProperty("color", "white");
@@ -95,10 +98,11 @@ addupdatewindowEvents::addupdatewindowEvents(Events mode, int id, QWidget *paren
             ui->Header->setText("Редактировать зарядку");
             Charge charge = Operations::getCharge(id);
             this->date = charge.getDate();
+            ui->DateTimeEdit->setDateTime(charge.getDate());
             ui->KWTEdit->setText(QString::number(charge.getKwh()));
             ui->DurationEdit->setText(QString::number(charge.getDuration()));
             ui->LocationBox->setCurrentText(Operations::getLocation(charge.getLocationId()).getName());
-            ui->CarIdBox->setCurrentText(QString::number(Operations::getCar(charge.getCarId()).getSid()));
+            ui->CarIdBox->setCurrentText(Operations::getCar(charge.getCarId()).getSid());
             ui->DriverIdBox->setCurrentText(Operations::getDriver(charge.getDriverId()).getName());
         }
     }
@@ -119,17 +123,17 @@ void addupdatewindowEvents::addRecord() {
         if (id > 0) {
             switch (this->mode) {
             case Events::Events:
-                Operations::updateEvent(Event(QVariantList::fromList({id, carsId.value(ui->CarIdBox->currentText()), driversId.value(ui->DriverIdBox->currentText()), types.value(ui->TypeBox->currentText()), ui->AmountEdit->text().toLongLong(), ui->DescEdit->toPlainText(), date})));
+                Operations::updateEvent(Event(QVariantList::fromList({id, carsId.value(ui->CarIdBox->currentText()), driversId.value(ui->DriverIdBox->currentText()), types.value(ui->TypeBox->currentText()), ui->AmountEdit->text().toLongLong(), ui->DescEdit->toPlainText(), ui->DateTimeEdit->dateTime()})));
                 break;
             case Events::Charges:
-                Operations::updateCharge(Charge(QVariantList::fromList({id, carsId.value(ui->CarIdBox->currentText()), driversId.value(ui->DriverIdBox->currentText()), locations.value(ui->LocationBox->currentText()), ui->KWTEdit->text().toLongLong(), ui->DurationEdit->text().toLongLong(), date})));
+                Operations::updateCharge(Charge(QVariantList::fromList({id, carsId.value(ui->CarIdBox->currentText()), driversId.value(ui->DriverIdBox->currentText()), locations.value(ui->LocationBox->currentText()), ui->KWTEdit->text().toLongLong(), ui->DurationEdit->text().toLongLong(), ui->DateTimeEdit->dateTime()})));
             }
         }
         emit close();
         this->closed();
     }
     else {
-        QTimer::singleShot(200, this, resetInputColor);
+        QTimer::singleShot(200, this, &addupdatewindowEvents::resetInputColor);
     }
 }
 

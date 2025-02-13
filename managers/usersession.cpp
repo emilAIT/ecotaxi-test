@@ -13,19 +13,33 @@ userSession::userSession(QObject *parent)
 
 bool userSession::logMe(QString password)
 {
-    if (password == "meow")
+    if (password == "290284")
     {
         isAdminSession = true;
-    }
-    else if (Operations::checkLoginUser(HASH::generateHMAC(password)))
-    {
-        isAdminSession = false;
+        id = -1;
     }
     else
     {
-        return false;
+        QList<int> data = Operations::checkLoginUser(HASH::generateHMAC(password));
+        qDebug() << data;
+        if (data[0] != -9)
+        {
+            if (data[1] == 1)
+                isAdminSession = true;
+            else
+                isAdminSession = false;
+        }
+        else
+        {
+            return false;
+        }
     }
     return true;
+}
+
+int userSession::getId()
+{
+    return id;
 }
 
 const int userSession::getSecretKey()

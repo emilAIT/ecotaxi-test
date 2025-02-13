@@ -47,7 +47,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>286</width>
+         <width>280</width>
          <height>16777215</height>
         </size>
        </property>
@@ -73,7 +73,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>286</width>
+         <width>280</width>
          <height>16777215</height>
         </size>
        </property>
@@ -87,19 +87,19 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <property name="spacing">
-      <number>0</number>
+      <number>105</number>
      </property>
      <property name="leftMargin">
-      <number>100</number>
+      <number>50</number>
      </property>
      <property name="rightMargin">
-      <number>100</number>
+      <number>50</number>
      </property>
-     <item alignment="Qt::AlignRight">
+     <item>
       <widget class="QPushButton" name="EditButton">
        <property name="minimumSize">
         <size>
-         <width>300</width>
+         <width>280</width>
          <height>52</height>
         </size>
        </property>
@@ -108,24 +108,69 @@
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignHCenter">
-      <widget class="QPushButton" name="DateButton">
-       <property name="minimumSize">
-        <size>
-         <width>220</width>
-         <height>0</height>
-        </size>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <property name="spacing">
+        <number>10</number>
        </property>
-       <property name="text">
-        <string>01.01.0001</string>
-       </property>
-      </widget>
+       <item>
+        <widget class="QPushButton" name="PrevButton">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>52</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>52</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&lt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="DateButton">
+         <property name="minimumSize">
+          <size>
+           <width>220</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>01.01.0001</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="NextButton">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>52</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>52</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&gt;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
-     <item alignment="Qt::AlignLeft">
+     <item>
       <widget class="QPushButton" name="DeleteButton">
        <property name="minimumSize">
         <size>
-         <width>300</width>
+         <width>280</width>
          <height>52</height>
         </size>
        </property>
@@ -174,7 +219,7 @@
         <bool>false</bool>
        </property>
        <attribute name="verticalHeaderVisible">
-        <bool>false</bool>
+        <bool>true</bool>
        </attribute>
       </widget>
      </item>

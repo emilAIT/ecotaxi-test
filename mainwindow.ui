@@ -50,7 +50,7 @@
          <number>0</number>
         </property>
         <property name="sizeConstraint">
-         <enum>QLayout::SetDefaultConstraint</enum>
+         <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
         </property>
         <property name="leftMargin">
          <number>50</number>
@@ -68,7 +68,7 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>370</width>
+            <width>360</width>
             <height>16777215</height>
            </size>
           </property>
@@ -115,9 +115,14 @@
             <string>ПО ТИПУ</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>ДОЛГИ</string>
+           </property>
+          </item>
          </widget>
         </item>
-        <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+        <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
          <widget class="QLabel" name="EcoTaxi">
           <property name="minimumSize">
            <size>
@@ -140,7 +145,7 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>370</width>
+            <width>360</width>
             <height>16777215</height>
            </size>
           </property>
@@ -200,7 +205,7 @@
         <property name="rightMargin">
          <number>45</number>
         </property>
-        <item alignment="Qt::AlignRight">
+        <item alignment="Qt::AlignmentFlag::AlignRight">
          <widget class="QPushButton" name="dateButton">
           <property name="minimumSize">
            <size>
@@ -219,7 +224,7 @@
           </property>
          </widget>
         </item>
-        <item alignment="Qt::AlignHCenter">
+        <item alignment="Qt::AlignmentFlag::AlignHCenter">
          <widget class="QTimeEdit" name="timeEdit">
           <property name="minimumSize">
            <size>
@@ -234,7 +239,7 @@
            </size>
           </property>
           <property name="correctionMode">
-           <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+           <enum>QAbstractSpinBox::CorrectionMode::CorrectToNearestValue</enum>
           </property>
           <property name="displayFormat">
            <string>hh:mm</string>
@@ -243,7 +248,7 @@
            <bool>true</bool>
           </property>
           <property name="timeSpec">
-           <enum>Qt::LocalTime</enum>
+           <enum>Qt::TimeSpec::LocalTime</enum>
           </property>
           <property name="time">
            <time>
@@ -254,7 +259,7 @@
           </property>
          </widget>
         </item>
-        <item alignment="Qt::AlignLeft">
+        <item alignment="Qt::AlignmentFlag::AlignLeft">
          <widget class="QCheckBox" name="systemTimeCheck">
           <property name="minimumSize">
            <size>
@@ -289,7 +294,7 @@
         <property name="rightMargin">
          <number>50</number>
         </property>
-        <item alignment="Qt::AlignRight|Qt::AlignTop">
+        <item alignment="Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTop">
          <widget class="QFrame" name="frame_2">
           <property name="minimumSize">
            <size>
@@ -298,13 +303,13 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::Shape::StyledPanel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,15">
-           <item alignment="Qt::AlignHCenter">
+           <item alignment="Qt::AlignmentFlag::AlignHCenter">
             <widget class="QLabel" name="label">
              <property name="minimumSize">
               <size>
@@ -317,7 +322,7 @@
              </property>
             </widget>
            </item>
-           <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+           <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
             <widget class="QFrame" name="eventFrame">
              <property name="minimumSize">
               <size>
@@ -332,10 +337,10 @@
               </size>
              </property>
              <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+              <enum>QFrame::Shape::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Shadow::Raised</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,1,1,1,0,0">
               <property name="leftMargin">
@@ -460,7 +465,7 @@
                   </property>
                  </widget>
                 </item>
-                <item alignment="Qt::AlignVCenter">
+                <item alignment="Qt::AlignmentFlag::AlignVCenter">
                  <widget class="QLineEdit" name="SumEdit">
                   <property name="enabled">
                    <bool>true</bool>
@@ -483,21 +488,34 @@
                 </item>
                </layout>
               </item>
-              <item alignment="Qt::AlignHCenter">
-               <widget class="QPushButton" name="addEventButton">
-                <property name="minimumSize">
-                 <size>
-                  <width>250</width>
-                  <height>52</height>
-                 </size>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_12">
+                <property name="topMargin">
+                 <number>0</number>
                 </property>
-                <property name="text">
-                 <string>Добавить</string>
-                </property>
-                <property name="flat">
-                 <bool>true</bool>
-                </property>
-               </widget>
+                <item>
+                 <widget class="QPushButton" name="addEventButton">
+                  <property name="minimumSize">
+                   <size>
+                    <width>250</width>
+                    <height>52</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>259</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Добавить</string>
+                  </property>
+                  <property name="flat">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
              </layout>
             </widget>
@@ -505,7 +523,7 @@
           </layout>
          </widget>
         </item>
-        <item alignment="Qt::AlignLeft|Qt::AlignTop">
+        <item alignment="Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop">
          <widget class="QFrame" name="frame">
           <property name="minimumSize">
            <size>
@@ -520,13 +538,13 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+           <enum>QFrame::Shape::StyledPanel</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Raised</enum>
+           <enum>QFrame::Shadow::Raised</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,15,0">
-           <item alignment="Qt::AlignHCenter">
+           <item alignment="Qt::AlignmentFlag::AlignHCenter">
             <widget class="QLabel" name="label_2">
              <property name="minimumSize">
               <size>
@@ -548,10 +566,10 @@
               </size>
              </property>
              <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+              <enum>QFrame::Shape::StyledPanel</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Shadow::Raised</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_6">
               <property name="leftMargin">
@@ -659,7 +677,7 @@
                   </property>
                  </widget>
                 </item>
-                <item alignment="Qt::AlignVCenter">
+                <item alignment="Qt::AlignmentFlag::AlignVCenter">
                  <widget class="QLineEdit" name="KWTEdit">
                   <property name="enabled">
                    <bool>true</bool>
@@ -692,7 +710,7 @@
                   </property>
                  </widget>
                 </item>
-                <item alignment="Qt::AlignVCenter">
+                <item alignment="Qt::AlignmentFlag::AlignVCenter">
                  <widget class="QLineEdit" name="TimeEdit">
                   <property name="enabled">
                    <bool>true</bool>
@@ -704,7 +722,7 @@
                 </item>
                </layout>
               </item>
-              <item alignment="Qt::AlignHCenter">
+              <item alignment="Qt::AlignmentFlag::AlignHCenter">
                <widget class="QPushButton" name="addChargeButton">
                 <property name="minimumSize">
                  <size>
@@ -726,7 +744,7 @@
            <item>
             <widget class="QLabel" name="label_3">
              <property name="text">
-              <string>0.3.7</string>
+              <string>0.4.17.9</string>
              </property>
             </widget>
            </item>
@@ -741,10 +759,10 @@
          <number>40</number>
         </property>
         <property name="sizeConstraint">
-         <enum>QLayout::SetDefaultConstraint</enum>
+         <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
         </property>
         <property name="leftMargin">
-         <number>700</number>
+         <number>50</number>
         </property>
         <property name="rightMargin">
          <number>50</number>
@@ -752,6 +770,47 @@
         <property name="bottomMargin">
          <number>20</number>
         </property>
+        <item>
+         <widget class="QComboBox" name="FinesButton">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>52</height>
+           </size>
+          </property>
+          <property name="placeholderText">
+           <string>ШТРАФЫ</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>ШТРАФЫ</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>ПО МАШИНАМ</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>ПО ВОДИТЕЛЯМ</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="repairsButton">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>52</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>РЕМОНТ</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QPushButton" name="eventsButton">
           <property name="minimumSize">

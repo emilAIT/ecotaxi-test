@@ -10,7 +10,7 @@ styleManager::styleManager(QApplication *app)
     vars["textColor"] = "#222222";
     vars["grayColor"] = "#b9b9b9";
 
-    vars["btnFontSize"] = "30px";
+    vars["btnFontSize"] = "27px";
     vars["textFontSize"] = "20px";
     vars["editFontSize"] = "20px";
 
@@ -315,7 +315,7 @@ QComboBox[type="nav"] QListView::item:selected {
 
 QTableView {
     font-family: Inter;
-    font-size: 24px;
+    font-size: 20px;
     background-color: )A" +
                      vars["backgroundColor"].toString() + R"A(;
     gridline-color: #b9b9b9;
@@ -329,8 +329,8 @@ QHeaderView::section {
     color: )A" +
             vars["textColor"].toString() + R"A(;
     background-color: #b9b9b9;
-    font-size: 24px;
-    padding: 5px;
+    font-size: 20px;
+    padding: 4px;
     text-align: center;
     border: 1px solid )A" +
                       vars["backgroundColor"].toString() + R"A(;
@@ -384,6 +384,12 @@ QCalendarWidget QToolButton {
             vars["mainColor"].toString() + R"A(;
     font-size: 24px;
     icon-size: 64px;
+    background-color: white;
+    color: )A" + vars["mainColor"].toString() + R"A(;
+    border: none;
+}
+QCalendarWidget QWidget#qt_calendar_navigationbar {
+    background-color: white; /* Background color for the navigation bar */
 }
 QCalendarWidget QMenu {
     width: 150px;
@@ -542,10 +548,46 @@ QTimeEdit::down-arrow:disabled
     border: none;
 }
 
+QDateTimeEdit {
+    background-color: )A" + vars["backgroundColor"].toString() + R"A(;
+    color: )A" + vars["textColor"].toString() + R"A(;
+    border-radius: )A" + vars["editBorderRadius"].toString() + R"A(;
+    padding: 5px;
+    font-size: )A" + vars["editFontSize"].toString() + R"A(;
+}
+
+QDateTimeEdit::drop-down {
+    background-color: )A" + vars["backgroundColor"].toString() + R"A(;
+    border: none;
+}
+
+QDateTimeEdit::down-arrow {
+    width: 0;
+    height: 0;
+}
+
+QDateTimeEdit::up-arrow {
+    width: 0;
+    height: 0;
+}
+
+QDateTimeEdit::up-button, QDateTimeEdit::down-button {
+    subcontrol-origin: border;
+    background-color: #00000000;
+    width: 20px;
+}
+
+QDateTimeEdit:disabled {
+    background-color: )A" + vars["backgroundColor"].toString() + R"A(;
+    color: )A" + vars["grayColor"].toString() + R"A(;
+}
+
+
 /* #################################################### CHECK BOX STYLES #################################################### */
 
 QCheckBox
 {
+    background-color: transparent;
     font-size: )A" +
                 vars["editFontSize"].toString() + R"A(;
     color: )A" +
@@ -574,6 +616,36 @@ QCheckBox::indicator:checked
 {
     background-color: )A" +
                     vars["mainColor"].toString() + R"A(;
+}
+
+QCheckBox[color="white"]
+{
+    color: )A" +
+            vars["backgroundColor"].toString() + R"A(;
+}
+
+QCheckBox:checked[color="white"]
+{
+    color: )A" +
+            vars["backgroundColor"].toString() + R"A(;
+}
+
+QCheckBox::indicator[color="white"]
+{
+    width: 20px;
+    height: 20px;
+    background-color: )A" +
+                    vars["mainColor"].toString() + R"A(;
+    border-style: solid;
+    border-width: 2px;
+    border-color: )A" +
+                    vars["backgroundColor"].toString() + R"A(;
+}
+
+QCheckBox::indicator:checked[color="white"]
+{
+    background-color: )A" +
+                    vars["backgroundColor"].toString() + R"A(;
 }
 
 )A";

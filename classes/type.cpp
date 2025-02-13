@@ -11,12 +11,14 @@ Type::Type(QVariantList type)
         this->id = -1;
         this->name = "удален";
         this->description = "";
+        this->forAdmin = false;
     }
     else
     {
         this->id = type[0].toInt();
         this->name = type[1].toString();
         this->description = type[2].toString();
+        this->forAdmin = type[3].toBool();
     }
 }
 
@@ -35,6 +37,11 @@ QString Type::getDescription()
     return description;
 }
 
+bool Type::getForAdmin()
+{
+    return forAdmin;
+}
+
 void Type::setName(QString newName)
 {
     name = newName;
@@ -43,4 +50,9 @@ void Type::setName(QString newName)
 void Type::setDescription(QString newDescription)
 {
     description = newDescription;
+}
+
+void Type::setForAdmin(bool newForAdmin)
+{
+    forAdmin = newForAdmin;
 }

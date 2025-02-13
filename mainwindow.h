@@ -20,6 +20,9 @@
 #include "pages/calendarpage.h"
 #include "pages/removedb.h"
 
+#include "scripts/awss3uploader.h"
+
+#include <QFileDialog>
 #include "QTimer"
 
 QT_BEGIN_NAMESPACE
@@ -42,12 +45,16 @@ public:
 private slots:
     void on_SettingsButton_currentIndexChanged(int index);
     void on_ReportsButton_currentIndexChanged(int index);
+    void on_FinesButton_currentIndexChanged(int index);
 
     void on_addEventButton_clicked();
     void on_addChargeButton_clicked();
 
     void on_eventsButton_clicked();
     void on_chargesButton_clicked();
+    void on_repairsButton_clicked();
+
+    void on_addImagesButton_clicked();
 
     void on_dateButton_clicked();
 
@@ -72,6 +79,7 @@ private:
 
     void setSettingIndex();
     void setReportIndex();
+    void setFinesIndex();
 
     bool checkEventFill();
     bool checkChargeFill();

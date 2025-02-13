@@ -15,6 +15,8 @@
 #include "../pages/addupdatewindowevents.h"
 #include "../pages/customdialog.h"
 
+#include "../scripts/greenbackgrounddelegate.h"
+
 #include "../enums/Events.h"
 
 namespace Ui
@@ -42,7 +44,14 @@ private slots:
 
     void onDateChange(QDate date);
 
+    void on_PrevButton_clicked();
+    void on_NextButton_clicked();
+
     void onSectionResized(int logicalIndex, int oldSize, int newSize);
+
+    void handleDoubleClick(const QModelIndex &index);
+
+    void onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order);
 
     void onYes();
     void onNo();
@@ -60,6 +69,9 @@ private:
 
     const int tableWidth = 1130;
     const int minColumnWidth = 100;
+
+    int selectedColumn;
+    Qt::SortOrder sortOrder;
 
     QDate date;
 };

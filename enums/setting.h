@@ -7,7 +7,7 @@ enum class Setting {
     Investors,
     Types,
     Locations,
-    Users
+    Users,
 };
 
 #endif // SETTING_H

@@ -15,15 +15,15 @@ addUpdateWindow::addUpdateWindow(Setting mode, int id, QWidget *parent)
 
     this->setWindowModality(Qt::ApplicationModal);
 
-    ui->IdEdit->setValidator(new QIntValidator());
     ui->YearEdit->setValidator(new QIntValidator());
     ui->MilleageEdit->setValidator(new QIntValidator());
+    ui->PercentEdit->setValidator(new QIntValidator());
 
     ui->DescLabel->setProperty("color", "white");
 
     if (id > 0)
     {
-        ui->pushButton->setText("Готово");
+        ui->pushButton->setText("Сохранить");
     }
     else
     {
@@ -42,6 +42,8 @@ addUpdateWindow::addUpdateWindow(Setting mode, int id, QWidget *parent)
         ui->InvestorFrame->hide();
         ui->MilleageFrame->hide();
         ui->PasswordFrame->hide();
+        ui->PercentFrame->hide();
+        ui->isAdminFrame->hide();
         ui->NameLabel->setProperty("color", "white");
         if (id > 0)
         {
@@ -59,6 +61,7 @@ addUpdateWindow::addUpdateWindow(Setting mode, int id, QWidget *parent)
         ui->TitleFrame->hide();
         ui->NameFrame->hide();
         ui->PasswordFrame->hide();
+        ui->isAdminFrame->hide();
         ui->IdLabel->setProperty("color", "white");
         ui->BrandLabel->setProperty("color", "white");
         ui->ModelLabel->setProperty("color", "white");
@@ -66,6 +69,14 @@ addUpdateWindow::addUpdateWindow(Setting mode, int id, QWidget *parent)
         ui->YearLabel->setProperty("color", "white");
         ui->InvestorLabel->setProperty("color", "white");
         ui->MilleageLabel->setProperty("color", "white");
+
+        if (true){
+            userSession &us = userSession::getInstance();
+            if (us.checkIsAdmin())
+                ui->PercentLabel->setProperty("color", "white");
+            else
+                ui->PercentFrame->hide();
+        }
 
         investors_list = Operations::selectAllInvestors();
 
@@ -80,13 +91,14 @@ addUpdateWindow::addUpdateWindow(Setting mode, int id, QWidget *parent)
         {
             ui->Header->setText("Редактировать машину");
             Car car = Operations::getCar(id);
-            ui->IdEdit->setText(QString::number(car.getSid()));
+            ui->IdEdit->setText(car.getSid());
             ui->BrandEdit->setText(car.getBrand());
             ui->ModelEdit->setText(car.getModel());
             ui->LicenseEdit->setText(car.getLicensePlate());
             ui->investorBox->setCurrentText(Operations::getInvestor(car.getInvestorId()).getName());
             ui->MilleageEdit->setText(QString::number(car.getMilleage()));
             ui->YearEdit->setText(QString::number(car.getYear()));
+            ui->PercentEdit->setText(QString::number(car.getPercentage()));
             ui->DescEdit->setText(car.getDescription());
         }
         else
@@ -103,8 +115,10 @@ addUpdateWindow::addUpdateWindow(Setting mode, int id, QWidget *parent)
         ui->YearFrame->hide();
         ui->InvestorFrame->hide();
         ui->MilleageFrame->hide();
-        ui->PasswordFrame->hide();
+        ui->PercentFrame->hide();
+        ui->isAdminFrame->hide();
         ui->NameLabel->setProperty("color", "white");
+        ui->PasswordLabel->setProperty("color", "white");
         if (id > 0)
         {
             ui->Header->setText("Редактировать инвестора");
@@ -127,13 +141,17 @@ addUpdateWindow::addUpdateWindow(Setting mode, int id, QWidget *parent)
         ui->InvestorFrame->hide();
         ui->MilleageFrame->hide();
         ui->PasswordFrame->hide();
+        ui->PercentFrame->hide();
         ui->TitleLabel->setProperty("color", "white");
+        ui->isAdminCheckBox->setProperty("color", "white");
+        ui->isAdminCheckBox->setText("Для админов");
         if (id > 0)
         {
             ui->Header->setText("Редактировать тип");
             Type type = Operations::getType(id);
             ui->TitleEdit->setText(type.getName());
             ui->DescEdit->setText(type.getDescription());
+            ui->isAdminCheckBox->setChecked(type.getForAdmin());
         }
         else
         {
@@ -150,6 +168,8 @@ addUpdateWindow::addUpdateWindow(Setting mode, int id, QWidget *parent)
         ui->InvestorFrame->hide();
         ui->MilleageFrame->hide();
         ui->PasswordFrame->hide();
+        ui->PercentFrame->hide();
+        ui->isAdminFrame->hide();
         ui->TitleLabel->setProperty("color", "white");
         if (id > 0)
         {
@@ -172,17 +192,18 @@ addUpdateWindow::addUpdateWindow(Setting mode, int id, QWidget *parent)
         ui->InvestorFrame->hide();
         ui->MilleageFrame->hide();
         ui->TitleFrame->hide();
+        ui->PercentFrame->hide();
         ui->NameLabel->setProperty("color", "white");
         ui->PasswordLabel->setProperty("color", "white");
+        ui->isAdminCheckBox->setProperty("color", "white");
         if (id > 0)
         {
             ui->Header->setText("Редактировать пользователя");
             User user = Operations::getUser(id);
             ui->NameEdit->setText(user.getName());
             userSession &u = userSession::getInstance();
-            // SimpleCrypt *sc = new SimpleCrypt(u.getSecretKey());
-            // ui->PasswordEdit->setText(sc->decryptToString(user.getPassword()));
             ui->DescEdit->setText(user.getDescription());
+            ui->isAdminCheckBox->setChecked(user.getIsAdmin());
         }
         else
         {
@@ -214,19 +235,19 @@ void addUpdateWindow::addRecord()
                 Operations::updateDriver(Driver(QVariantList::fromList({id, ui->NameEdit->text(), ui->DescEdit->toPlainText()})));
                 break;
             case Setting::Cars:
-                Operations::updateCar(id, Car(QVariantList::fromList({id, ui->IdEdit->text().toLongLong(), ui->BrandEdit->text(), ui->ModelEdit->text(), ui->LicenseEdit->text(), ui->YearEdit->text().toLongLong(), investors.value(ui->investorBox->currentText()), ui->MilleageEdit->text().toLongLong(), ui->DescEdit->toPlainText()})));
+                Operations::updateCar(id, Car(QVariantList::fromList({id, ui->IdEdit->text(), ui->BrandEdit->text(), ui->ModelEdit->text(), ui->LicenseEdit->text(), ui->YearEdit->text().toLongLong(), investors.value(ui->investorBox->currentText()), ui->MilleageEdit->text().toLongLong(), ui->DescEdit->toPlainText(), ui->PercentEdit->text().toLongLong()})));
                 break;
             case Setting::Investors:
-                Operations::updateInvestor(Investor(QVariantList::fromList({id, ui->NameEdit->text(), ui->DescEdit->toPlainText()})));
+                Operations::updateInvestor(Investor(QVariantList::fromList({id, ui->NameEdit->text(), ui->DescEdit->toPlainText(), HASH::generateHMAC(ui->PasswordEdit->text())})));
                 break;
             case Setting::Types:
-                Operations::updateType(Type(QVariantList::fromList({id, ui->TitleEdit->text(), ui->DescEdit->toPlainText()})));
+                Operations::updateType(Type(QVariantList::fromList({id, ui->TitleEdit->text(), ui->DescEdit->toPlainText(), ui->isAdminCheckBox->isChecked()})));
                 break;
             case Setting::Locations:
                 Operations::updateLocation(Location(QVariantList::fromList({id, ui->TitleEdit->text(), ui->DescEdit->toPlainText()})));
                 break;
             case Setting::Users:
-                Operations::updateUser(User(QVariantList::fromList({id, ui->NameEdit->text(), HASH::generateHMAC(ui->PasswordEdit->text()), ui->DescEdit->toPlainText()})));
+                Operations::updateUser(User(QVariantList::fromList({id, ui->NameEdit->text(), HASH::generateHMAC(ui->PasswordEdit->text()), ui->DescEdit->toPlainText(), ui->isAdminCheckBox->isChecked()})));
                 break;
             }
         }
@@ -238,19 +259,19 @@ void addUpdateWindow::addRecord()
                 Operations::addDriver(Driver(QVariantList::fromList({id, ui->NameEdit->text(), ui->DescEdit->toPlainText()})));
                 break;
             case Setting::Cars:
-                Operations::addCar(Car(QVariantList::fromList({0, ui->IdEdit->text().toLongLong(), ui->BrandEdit->text(), ui->ModelEdit->text(), ui->LicenseEdit->text(), ui->YearEdit->text(), investors.value(ui->investorBox->currentText()), ui->MilleageEdit->text(), ui->DescEdit->toPlainText()})));
+                Operations::addCar(Car(QVariantList::fromList({0, ui->IdEdit->text(), ui->BrandEdit->text(), ui->ModelEdit->text(), ui->LicenseEdit->text(), ui->YearEdit->text(), investors.value(ui->investorBox->currentText()), ui->MilleageEdit->text(), ui->DescEdit->toPlainText(), ui->PercentEdit->text().toLongLong()})));
                 break;
             case Setting::Investors:
-                Operations::addInvestor(Investor(QVariantList::fromList({id, ui->NameEdit->text(), ui->DescEdit->toPlainText()})));
+                Operations::addInvestor(Investor(QVariantList::fromList({id, ui->NameEdit->text(), ui->DescEdit->toPlainText(), HASH::generateHMAC(ui->PasswordEdit->text())})));
                 break;
             case Setting::Types:
-                Operations::addType(Type(QVariantList::fromList({id, ui->TitleEdit->text(), ui->DescEdit->toPlainText()})));
+                Operations::addType(Type(QVariantList::fromList({id, ui->TitleEdit->text(), ui->DescEdit->toPlainText(), ui->isAdminCheckBox->isChecked()})));
                 break;
             case Setting::Locations:
                 Operations::addLocation(Location(QVariantList::fromList({id, ui->TitleEdit->text(), ui->DescEdit->toPlainText()})));
                 break;
             case Setting::Users:
-                Operations::addUser(User(QVariantList::fromList({id, ui->NameEdit->text(), HASH::generateHMAC(ui->PasswordEdit->text()), ui->DescEdit->toPlainText()})));
+                Operations::addUser(User(QVariantList::fromList({id, ui->NameEdit->text(), HASH::generateHMAC(ui->PasswordEdit->text()), ui->DescEdit->toPlainText(), ui->isAdminCheckBox->isChecked()})));
                 break;
             }
         }
@@ -259,7 +280,7 @@ void addUpdateWindow::addRecord()
     }
     else
     {
-        QTimer::singleShot(200, this, resetInputColor);
+        QTimer::singleShot(200, this, &addUpdateWindow::resetInputColor);
     }
 }
 
@@ -384,12 +405,6 @@ bool addUpdateWindow::checkFill()
         {
             ui->NameEdit->setStyleSheet("background-color: red;");
             ui->NameLabel->setStyleSheet("color: red;");
-            result = false;
-        }
-        if (ui->PasswordEdit->text().isEmpty())
-        {
-            ui->PasswordEdit->setStyleSheet("background-color: red;");
-            ui->PasswordLabel->setStyleSheet("color: red;");
             result = false;
         }
     }

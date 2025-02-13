@@ -6,10 +6,14 @@ enum class Report
     Investors,
     Types,
     Cars,
+    Debts,
     Drivers,
     Locations,
     Charges,
-    Users
+    Users,
+    Users2,
+    FinesByCars,
+    FinesByDrivers
 };
 
 #endif // REPORT_H

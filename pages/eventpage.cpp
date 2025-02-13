@@ -19,6 +19,12 @@ eventPage::eventPage(nm *nav, QWidget *parent)
     ui->DateButton->setText(this->date.toString("dd.MM.yyyy"));
 
     ui->DateButton->setProperty("color", "gray");
+
+    connect(ui->tableView, &QTableView::doubleClicked, this, &eventPage::handleDoubleClick);
+
+    connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &eventPage::onSectionResized);
+
+    connect(ui->tableView->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &eventPage::onSortIndicatorChanged);
 }
 
 eventPage::~eventPage()
@@ -28,6 +34,8 @@ eventPage::~eventPage()
 
 void eventPage::setEvents(Events table, QDate date)
 {
+    this->selectedColumn = -1;
+
     this->table = table;
 
     if (!date.isNull())
@@ -67,35 +75,66 @@ bool eventPage::setTable()
     {
     case Events::Events:
         model->setHorizontalHeaderLabels({"id", "Время", "Тип", "ID Водителя", "ID Машины", "Сумма", "Описание"});
-        for (Event event : Operations::selectEventsByDate(this->date))
+        for (const QVariant &event : Operations::selectEventsByDate(this->date))
         {
-            QString driverShow = "-";
-            if (event.getDriverId() > 0)
-            {
-                Driver driver = Operations::getDriver(event.getDriverId());
-                driverShow = driver.getName();
-            }
+            QList<QStandardItem *> row;
 
-            QString carShow = "-";
-            if (event.getCarId() > 0)
-            {
-                Car car = Operations::getCar(event.getCarId());
-                carShow = QString::number(car.getSid());
-            }
-            model->appendRow({new QStandardItem(QString::number(event.getId())), new QStandardItem(event.getDate().toString("HH:mm:ss")), new QStandardItem(Operations::getType(event.getTypeId()).getName()), new QStandardItem(driverShow), new QStandardItem(carShow), new QStandardItem(QString::number(event.getAmount())), new QStandardItem(event.getDescription())});
+            QVariantList data = event.toList();
+
+            row.append(new QStandardItem(data[0].toString()));
+
+            QStandardItem *dateItem = new QStandardItem();
+            dateItem->setData(data[1].toDateTime(), Qt::DisplayRole);
+            row.append(dateItem);
+
+            row.append(new QStandardItem(data[2].toString()));
+            row.append(new QStandardItem(data[3].toString()));
+            row.append(new QStandardItem(data[4].toString()));
+
+            QStandardItem *amountItem = new QStandardItem();
+            amountItem->setData(data[5].toInt(), Qt::DisplayRole); // Сумма
+            row.append(amountItem);
+            
+            row.append(new QStandardItem(data[6].toString()));
+            model->appendRow(row);
         }
         break;
     case Events::Charges:
         model->setHorizontalHeaderLabels({"id", "Время", "ID Машины", "ID Водителя", "Локация", "КВТ", "Время"});
-        for (Charge charge : Operations::selectChargesByDate(this->date))
+        for (const QVariant &charge : Operations::selectChargesByDate(this->date))
         {
-            Driver driver = Operations::getDriver(charge.getDriverId());
-            Location location = Operations::getLocation(charge.getLocationId());
-            QString time = (charge.getDuration() != 0) ? QString::number(charge.getDuration()) : "-";
-            model->appendRow({new QStandardItem(QString::number(charge.getId())), new QStandardItem(charge.getDate().toString("HH:mm:ss")), new QStandardItem(QString::number(Operations::getCar(charge.getCarId()).getSid())), new QStandardItem(driver.getName()), new QStandardItem(location.getName()), new QStandardItem(QString::number(charge.getKwh())), new QStandardItem(time)});
+            QList<QStandardItem *> row;
+
+            QVariantList data = charge.toList();
+
+            row.append(new QStandardItem(data[0].toString()));
+
+            QStandardItem *dateItem = new QStandardItem();
+            dateItem->setData(data[1].toDateTime(), Qt::DisplayRole);
+            row.append(dateItem);
+
+            row.append(new QStandardItem(data[2].toString()));
+            row.append(new QStandardItem(data[3].toString()));
+            row.append(new QStandardItem(data[4].toString()));
+
+            QStandardItem *kwhItem = new QStandardItem();
+            kwhItem->setData(data[5].toInt(), Qt::DisplayRole);
+            row.append(kwhItem);
+            
+            QStandardItem *timeItem = new QStandardItem();
+            timeItem->setData(data[6].toInt(), Qt::DisplayRole);
+            row.append(timeItem);
+
+            model->appendRow(row);
         }
     }
     ui->tableView->setModel(model);
+
+    if (this->table == Events::Events)
+    {
+        GreenBackgroundDelegate *delegate = new GreenBackgroundDelegate(ui->tableView);
+        ui->tableView->setItemDelegateForColumn(5, delegate);
+    }
 
     ui->tableView->setColumnHidden(0, true);
 
@@ -107,7 +146,8 @@ bool eventPage::setTable()
 
     ui->tableView->horizontalHeader()->setCascadingSectionResizes(true);
 
-    connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &eventPage::onSectionResized);
+    if (this->selectedColumn != -1)
+        ui->tableView->sortByColumn(this->selectedColumn, this->sortOrder);
 
     switch (this->table)
     {
@@ -144,7 +184,10 @@ void eventPage::setBottomTable() {
         for (const QVariant &event : Operations::getAllEventsReport(this->date)) {
             QVariantList events = event.toList();
             model->setHorizontalHeaderLabels({"Итого",
-                                              events[0].toString()});
+                                              events[0].toString(),
+                                              events[1].toString(),
+                                              events[2].toString(),
+                                              });
         }
         break;
 
@@ -195,7 +238,7 @@ void eventPage::on_DeleteButton_clicked()
             if (true)
             {
                 Charge charge = Operations::getCharge(id);
-                question = "Вы уверены что хотите удалить зарядку " + QString::number(charge.getId()) + ", " + charge.getDate().toString("HH:mm:ss") + ", " + QString::number(Operations::getCar(charge.getCarId()).getSid()) + ", " + Operations::getDriver(charge.getDriverId()).getName() + ", " + Operations::getLocation(charge.getLocationId()).getName() + ", " + QString::number(charge.getKwh()) + ", " + QString::number(charge.getDuration()) + "?";
+                question = "Вы уверены что хотите удалить зарядку " + QString::number(charge.getId()) + ", " + charge.getDate().toString("HH:mm:ss") + ", " + Operations::getCar(charge.getCarId()).getSid() + ", " + Operations::getDriver(charge.getDriverId()).getName() + ", " + Operations::getLocation(charge.getLocationId()).getName() + ", " + QString::number(charge.getKwh()) + ", " + QString::number(charge.getDuration()) + "?";
             }
         default:
             break;
@@ -312,4 +355,45 @@ void eventPage::on_ReportButton_clicked()
         nav->openReport(6);
         break;
     }
+}
+
+void eventPage::on_PrevButton_clicked()
+{
+    this->date = this->date.addDays(-1);
+    ui->DateButton->setText(this->date.toString("dd.MM.yyyy"));
+
+    setTable();
+    setBottomTable();
+}
+
+void eventPage::on_NextButton_clicked()
+{
+    this->date = this->date.addDays(1);
+    ui->DateButton->setText(this->date.toString("dd.MM.yyyy"));
+    setTable();
+    setBottomTable();
+}
+
+void eventPage::handleDoubleClick(const QModelIndex &index)
+{
+    if (index.isValid()) {
+        QModelIndex firstColumnIndex = index.sibling(index.row(), 0);
+
+        int id = ui->tableView->model()->data(firstColumnIndex).toLongLong();
+
+        addupdatewindowEvents *w = new addupdatewindowEvents(this->table, id);
+        w->resize(w->minimumSizeHint());
+        w->show();
+
+        QEventLoop loop;
+        connect(w, SIGNAL(closed()), &loop, SLOT(quit()));
+        loop.exec();
+
+        setTable();
+    }
+}
+
+void eventPage::onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order) {
+    this->selectedColumn = logicalIndex;
+    this->sortOrder = order;
 }

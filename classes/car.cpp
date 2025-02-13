@@ -8,12 +8,12 @@ Car::Car(QVariantList car)
     if (car.isEmpty())
     {
         this->id = -1;
-        this->sid = -1;
+        this->sid = "-1";
     }
     else
     {
         this->id = car[0].toInt();
-        this->sid = car[1].toInt();
+        this->sid = car[1].toString();
         this->brand = car[2].toString();
         this->model = car[3].toString();
         this->licensePlate = car[4].toString();
@@ -21,6 +21,7 @@ Car::Car(QVariantList car)
         this->investorId = car[6].toInt();
         this->milleage = car[7].toInt();
         this->description = car[8].toString();
+        this->percentage = car[9].toInt();
     }
 }
 
@@ -29,7 +30,7 @@ int Car::getId()
     return id;
 }
 
-int Car::getSid()
+QString Car::getSid()
 {
     return sid;
 }
@@ -69,6 +70,11 @@ QString Car::getDescription()
     return description;
 }
 
+int Car::getPercentage()
+{
+    return percentage;
+}
+
 void Car::setBrand(QString newBrand)
 {
     brand = newBrand;
@@ -102,4 +108,9 @@ void Car::setMilleage(float newMilleage)
 void Car::setDescription(QString newDescription)
 {
     description = newDescription;
+}
+
+void Car::setPercentage(int newPercentage)
+{
+    percentage = newPercentage;
 }

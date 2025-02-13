@@ -54,6 +54,8 @@ private slots:
 
     void onSectionResized(int logicalIndex, int oldSize, int newSize);
 
+    void onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order);
+
 private:
     Ui::ReportPage *ui;
 
@@ -75,6 +77,9 @@ private:
     void setToDate(QDate date);
 
     void adjustColumnWidths();
+
+    int selectedColumn;
+    Qt::SortOrder sortOrder;
 
     QDate fromDate;
     QDate toDate;

@@ -8,6 +8,8 @@
 #include "../managers/nm.h"
 #include "../managers/operations.h"
 
+#include "../managers/usersession.h"
+
 #include "../enums/setting.h"
 
 #include "addupdatewindow.h"
@@ -37,6 +39,8 @@ private slots:
     void onNo();
 
     void on_ReportButton_clicked();
+
+    void handleDoubleClick(const QModelIndex &index);
 
     void onSectionResized(int logicalIndex, int oldSize, int newSize);
 

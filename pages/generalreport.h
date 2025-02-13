@@ -6,8 +6,10 @@
 #include <QStandardItem>
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
+#include <QMessageBox>
 
 #include "../managers/reportoperations.h"
+#include "../managers/operations.h"
 
 #include "../enums/Report.h"
 #include "../managers/nm.h"
@@ -38,6 +40,8 @@ private slots:
 
     void on_ReportButton_clicked();
 
+    void on_SecondReportButton_clicked();
+
     void on_FilterButton_clicked();
 
     void on_FromDateButton_clicked();
@@ -45,7 +49,11 @@ private slots:
 
     void on_ToPDFButton_clicked();
 
+    void handleDoubleClick(const QModelIndex &index);
+
     void onSectionResized(int logicalIndex, int oldSize, int newSize);
+
+    void onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order);
 
 private:
     Ui::GeneralReport *ui;
@@ -64,6 +72,9 @@ private:
     void setToDate(QDate date);
 
     void adjustColumnWidths();
+
+    int selectedColumn;
+    Qt::SortOrder sortOrder;
 
     Report mode;
 

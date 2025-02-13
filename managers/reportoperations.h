@@ -34,6 +34,18 @@ public:
     QVariantList static getUsersReport(QDate fromDate, QDate toDate);
     QVariantList static getAllUsersReport(QDate fromDate, QDate toDate);
 
+    QVariantList static getUsers2Report(QDate fromDate, QDate toDate);
+    QVariantList static getAllUsers2Report(QDate fromDate, QDate toDate);
+
+    QVariantList static getDebtsReport(QDate fromDate, QDate toDate);
+    QVariantList static getAllDebtsReport(QDate fromDate, QDate toDate);
+
+    QVariantList static getFinesByCarsReport(QDate fromDate, QDate toDate);
+    QVariantList static getAllFinesByCarsReport(QDate fromDate, QDate toDate);
+
+    QVariantList static getFinesByDriversReport(QDate fromDate, QDate toDate);
+    QVariantList static getAllFinesByDriversReport(QDate fromDate, QDate toDate);
+
     // reports by item
     QVariantList static getCarReport(int carId, QDate fromDate, QDate toDate);
     QVariantList static getAllCarReport(int carId, QDate fromDate, QDate toDate);
@@ -55,6 +67,19 @@ public:
 
     QVariantList static getUserReport(int userId, QDate fromDate, QDate toDate);
     QVariantList static getAllUserReport(int userId, QDate fromDate, QDate toDate);
+
+    QVariantList static getFinesByCarReport(int carId, QDate fromDate, QDate toDate);
+    QVariantList static getAllFinesByCarReport(int carId, QDate fromDate, QDate toDate);
+
+    QVariantList static getFinesByDriverReport(int driverId, QDate fromDate, QDate toDate);
+    QVariantList static getAllFinesByDriverReport(int driverId, QDate fromDate, QDate toDate);
+
+    // other reports
+    QVariantList static getRepairsReport();
+    QVariantList static getNotDoneRepairsReport();
+
+    QVariantList static getFinesReport();
+    QVariantList static getNotPaidFinesReport();
 };
 
 #endif // REPORTOPERATIONS_H

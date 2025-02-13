@@ -15,6 +15,7 @@ User::User(QVariantList user) {
         this->name = user[1].toString();
         this->password = user[2].toString();
         this->description = user[3].toString();
+        this->isAdmin = user[4].toBool();
     }
 }
 
@@ -35,6 +36,9 @@ QString User::getDescription() {
     return description;
 }
 
+bool User::getIsAdmin() {
+    return isAdmin;
+}
 
 void User::setName(QString newName) {
     name = newName;
@@ -46,4 +50,8 @@ void User::setPassword(QString newPassword) {
 
 void User::setDescription(QString newDescription) {
     description = newDescription;
+}
+
+void User::setIsAdmin(bool newIsAdmin) {
+    isAdmin = newIsAdmin;
 }

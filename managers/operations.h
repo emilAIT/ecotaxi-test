@@ -8,6 +8,7 @@
 
 #include "dbmanager.h"
 #include "backupmanager.h"
+#include "usersession.h"
 
 #include "../classes/car.h"
 #include "../classes/investor.h"
@@ -27,15 +28,16 @@ public:
     QList<Investor> static selectAllInvestors();
 
     QList<Car> static selectAllCars();
+    QVariantList static selectAllCarsQuick();
 
     QList<Driver> static selectAllDrivers();
 
     QList<Event> static selectAllEvents();
-    QList<Event> static selectEventsByDate(QDate date);
+    QVariantList static selectEventsByDate(QDate date);
     QVariantList static getAllEventsReport(QDate fromDate);
 
     QList<Charge> static selectAllCharges();
-    QList<Charge> static selectChargesByDate(QDate date);
+    QVariantList static selectChargesByDate(QDate date);
     QVariantList static getAllChargesReport(QDate fromDate);
 
     QList<Type> static selectAllTypes();
@@ -84,7 +86,17 @@ public:
     bool static updateUser(User user);
     bool static deleteUser(int id);
     User static getUser(int id);
-    bool static checkLoginUser(QString password);
+    QList<int> static checkLoginUser(QString password);
+
+    bool static addRepair(int carId, QDate fromDate, QDate toDate, QString description);
+    bool static updateRepair(int id, int carId, QDate fromDate, QDate toDate, QString description);
+    bool static deleteRepair(int id);
+    QVariantList static getRepair(int id);
+
+    bool static addFine(QDate date, int carId, int driverId, int amount, bool isPaid, QString description);
+    bool static updateFine(int id, QDate date, int carId, int driverId, int amount, bool isPaid, QString description);
+    bool static deleteFine(int id);
+    QVariantList static getFine(int id);
 };
 
 #endif // OPERATIONS_H

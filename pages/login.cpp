@@ -24,9 +24,9 @@ void login::logIn()
     userSession &u = userSession::getInstance();
     if (u.logMe(ui->passwordEdit->text()))
     {
-        navigationManager *w = new navigationManager();
+        navigationManager &w = navigationManager::getInstance();
         this->hide();
-        w->showMaximized();
+        w.showMaximized();
     }
     else
     {

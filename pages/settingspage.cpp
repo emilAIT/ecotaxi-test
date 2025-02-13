@@ -6,6 +6,8 @@ SettingsPage::SettingsPage(nm *nav, QWidget *parent)
 {
     this->nav = nav;
     ui->setupUi(this);
+
+    connect(ui->tableView, &QTableView::doubleClicked, this, &SettingsPage::handleDoubleClick);
 }
 
 SettingsPage::~SettingsPage()
@@ -68,19 +70,42 @@ bool SettingsPage::setTable()
                               new QStandardItem(driver.getDescription())});
         break;
     case Setting::Cars:
-        model->setHorizontalHeaderLabels({"uid", "ID", "Марка", "Модель", "Госномер", "Год", "Инвестор", "Пробег", "Описание"});
-        for (Car car : Operations::selectAllCars())
-        {
-            Investor investor = Operations::getInvestor(car.getInvestorId());
-            model->appendRow({new QStandardItem(QString::number(car.getId())),
-                              new QStandardItem(QString::number(car.getSid())),
-                              new QStandardItem(car.getBrand()),
-                              new QStandardItem(car.getModel()),
-                              new QStandardItem(car.getLicensePlate()),
-                              new QStandardItem(QString::number(car.getYear())),
-                              new QStandardItem(investor.getName()),
-                              new QStandardItem(QString::number(car.getMilleage())),
-                              new QStandardItem(car.getDescription())});
+        if (true) {
+            userSession &us = userSession::getInstance();
+            if (us.checkIsAdmin()) {
+                model->setHorizontalHeaderLabels({"uid", "ID", "Марка", "Модель", "Госномер", "Год", "Инвестор", "Пробег", "Процент" , "Описание"});
+                for (const QVariant &car : Operations::selectAllCarsQuick())
+                {
+                    QVariantList values = car.toList();
+                    model->appendRow({new QStandardItem(values[0].toString()),
+                                      new QStandardItem(values[1].toString()),
+                                      new QStandardItem(values[2].toString()),
+                                      new QStandardItem(values[3].toString()),
+                                      new QStandardItem(values[4].toString()),
+                                      new QStandardItem(values[5].toString()),
+                                      new QStandardItem(values[6].toString()),
+                                      new QStandardItem(values[7].toString()),
+                                      new QStandardItem(values[8].toString() + "%"),
+                                      new QStandardItem(values[9].toString())});
+                }
+            }
+            else
+            {
+                model->setHorizontalHeaderLabels({"uid", "ID", "Марка", "Модель", "Госномер", "Год", "Инвестор", "Пробег", "Описание"});
+                for (const QVariant &car : Operations::selectAllCarsQuick())
+                {
+                    QVariantList values = car.toList();
+                    model->appendRow({new QStandardItem(values[0].toString()),
+                                      new QStandardItem(values[1].toString()),
+                                      new QStandardItem(values[2].toString()),
+                                      new QStandardItem(values[3].toString()),
+                                      new QStandardItem(values[4].toString()),
+                                      new QStandardItem(values[5].toString()),
+                                      new QStandardItem(values[6].toString()),
+                                      new QStandardItem(values[7].toString()),
+                                      new QStandardItem(values[9].toString())});
+                }
+            }
         }
         break;
     case Setting::Investors:
@@ -136,13 +161,14 @@ bool SettingsPage::setTable()
         break;
     case Setting::Cars:
         ui->tableView->setColumnWidth(0, 100);
-        ui->tableView->setColumnWidth(1, 140);
-        ui->tableView->setColumnWidth(2, 140);
-        ui->tableView->setColumnWidth(3, 180);
-        ui->tableView->setColumnWidth(4, 140);
-        ui->tableView->setColumnWidth(5, 140);
-        ui->tableView->setColumnWidth(6, 140);
-        ui->tableView->setColumnWidth(7, 150);
+        ui->tableView->setColumnWidth(1, 130);
+        ui->tableView->setColumnWidth(2, 130);
+        ui->tableView->setColumnWidth(3, 170);
+        ui->tableView->setColumnWidth(4, 130);
+        ui->tableView->setColumnWidth(5, 130);
+        ui->tableView->setColumnWidth(6, 130);
+        ui->tableView->setColumnWidth(7, 130);
+        ui->tableView->setColumnWidth(8, 140);
         break;
     case Setting::Investors:
         ui->tableView->setColumnWidth(0, 200);
@@ -383,5 +409,24 @@ void SettingsPage::adjustColumnWidths() {
         ui->tableView->setColumnWidth(ui->tableView->model()->columnCount() - 1, lastColumnWidth);
     } else {
         ui->tableView->setColumnWidth(ui->tableView->model()->columnCount() - 1, 150);
+    }
+}
+
+void SettingsPage::handleDoubleClick(const QModelIndex &index)
+{
+    if (index.isValid()) {
+        QModelIndex firstColumnIndex = index.sibling(index.row(), 0);
+
+        int id = ui->tableView->model()->data(firstColumnIndex).toLongLong();
+
+        addUpdateWindow *w = new addUpdateWindow(this->table, id);
+        w->resize(w->minimumSizeHint());
+        w->show();
+
+        QEventLoop loop;
+        connect(w, SIGNAL(closed()), &loop, SLOT(quit()));
+        loop.exec();
+
+        setTable();
     }
 }

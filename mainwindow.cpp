@@ -12,14 +12,23 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
 
     ui->SettingsButton->setCurrentIndex(-1);
     ui->ReportsButton->setCurrentIndex(-1);
+    ui->FinesButton->setCurrentIndex(-1);
 
     ui->timeEdit->setDisabled(true);
 
     // hide settings and reports button if user is not admin
     if (!u.checkIsAdmin())
     {
-        ui->SettingsButton->setDisabled(true);
+        // ui->SettingsButton->setDisabled(true);
+        ui->SettingsButton->removeItem(6);
+        ui->SettingsButton->removeItem(5);
+        ui->SettingsButton->removeItem(2);
         ui->ReportsButton->setDisabled(true);
+    }
+    else if (u.getId() != -1)
+    {
+        ui->SettingsButton->removeItem(6);
+        ui->SettingsButton->removeItem(5);
     }
 
     // date & time
@@ -40,6 +49,7 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
     ui->chargeFrame->setProperty("color", "green");
     ui->SettingsButton->setProperty("type", "nav");
     ui->ReportsButton->setProperty("type", "nav");
+    ui->FinesButton->setProperty("type", "nav");
 
     // event components
     ui->typeLabel->setProperty("color", "white");
@@ -89,6 +99,27 @@ bool MainWindow::checkChargeFill()
         result = false;
     }
 
+    if (ui->CarsBox_2->currentIndex() == 0)
+    {
+        ui->CarsBox_2->setStyleSheet("background-color: red;");
+        ui->carsLabel_2->setStyleSheet("color: red;");
+        result = false;
+    }
+
+    if (ui->DriversBox_2->currentIndex() == 0)
+    {
+        ui->DriversBox_2->setStyleSheet("background-color: red;");
+        ui->driversLabel_2->setStyleSheet("color: red;");
+        result = false;
+    }
+
+    if (ui->LocsBox->currentIndex() == 0)
+    {
+        ui->LocsBox->setStyleSheet("background-color: red;");
+        ui->locsLabel->setStyleSheet("color: red;");
+        result = false;
+    }
+
     return result;
 }
 
@@ -110,16 +141,33 @@ void MainWindow::setReportIndex()
     ui->ReportsButton->setCurrentIndex(-1);
 }
 
+void MainWindow::setFinesIndex()
+{
+    if (ui->FinesButton->currentIndex() == -1)
+    {
+        return;
+    }
+    ui->FinesButton->setCurrentIndex(-1);
+}
+
 void MainWindow::on_SettingsButton_currentIndexChanged(int index)
 {
-    if (index == 6)
-    {
-        RemoveDB *rdb = new RemoveDB();
-        connect(rdb, &RemoveDB::yesClicked, this, &MainWindow::setComboBoxesData);
-        rdb->show();
+    if (userSession::getInstance().checkIsAdmin()) {
+        if (index == 6)
+        {
+            RemoveDB *rdb = new RemoveDB();
+            connect(rdb, &RemoveDB::yesClicked, this, &MainWindow::setComboBoxesData);
+            rdb->show();
+        }
+        else
+        {
+            nav->openSettings(index);
+        }
     }
-    else
-    {
+    else {
+        if (index > 1) {
+            index += 1;
+        }
         nav->openSettings(index);
     }
     setSettingIndex();
@@ -127,7 +175,15 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
     setReportIndex();
+    if (index > 7)
+        index += 7;
     nav->openReport(index);
+}
+
+void MainWindow::on_FinesButton_currentIndexChanged(int index)
+{
+    nav->openFines(index);
+    setFinesIndex();
 }
 
 void MainWindow::openWidnow()
@@ -153,15 +209,18 @@ void MainWindow::setComboBoxesData()
 
     // set
     ui->CarsBox->addItem("-");
+    ui->CarsBox_2->addItem("-");
     QList<Car> cars_list = Operations::selectAllCars();
     foreach (Car car, cars_list)
     {
-        QString show = QString::number(car.getSid());
+        QString show = car.getSid();
         this->cars.insert(show, car.getId());
         ui->CarsBox->addItem(show);
         ui->CarsBox_2->addItem(show);
     }
+
     ui->DriversBox->addItem("-");
+    ui->DriversBox_2->addItem("-");
     QList<Driver> driver_list = Operations::selectAllDrivers();
     foreach (Driver driver, driver_list)
     {
@@ -170,6 +229,7 @@ void MainWindow::setComboBoxesData()
         ui->DriversBox->addItem(show);
         ui->DriversBox_2->addItem(show);
     }
+
     QList<Type> types_list = Operations::selectAllTypes();
     foreach (Type type, types_list)
     {
@@ -177,7 +237,9 @@ void MainWindow::setComboBoxesData()
         this->types.insert(show, type.getId());
         ui->TypesBox->addItem(show);
     }
+
     QList<Location> locations_list = Operations::selectAllLocations();
+    ui->LocsBox->addItem("-");
     foreach (Location location, locations_list)
     {
         QString show = location.getName();
@@ -212,7 +274,7 @@ void MainWindow::on_addEventButton_clicked()
             ui->descLabel->setStyleSheet("color: #32CD32;");
         }
     }
-    QTimer::singleShot(200, this, resetInputColor);
+    QTimer::singleShot(200, this, &MainWindow::resetInputColor);
 }
 
 void MainWindow::on_addChargeButton_clicked()
@@ -237,7 +299,7 @@ void MainWindow::on_addChargeButton_clicked()
         ui->TimeEdit->setStyleSheet("background-color: #32CD32;");
         ui->timeLabel->setStyleSheet("color: #32CD32;");
     }
-    QTimer::singleShot(200, this, resetInputColor);
+    QTimer::singleShot(200, this, &MainWindow::resetInputColor);
 }
 
 void MainWindow::on_eventsButton_clicked()
@@ -297,6 +359,9 @@ void MainWindow::clearAllInputsEvent()
 
 void MainWindow::clearAllInputsCharge()
 {
+    ui->CarsBox_2->setCurrentIndex(0);
+    ui->DriversBox_2->setCurrentIndex(0);
+    ui->LocsBox->setCurrentIndex(0);
     ui->KWTEdit->clear();
     ui->TimeEdit->clear();
 }
@@ -322,4 +387,16 @@ void MainWindow::on_systemTimeCheck_checkStateChanged(Qt::CheckState state)
     default:
         break;
     }
+}
+
+void MainWindow::on_repairsButton_clicked()
+{
+    nav->changeWindow(5);
+}
+
+void MainWindow::on_addImagesButton_clicked()
+{
+    // AwsS3Uploader uploader;
+    QStringList filesToUpload = QFileDialog::getOpenFileNames(this, tr("Выберите изображения"), "", tr("Изображения (*.png *.jpg *.jpeg *.ico)"));
+    // std::vector<QString> uploadedUrls = uploader.uploadFiles("ecotaxi-bucket", filesToUpload);
 }

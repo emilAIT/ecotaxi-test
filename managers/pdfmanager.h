@@ -16,43 +16,20 @@
 
 #include <QDate>
 
-#include "../managers/operations.h"
-#include "../managers/reportoperations.h"
+#include "qstandarditemmodel.h"
+#include "../scripts/columnselectiondialog.h"
 
 class PDFmanager
 {
 public:
     PDFmanager();
 
-    // general reports
-    void static createCarsReport(QDate from, QDate to);
+    // general
+    void static exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
-    void static createDriversReport(QDate from, QDate to);
+    void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
-    void static createInvestorsReport(QDate from, QDate to);
-
-    void static createTypesReport(QDate from, QDate to);
-
-    void static createLocationsReport(QDate from, QDate to);
-
-    void static createChargesReport(QDate from, QDate to);
-
-    void static createUsersReport(QDate from, QDate to);
-
-    // reports by item
-    void static createCarReport(QDate from, QDate to, int id);
-
-    void static createDriverReport(QDate from, QDate to, int id);
-
-    void static createInvestorReport(QDate from, QDate to, int id);
-
-    void static createTypeReport(QDate from, QDate to, int id);
-
-    void static createLocationReport(QDate from, QDate to, int id);
-
-    void static createChargeReport(QDate from, QDate to, int id);
-
-    void static createUserReport(QDate from, QDate to, int id);
+    QString static modelToHTML(QAbstractItemModel *model, int start);
 
 private:
     QString static getAppDir();

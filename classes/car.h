@@ -9,7 +9,7 @@ using namespace std;
 class Car {
 private:
     int id;
-    int sid;
+    QString sid;
     QString brand;
     QString model;
     QString licensePlate;
@@ -17,13 +17,14 @@ private:
     int investorId;
     float milleage;
     QString description;
+    int percentage;
 
 public:
     Car();
     Car(QVariantList car);
 
     int getId();
-    int getSid();
+    QString getSid();
     QString getBrand();
     QString getModel();
     QString getLicensePlate();
@@ -31,6 +32,7 @@ public:
     int getInvestorId();
     float getMilleage();
     QString getDescription();
+    int getPercentage();
 
     void setBrand(QString newBrand);
     void setModel(QString newModel);
@@ -39,6 +41,7 @@ public:
     void setInvestor(int newInvestorId);
     void setMilleage(float newMilleage);
     void setDescription(QString newDescription);
+    void setPercentage(int newPercentage);
 };
 
 #endif // CAR_H

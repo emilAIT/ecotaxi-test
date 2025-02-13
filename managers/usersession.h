@@ -15,6 +15,8 @@ class userSession : public QObject
 public:
     static userSession &getInstance();
 
+    int getId();
+
     bool checkIsAdmin();
     bool logMe(QString password);
 
@@ -25,6 +27,8 @@ private:
 
     userSession(const userSession &) = delete;
     userSession &operator=(const userSession &) = delete;
+
+    int id;
 
     const int secretKey = 2134353453;
 

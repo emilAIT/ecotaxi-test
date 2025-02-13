@@ -1,5 +1,7 @@
-
 #include "dbmanager.h"
+#include "qapplication.h"
+#include <QFile>
+#include <QTextStream>
 #include <QDebug>
 #include <QCoreApplication>
 #include <QDir>
@@ -10,7 +12,11 @@ dbManager &dbManager::getInstance()
     return instance;
 }
 
-dbManager::dbManager() {}
+dbManager::dbManager()
+{
+    ni = new NoInternet();
+    connect(ni, &NoInternet::reload, this, &dbManager::onReload);
+}
 
 dbManager::~dbManager()
 {
@@ -20,25 +26,42 @@ dbManager::~dbManager()
     }
 }
 
-bool dbManager::connect()
+bool dbManager::connectDB()
 {
-    dbName = "ecotaxi.db";
+    db = QSqlDatabase::addDatabase("QMYSQL");
 
-    QString appDir = QCoreApplication::applicationDirPath();
-    QString dbPath = appDir + QDir::separator() + dbName;
-    qDebug() << "connecting to db. db path: " << dbPath;
+    QFile file("conn.data");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open file for reading.";
+        return false;
+    }
 
-    db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(dbPath);
+    QTextStream in(&file);
+    EncryptionManager& manager = EncryptionManager::getInstance();
+
+    QString hostData = manager.decrypt(in.readLine());
+    QString portData = manager.decrypt(in.readLine());
+    QString dbName = manager.decrypt(in.readLine());
+    QString username = manager.decrypt(in.readLine());
+    QString password = manager.decrypt(in.readLine());
+
+    db.setHostName(hostData);
+    db.setPort(portData.toInt());
+    db.setDatabaseName(dbName);
+    db.setUserName(username);
+    db.setPassword(password);
 
     if (!db.open())
     {
         qDebug() << "database connection error: " << db.lastError().text();
+        // Logger::instance()->logInfo("database connection error: " + db.lastError().text());
+        openError();
         return false;
     }
     else
     {
         qDebug() << "database connected successfully!";
+        // Logger::instance()->logInfo("database connected successfully!");
         createTables();
         return true;
     }
@@ -69,6 +92,8 @@ void dbManager::createTables()
     createLocationTable();
     createUserTable();
     createLoginTable();
+    createRepairsTable();
+    createFinesTable();
 }
 
 bool dbManager::isConnected() const
@@ -76,20 +101,40 @@ bool dbManager::isConnected() const
     return db.isOpen();
 }
 
+bool dbManager::onReload()
+{
+    if (connectDB()) {
+        emit reload();
+        return true;
+    }
+    return false;
+}
+
+void dbManager::openError()
+{
+    if (ni->isHidden())
+        ni->show();
+}
+
 bool dbManager::executeSet(const QString query)
 {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     qDebug() << "set query execution: " << query;
     QSqlQuery q;
     if (!q.exec(query))
     {
         qDebug() << "set query error: " << q.lastError();
+        openError();
+        QApplication::restoreOverrideCursor();
         return false;
     }
+    QApplication::restoreOverrideCursor();
     return true;
 }
 
 QVariantList dbManager::executeGet(const QString query)
 {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     qDebug() << "get query execution: " << query;
     QSqlQuery q;
     QVariantList out;
@@ -103,7 +148,9 @@ QVariantList dbManager::executeGet(const QString query)
     else
     {
         qDebug() << "get query error: " << q.lastError();
+        openError();
     }
+    QApplication::restoreOverrideCursor();
     return out;
 }
 
@@ -121,11 +168,13 @@ void dbManager::createInvestorTable()
 {
     QString createTableQuery = R"Q(
         CREATE TABLE IF NOT EXISTS investors (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             name TEXT NOT NULL,
-            description TEXT
+            description TEXT,
+            password TEXT
         )
     )Q";
+
     this->executeSet(createTableQuery);
 }
 
@@ -133,15 +182,16 @@ void dbManager::createCarTable()
 {
     QString createTableQuery = R"Q(
         CREATE TABLE IF NOT EXISTS cars (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sid INTEGER NOT NULL,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            sid VARCHAR(255) NOT NULL,
             brand TEXT NOT NULL,
             model TEXT NOT NULL,
             licensePlate TEXT NOT NULL,
             year INTEGER NOT NULL,
             investorId INTEGER NOT NULL,
             mileage FLOAT NOT NULL,
-            description TEXT
+            description TEXT,
+            percentage INT NOT NULL
         )
     )Q";
     this->executeSet(createTableQuery);
@@ -151,7 +201,7 @@ void dbManager::createDriverTable()
 {
     QString createTableQuery = R"Q(
         CREATE TABLE IF NOT EXISTS drivers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             name TEXT NOT NULL,
             description TEXT
         )
@@ -163,13 +213,14 @@ void dbManager::createEventTable()
 {
     QString createTableQuery = R"Q(
         CREATE TABLE IF NOT EXISTS events (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             carId INTEGER NOT NULL,
             driverId INTEGER NOT NULL,
             typeId INTEGER NOT NULL,
             amount FLOAT NOT NULL,
             description TEXT,
-            date DATETIME DEFAULT CURRENT_TIMESTAMP
+            date DATETIME DEFAULT CURRENT_TIMESTAMP,
+            userId INTEGER NOT NULL
         )
     )Q";
     this->executeSet(createTableQuery);
@@ -179,13 +230,14 @@ void dbManager::createChargeTable()
 {
     QString createTableQuery = R"Q(
         CREATE TABLE IF NOT EXISTS charges (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             carId INTEGER NOT NULL,
             driverId INTEGER NOT NULL,
             locationId INTEGER NOT NULL,
             kwh FLOAT NOT NULL,
             duration FLOAT NOT NULL,
-            date DATETIME DEFAULT CURRENT_TIMESTAMP
+            date DATETIME DEFAULT CURRENT_TIMESTAMP,
+            userId INTEGER NOT NULL
         )
     )Q";
     this->executeSet(createTableQuery);
@@ -195,11 +247,35 @@ void dbManager::createTypeTable()
 {
     QString createTableQuery = R"Q(
         CREATE TABLE IF NOT EXISTS types (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             name TEXT NOT NULL,
-            description TEXT
+            description TEXT,
+            forAdmin BOOLEAN NOT NULL DEFAULT false
         )
     )Q";
+
+    QString checkColumnQuery = R"Q(
+        SELECT COUNT(*) AS count
+        FROM information_schema.columns
+        WHERE table_name = 'types'
+        AND column_name = 'forAdmin'
+        AND table_schema = DATABASE();
+    )Q";
+    QVariantList columnExists = this->executeGet(checkColumnQuery);
+    qDebug() << columnExists;
+    if (!columnExists.isEmpty() && !columnExists[0].toList().isEmpty() && columnExists[0].toList()[0].toInt() == 0)
+    {
+        QString addColumnQuery = R"Q(
+            ALTER TABLE types
+            ADD COLUMN forAdmin BOOLEAN NOT NULL DEFAULT false;
+        )Q";
+        this->executeSet(addColumnQuery);
+    }
+    else
+    {
+        qDebug() << "Column 'userId' already exists or error in query (types).";
+    }
+
     this->executeSet(createTableQuery);
 }
 
@@ -207,7 +283,7 @@ void dbManager::createLocationTable()
 {
     QString createTableQuery = R"Q(
         CREATE TABLE IF NOT EXISTS locations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             name TEXT NOT NULL,
             description TEXT
         )
@@ -219,10 +295,11 @@ void dbManager::createUserTable()
 {
     QString createTableQuery = R"Q(
         CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             name TEXT NOT NULL,
             password TEXT NOT NULL,
-            description TEXT
+            description TEXT,
+            isAdmin BOOLEAN NOT NULL DEFAULT false
         )
     )Q";
     this->executeSet(createTableQuery);
@@ -232,10 +309,61 @@ void dbManager::createLoginTable()
 {
     QString createTableQuery = R"Q(
         CREATE TABLE IF NOT EXISTS logins (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
             date DATETIME DEFAULT CURRENT_TIMESTAMP,
             userId INTEGER NOT NULL
         )
     )Q";
     this->executeSet(createTableQuery);
+}
+
+void dbManager::createRepairsTable()
+{
+    QString createTableQuery = R"Q(
+        CREATE TABLE IF NOT EXISTS repairs (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            carId INTEGER NOT NULL,
+            fromDate DATE NOT NULL,
+            toDate DATE,
+            description TEXT
+        )
+    )Q";
+    this->executeSet(createTableQuery);
+}
+
+void dbManager::createFinesTable()
+{
+    QString createTableQuery = R"Q(
+        CREATE TABLE IF NOT EXISTS fines (
+            id INTEGER PRIMARY KEY AUTO_INCREMENT,
+            date DATE NOT NULL,
+            carId INTEGER NOT NULL,
+            driverId INTEGER,
+            amount FLOAT NOT NULL,
+            isPaid BOOLEAN NOT NULL DEFAULT false,
+            description TEXT
+        )
+    )Q";
+    this->executeSet(createTableQuery);
+    QString checkColumnQuery = R"Q(
+        SELECT COUNT(*) AS count
+        FROM information_schema.columns
+        WHERE table_name = 'fines'
+        AND column_name = 'driverId'
+        AND table_schema = DATABASE()
+        AND is_nullable = 'NO';
+    )Q";
+    QVariantList columnExists = this->executeGet(checkColumnQuery);
+    if (!columnExists.isEmpty() && !columnExists[0].toList().isEmpty() && columnExists[0].toList()[0].toInt() == 1)
+    {
+        QString alterColumnQuery = R"Q(
+            ALTER TABLE fines
+            MODIFY COLUMN driverId INTEGER;
+        )Q";
+        this->executeSet(alterColumnQuery);
+    }
+    else
+    {
+        qDebug() << "Column 'driverId' already not NOT NULL or error in query (fines).";
+    }
 }

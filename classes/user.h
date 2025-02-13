@@ -11,6 +11,7 @@ private:
     QString name;
     QString password;
     QString description;
+    bool isAdmin;
 
 public:
     User();
@@ -19,10 +20,12 @@ public:
     QString getName();
     QString getPassword();
     QString getDescription();
+    bool getIsAdmin();
 
     void setName(QString newName);
     void setPassword(QString newPassword);
     void setDescription(QString newDescription);
+    void setIsAdmin(bool newIsAdmin);
 };
 
 #endif // USER_H
