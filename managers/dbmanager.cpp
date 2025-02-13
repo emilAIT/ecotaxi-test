@@ -30,20 +30,20 @@ bool dbManager::connectDB()
 {
     db = QSqlDatabase::addDatabase("QMYSQL");
 
-    QFile file("conn.data");
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Failed to open file for reading.";
-        return false;
-    }
+    // QFile file("conn.data");
+    // if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    //     qDebug() << "Failed to open file for reading.";
+    //     return false;
+    // }
 
-    QTextStream in(&file);
-    EncryptionManager& manager = EncryptionManager::getInstance();
+    // QTextStream in(&file);
+    // EncryptionManager& manager = EncryptionManager::getInstance();
 
-    QString hostData = manager.decrypt(in.readLine());
-    QString portData = manager.decrypt(in.readLine());
-    QString dbName = manager.decrypt(in.readLine());
-    QString username = manager.decrypt(in.readLine());
-    QString password = manager.decrypt(in.readLine());
+    QString hostData = "localhost";
+    QString portData = "3306";
+    QString dbName = "ecotaxidb";
+    QString username = "root";
+    QString password = "";
 
     db.setHostName(hostData);
     db.setPort(portData.toInt());
