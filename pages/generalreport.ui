@@ -243,7 +243,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0,0">
      <property name="spacing">
       <number>40</number>
      </property>
@@ -285,6 +285,13 @@
        </property>
        <property name="text">
         <string>ОТЧЕТ ПО КОЛИЧЕСТВУ</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="PDFbyDate">
+       <property name="text">
+        <string>PDF ПО ДНЯМ</string>
        </property>
       </widget>
      </item>

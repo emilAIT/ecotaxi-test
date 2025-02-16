@@ -20,7 +20,11 @@ ReportPage::ReportPage(nm *nav, QWidget *parent)
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &ReportPage::onSectionResized);
 
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &ReportPage::onSortIndicatorChanged);
+
+
 }
+
+
 
 ReportPage::~ReportPage()
 {
@@ -45,6 +49,12 @@ void ReportPage::setReport(Report mode, int id, QDate from, QDate to)
     if (id > -2)
     {
         this->id = id;
+    }
+
+    if (this->mode == Report::Cars) {
+        ui->PDFbyDateButton->setVisible(true);
+    } else {
+        ui->PDFbyDateButton->setVisible(false);
     }
 
     setHeader();
@@ -940,7 +950,7 @@ void ReportPage::on_ReportButton_clicked()
         break;
 
     case Report::ChargesByDrivers:
-        nav->openFines(6, 0, fromDate, toDate);
+        nav->openFines(11, 0, fromDate, toDate);
         break;
     default:
         break;
@@ -1025,7 +1035,19 @@ void ReportPage::on_ToPDFButton_clicked()
     }
 
     PDFmanager::exportToPDF(title, this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"), { ui->tableView->model(), ui->bottomTable->model() }, start);
+
+
+    // else
+    // {
+    //     PDFmanager pdfManager;
+    //     pdfManager.exportToPDF(title,
+    //                            this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"),
+    //                            { ui->tableView->model(), ui->bottomTable->model() },
+    //                            start);
+    // }
+
 }
+
 
 void ReportPage::setFromDate(QDate date)
 {
@@ -1098,4 +1120,85 @@ void ReportPage::on_ItemButton_clicked()
 void ReportPage::onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order) {
     this->selectedColumn = logicalIndex;
     this->sortOrder = order;
+}
+
+void ReportPage::on_PDFbyDateButton_clicked()
+{
+    QString title;
+    int start = 1;
+    switch (this->mode)
+    {
+    case Report::Cars:
+        title = "Отчет по машине " + Operations::getCar(this->id).getSid();
+        start = 0;
+        break;
+    }
+
+    if (this->mode == Report::Cars)
+    {
+        // Приводим модель таблицы к QStandardItemModel
+        QStandardItemModel *mainModel = qobject_cast<QStandardItemModel*>(ui->tableView->model());
+        if (!mainModel) {
+            PDFmanager pdfManager;
+            pdfManager.exportToPDF(title,
+                                   this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"),
+                                   { ui->tableView->model(), ui->bottomTable->model() },
+                                   start);
+            return;
+        }
+
+        // Группируем строки по дате (предполагается, что дата находится в первом столбце)
+        QMap<QDate, QStandardItemModel*> modelsByDay;
+        int colCount = mainModel->columnCount();
+        for (int i = 0; i < mainModel->rowCount(); i++) {
+            QModelIndex idx = mainModel->index(i, 0);
+            QDateTime dt = mainModel->data(idx, Qt::DisplayRole).toDateTime();
+            QDate day = dt.date();
+            if (!modelsByDay.contains(day)) {
+                // Создаем новую модель для данного дня и копируем заголовки
+                QStandardItemModel *dayModel = new QStandardItemModel();
+                QStringList headers;
+                for (int j = start; j < colCount; j++) {
+                    headers << mainModel->headerData(j, Qt::Horizontal).toString();
+                }
+                dayModel->setHorizontalHeaderLabels(headers);
+                modelsByDay.insert(day, dayModel);
+            }
+            // Копируем данные строки (начиная с нужного столбца)
+            QList<QStandardItem*> rowItems;
+            for (int j = start; j < colCount; j++) {
+                QStandardItem *item = mainModel->item(i, j);
+                if (item)
+                    rowItems.append(item->clone());
+                else
+                    rowItems.append(new QStandardItem(mainModel->data(mainModel->index(i, j), Qt::DisplayRole).toString()));
+            }
+            modelsByDay[day]->appendRow(rowItems);
+        }
+
+        // Преобразуем QMap<QDate, QStandardItemModel*> в QMap<QDate, QAbstractItemModel*>
+        QMap<QDate, QAbstractItemModel*> convertedMap;
+        for (auto it = modelsByDay.constBegin(); it != modelsByDay.constEnd(); ++it) {
+            convertedMap.insert(it.key(), static_cast<QAbstractItemModel*>(it.value()));
+        }
+
+        // Создаем экземпляр PDFmanager и вызываем функцию экспорта с разрывами страниц по дням
+        PDFmanager pdfManager;
+        pdfManager.exportCarReportByDays(convertedMap,
+                                         title,
+                                         this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"));
+
+        // Освобождаем созданные модели
+        for (auto model : modelsByDay) {
+            model->deleteLater();
+        }
+    }
+    else
+    {
+        PDFmanager pdfManager;
+        pdfManager.exportToPDF(title,
+                               this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"),
+                               { ui->tableView->model(), ui->bottomTable->model() },
+                               start);
+    }
 }

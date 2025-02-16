@@ -49,11 +49,14 @@ private slots:
 
     void on_ToPDFButton_clicked();
 
+
     void handleDoubleClick(const QModelIndex &index);
 
     void onSectionResized(int logicalIndex, int oldSize, int newSize);
 
     void onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order);
+
+    void on_PDFbyDate_clicked();
 
 private:
     Ui::GeneralReport *ui;
@@ -80,6 +83,7 @@ private:
 
     QDate fromDate;
     QDate toDate;
+    int id;
 };
 
 #endif // GENERALREPORT_H

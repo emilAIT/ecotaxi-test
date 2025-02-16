@@ -50,11 +50,12 @@ private slots:
     void on_FromDateButton_clicked();
     void on_ToDateButton_clicked();
 
-    void on_ToPDFButton_clicked();
-
     void onSectionResized(int logicalIndex, int oldSize, int newSize);
 
     void onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order);
+
+    void on_PDFbyDateButton_clicked();
+    void on_ToPDFButton_clicked();
 
 private:
     Ui::ReportPage *ui;

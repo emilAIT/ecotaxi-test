@@ -294,3 +294,73 @@ void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemMo
     
     dialog.exec();
 }
+
+
+void PDFmanager::exportCarReportByDays(const QMap<QDate, QAbstractItemModel*> &modelsByDay,
+                                       const QString &title, const QString &dates)
+{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
+    QString appDir = getDesktopDir();
+    QDir folder(appDir + "/отчеты");
+    if (!folder.exists()) {
+        folder.mkdir(appDir + "/отчеты");
+    }
+
+    QDateTime currentTime = QDateTime::currentDateTime();
+    QString fileName = title + " " + currentTime.toString("dd.MM.yyyy HH-mm-ss") + ".pdf";
+    fileName.replace(" ", "_");
+    QString filePath = appDir + "/отчеты/" + fileName;
+
+    QPrinter printer(QPrinter::PrinterResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setPageSize(QPageSize::A4);
+    printer.setOutputFileName(filePath);
+
+    // Формируем общий заголовок (будет отображен только один раз в начале)
+    QString overallHeader = getHeader(currentTime);
+    QString overallFooter = getFooter(currentTime);
+
+    // Собираем HTML для каждого дня.
+    QString combinedHtml;
+    bool firstDay = true;
+    // modelsByDay предполагается, что отсортирован по возрастанию даты
+    for (auto it = modelsByDay.constBegin(); it != modelsByDay.constEnd(); ++it) {
+        QDate day = it.key();
+        QAbstractItemModel *model = it.value();
+
+        // Формируем контент для данного дня: дата (без дополнительного заголовка) + таблица.
+        QString dayContent;
+        dayContent += "<p style='text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 10px;'>"
+                      + day.toString("dd.MM.yyyy")
+                      + "</p>";
+        dayContent += modelToHTML(model, 0);
+
+        // Для первого дня не добавляем page-break-before, для остальных – да.
+        if (!firstDay)
+            combinedHtml += "<div style='page-break-before: always;'>" + dayContent + "</div>";
+        else {
+            combinedHtml += "<div>" + dayContent + "</div>";
+            firstDay = false;
+        }
+    }
+
+    // Формируем итоговый HTML: общий заголовок + контент по дням + общий подвал (если нужно)
+    QString finalHtml = overallHeader + combinedHtml + overallFooter;
+
+    // Создаем QTextDocument и печатаем PDF.
+    QTextDocument doc;
+    doc.setDefaultStyleSheet(getStyleSheet());
+    doc.setHtml(finalHtml);
+    doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
+    doc.print(&printer);
+
+    QApplication::restoreOverrideCursor();
+
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setUrls({ QUrl::fromLocalFile(filePath) });
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setMimeData(mimeData);
+
+    QMessageBox::information(nullptr, "PDF", "Отчёт сохранён в папке 'отчеты' на рабочем столе и скопирован в буфер обмена");
+}

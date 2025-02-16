@@ -38,6 +38,7 @@ private slots:
     void on_DeleteButton_clicked();
     void on_ToPDFButton_clicked();
 
+
     void on_checkBox_checkStateChanged(Qt::CheckState state);
 
     void onYes();

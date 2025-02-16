@@ -27,6 +27,9 @@ public:
     // general
     void static exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
+    static void exportCarReportByDays(const QMap<QDate, QAbstractItemModel*> &modelsByDay,
+                                      const QString &title, const QString &dates);
+
     void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
     QString static modelToHTML(QAbstractItemModel *model, int start);
