@@ -364,6 +364,7 @@ popup.exec();
 }
 
 
+
 void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
     ColumnSelectionDialog dialog(models, title, dates, start);
