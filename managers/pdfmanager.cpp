@@ -1,4 +1,5 @@
 #include "pdfmanager.h"
+#include "reportoperations.h" // Путь может отличаться - используйте правильный путь
 
 PDFmanager::PDFmanager() {}
 
@@ -296,6 +297,164 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 }
 
 
+void PDFmanager::exportToPDFByDates(QString title, QDate fromDate, QDate toDate, 
+  QList<QAbstractItemModel *> models, int start)
+{
+QApplication::setOverrideCursor(Qt::WaitCursor);
+
+QDateTime currentTime = QDateTime::currentDateTime();
+QString appDir = getDesktopDir();
+QDir folder(appDir + "/отчеты");
+if (!folder.exists())
+{
+folder.mkdir(appDir + "/отчеты");
+}
+
+QString fileName = title + "_по_дням_" + 
+fromDate.toString("dd.MM.yyyy") + "_-_" + 
+toDate.toString("dd.MM.yyyy") + "_" + 
+currentTime.toString("HH-mm-ss") + ".pdf";
+fileName.replace(" ", "_");
+
+QString filePath = appDir + "/отчеты/" + fileName;
+
+QPrinter printer(QPrinter::PrinterResolution);
+printer.setOutputFormat(QPrinter::PdfFormat);
+printer.setPageSize(QPageSize::A4);
+printer.setOutputFileName(filePath);
+
+QTextDocument doc;
+doc.setDefaultStyleSheet(getStyleSheet());
+
+QString html = "<h2>" + title + "</h2>";
+html += "<p>Период: " + fromDate.toString("dd.MM.yyyy") + " - " + toDate.toString("dd.MM.yyyy") + "</p><br>";
+
+// Получаем класс ReportOperations для доступа к данным
+ReportOperations reportOps;
+
+// Для каждого дня в выбранном диапазоне
+QDate currentDate = fromDate;
+while (currentDate <= toDate)
+{
+// Добавляем заголовок страницы с текущей датой
+if (currentDate != fromDate) {
+html += "<div style='page-break-before: always;'></div>";
+}
+
+html += "<h2>Отчет по машинам за " + currentDate.toString("dd.MM.yyyy") + "</h2><br>";
+
+// Получаем данные за текущий день
+QVariantList dailyData = ReportOperations::getCarsReport(currentDate, currentDate);
+
+if (dailyData.isEmpty())
+{
+// Если данных нет, показываем сообщение
+html += "<p style='text-align: center; font-size: 14pt; margin: 40px 0;'>Нет данных за этот день</p>";
+}
+else
+{
+// Формируем HTML-таблицу с данными
+html += "<table style='width: 100%; border-collapse: collapse;'>";
+
+// Заголовок таблицы
+html += "<thead><tr>";
+if (start == 0) {
+html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>#</th>";
+}
+
+// Добавляем заголовки столбцов
+QStringList headers = {"ID", "Инвестор", "Доход", "Налог 10%", "KWH x 10", 
+"Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"};
+
+for (const QString &header : headers) {
+html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>" + 
+header + "</th>";
+}
+html += "</tr></thead><tbody>";
+
+// Добавляем данные
+int rowNumber = 1;
+for (const QVariant &item : dailyData)
+{
+QVariantList rowData = item.toList();
+html += "<tr>";
+
+// Номер строки
+if (start == 0) {
+html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>" + 
+QString::number(rowNumber++) + "</td>";
+}
+
+// Данные ячеек
+for (int i = 0; i < rowData.size(); i++) {
+QString cellStyle = "border: 1px solid black; padding: 5px; text-align: center;";
+if (headers[i] == "Инвестору") {
+cellStyle += " color: #007700;";
+}
+
+html += "<td style='" + cellStyle + "'>" + rowData[i].toString() + "</td>";
+}
+
+html += "</tr>";
+}
+
+html += "</tbody></table>";
+
+// Добавляем итоговую таблицу
+QVariantList dailySummary = ReportOperations::getAllCarsReport(currentDate, currentDate);
+if (!dailySummary.isEmpty()) {
+html += "<br><table style='width: 100%; border-collapse: collapse;'>";
+html += "<thead><tr>";
+
+QStringList summaryHeaders = {"Итого", "Доход", "Налог 10%", "KWH * 10", 
+         "Расход", "Общая", "Комиссия", "Инвесторам"};
+
+for (const QString &header : summaryHeaders) {
+html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>" + 
+header + "</th>";
+}
+
+html += "</tr></thead><tbody><tr>";
+
+// Первая ячейка - "Итого"
+html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>Итого</td>";
+
+// Добавляем остальные ячейки с данными
+QVariantList summaryData = dailySummary.toList();
+for (int i = 0; i < summaryData.size(); i++) {
+html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>" + 
+summaryData[i].toString() + "</td>";
+}
+
+html += "</tr></tbody></table>";
+}
+}
+
+// Переходим к следующему дню
+currentDate = currentDate.addDays(1);
+}
+
+// Завершаем документ
+doc.setHtml(getHeader(currentTime) + html + getFooter(currentTime));
+doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
+
+// Печатаем документ
+doc.print(&printer);
+
+// Копируем путь к файлу в буфер обмена
+QMimeData *mimeData = new QMimeData();
+mimeData->setUrls({QUrl::fromLocalFile(filePath)});
+QClipboard *clipboard = QApplication::clipboard();
+clipboard->setMimeData(mimeData);
+
+QApplication::restoreOverrideCursor();
+
+// Показываем сообщение об успешном создании файла
+QMessageBox popup;
+popup.setTextFormat(Qt::MarkdownText);
+popup.setText("Отчет с разбивкой по дням сохранен в папке отчеты на рабочем столе и скопирован в буфер обмена");
+popup.exec();
+}
 
 void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {

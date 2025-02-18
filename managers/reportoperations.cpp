@@ -1,4 +1,5 @@
 #include "reportoperations.h"
+#include <QDebug>
 
 ReportOperations::ReportOperations() {}
 
@@ -6,7 +7,7 @@ QVariantList ReportOperations::getCarsReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "WITH grouped_events AS (\n"
         "    SELECT carId, SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) AS income,\n"
@@ -64,7 +65,7 @@ QVariantList ReportOperations::getAllCarsReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "WITH grouped_events AS (\n"
         "    SELECT carId, \n"
@@ -134,7 +135,7 @@ QVariantList ReportOperations::getTypesReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    types.id as typeId,\n"
@@ -146,7 +147,7 @@ QVariantList ReportOperations::getTypesReport(QDate fromDate, QDate toDate)
         "JOIN events ON events.typeId = types.id\n"
         "WHERE events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "GROUP BY types.id, types.name";
+                                                                                      "GROUP BY types.id, types.name";
     result = db.executeGet(query);
     return result;
 }
@@ -155,7 +156,7 @@ QVariantList ReportOperations::getAllTypesReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "	SUM(CASE WHEN events.amount > 0 THEN events.amount ELSE 0 END) as income,\n"
@@ -173,12 +174,11 @@ QVariantList ReportOperations::getAllTypesReport(QDate fromDate, QDate toDate)
     return result;
 }
 
-
 QVariantList ReportOperations::getDriversReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "WITH EventsGrouped AS (\n"
         "    SELECT \n"
@@ -234,7 +234,7 @@ QVariantList ReportOperations::getAllDriversReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString query =
         "WITH EventsGrouped AS (\n"
@@ -294,7 +294,7 @@ QVariantList ReportOperations::getInvestorsReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString query =
         "WITH event_stats AS (\n"
@@ -362,7 +362,7 @@ QVariantList ReportOperations::getAllInvestorsReport(QDate fromDate, QDate toDat
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString query =
         "WITH grouped_events AS (\n"
@@ -436,7 +436,7 @@ QVariantList ReportOperations::getLocationsReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    locations.id as locationId,\n"
@@ -446,7 +446,7 @@ QVariantList ReportOperations::getLocationsReport(QDate fromDate, QDate toDate)
         "JOIN charges ON charges.locationId = locations.id\n"
         "WHERE charges.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "GROUP BY locations.id, locations.name";
+                                                                                      "GROUP BY locations.id, locations.name";
     result = db.executeGet(query);
     return result;
 }
@@ -455,7 +455,7 @@ QVariantList ReportOperations::getAllLocationsReport(QDate fromDate, QDate toDat
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "	SUM(charges.kwh) as kwhSum\n"
@@ -475,7 +475,7 @@ QVariantList ReportOperations::getChargesReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    cars.id as carId,\n"
@@ -486,7 +486,7 @@ QVariantList ReportOperations::getChargesReport(QDate fromDate, QDate toDate)
         "JOIN charges ON charges.carId = cars.id\n"
         "WHERE charges.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "GROUP BY cars.id";
+                                                                                      "GROUP BY cars.id";
     result = db.executeGet(query);
     return result;
 }
@@ -495,7 +495,7 @@ QVariantList ReportOperations::getAllChargesReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "	SUM(charges.kwh) as kwhSum\n"
@@ -515,7 +515,7 @@ QVariantList ReportOperations::getUsersReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    events.userId as id,\n"
@@ -532,9 +532,9 @@ QVariantList ReportOperations::getUsersReport(QDate fromDate, QDate toDate)
         "LEFT JOIN types ON types.id = events.typeId\n"
         "WHERE events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "ORDER BY events.date DESC";
+                                                                                      "ORDER BY events.date DESC";
     QVariantList data = db.executeGet(query);
-    foreach(QVariant row, data)
+    foreach (QVariant row, data)
     {
         QVariantList rowList = row.toList();
         result.append(QVariant(rowList));
@@ -546,14 +546,14 @@ QVariantList ReportOperations::getAllUsersReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    COUNT(*) as loginCount,\n"
         "    (SELECT COUNT(*) FROM events WHERE events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "') as eventsCount\n"
-        "FROM logins\n"
-        "WHERE logins.date BETWEEN '" +
+                                                                                      "FROM logins\n"
+                                                                                      "WHERE logins.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
         "'";
     QVariantList data = db.executeGet(query);
@@ -568,7 +568,7 @@ QVariantList ReportOperations::getUsers2Report(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString userQuery = "SELECT users.name FROM users;";
     QVariantList userNamesList = db.executeGet(userQuery);
@@ -577,32 +577,32 @@ QVariantList ReportOperations::getUsers2Report(QDate fromDate, QDate toDate)
     QVariantList headerRow;
     headerRow << "Дата" << "admin" << "удален";
 
-    for (const QVariant& userNameVar : userNamesList)
+    for (const QVariant &userNameVar : userNamesList)
     {
         QString userName = userNameVar.toList()[0].toString();
         headerRow << userName;
         dynamicColumns += QString("SUM(CASE WHEN users.name = '%1' THEN 1 ELSE 0 END) AS `%1`, ")
-            .arg(userName.replace("'", "''"));
+                              .arg(userName.replace("'", "''"));
     }
     dynamicColumns.chop(2);
 
     QString mainQuery = QString(
-        "SELECT DATE(events.date) AS eventDate, "
-        "SUM(CASE WHEN events.userId = -1 THEN 1 ELSE 0 END) AS admin, "
-        "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS removed, "
-        "%1 "
-        "FROM events "
-        "LEFT JOIN users ON users.id = events.userId "
-        "WHERE events.date BETWEEN '" +
-        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'"
-        "GROUP BY eventDate ORDER BY eventDate")
-        .arg(dynamicColumns);
+                            "SELECT DATE(events.date) AS eventDate, "
+                            "SUM(CASE WHEN events.userId = -1 THEN 1 ELSE 0 END) AS admin, "
+                            "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS removed, "
+                            "%1 "
+                            "FROM events "
+                            "LEFT JOIN users ON users.id = events.userId "
+                            "WHERE events.date BETWEEN '" +
+                            fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'"
+                                                                                                          "GROUP BY eventDate ORDER BY eventDate")
+                            .arg(dynamicColumns);
 
     QVariantList data = db.executeGet(mainQuery);
 
     result.append(QVariant(headerRow));
 
-    for (const QVariant& row : data)
+    for (const QVariant &row : data)
     {
         result.append(row);
     }
@@ -614,7 +614,7 @@ QVariantList ReportOperations::getAllUsers2Report(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString userQuery = "SELECT users.name FROM users;";
     QVariantList userNamesList = db.executeGet(userQuery);
@@ -622,24 +622,24 @@ QVariantList ReportOperations::getAllUsers2Report(QDate fromDate, QDate toDate)
     QVariantList headerRow;
     headerRow << "admin" << "удален";
 
-    for (const QVariant& userNameVar : userNamesList)
+    for (const QVariant &userNameVar : userNamesList)
     {
         QString userName = userNameVar.toList()[0].toString();
         headerRow << userName;
         dynamicColumns += QString("SUM(CASE WHEN users.name = '%1' THEN 1 ELSE 0 END) AS `%1`, ")
-            .arg(userName.replace("'", "''"));
+                              .arg(userName.replace("'", "''"));
     }
     dynamicColumns.chop(2);
     QString mainQuery = QString(
-        "SELECT "
-        "SUM(CASE WHEN events.userId = -1 THEN 1 ELSE 0 END) AS admin, "
-        "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS удален, "
-        "%1 "
-        "FROM events "
-        "LEFT JOIN users ON users.id = events.userId "
-        "WHERE events.date BETWEEN '" +
-        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'")
-        .arg(dynamicColumns);
+                            "SELECT "
+                            "SUM(CASE WHEN events.userId = -1 THEN 1 ELSE 0 END) AS admin, "
+                            "SUM(CASE WHEN users.id IS NULL AND events.userId != -1 THEN 1 ELSE 0 END) AS удален, "
+                            "%1 "
+                            "FROM events "
+                            "LEFT JOIN users ON users.id = events.userId "
+                            "WHERE events.date BETWEEN '" +
+                            fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'")
+                            .arg(dynamicColumns);
 
     QVariantList data = db.executeGet(mainQuery);
 
@@ -657,7 +657,7 @@ QVariantList ReportOperations::getDebtsReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString query =
         "SELECT\n"
@@ -674,8 +674,8 @@ QVariantList ReportOperations::getDebtsReport(QDate fromDate, QDate toDate)
         "AND events.amount = 0\n"
         "AND events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "GROUP BY cars.id, cars.sid, investors.name\n"
-        "ORDER BY debtAmount DESC";
+                                                                                      "GROUP BY cars.id, cars.sid, investors.name\n"
+                                                                                      "ORDER BY debtAmount DESC";
 
     result = db.executeGet(query);
     return result;
@@ -685,7 +685,7 @@ QVariantList ReportOperations::getAllDebtsReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString query =
         "SELECT\n"
@@ -696,7 +696,7 @@ QVariantList ReportOperations::getAllDebtsReport(QDate fromDate, QDate toDate)
         "WHERE events.amount = 0\n"
         "AND events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "AND types.name = 'Аренда'";
+                                                                                      "AND types.name = 'Аренда'";
 
     result = db.executeGet(query);
     return result;
@@ -705,7 +705,7 @@ QVariantList ReportOperations::getAllDebtsReport(QDate fromDate, QDate toDate)
 QVariantList ReportOperations::getFinesByCarsReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString query =
         "SELECT\n"
@@ -721,7 +721,7 @@ QVariantList ReportOperations::getFinesByCarsReport(QDate fromDate, QDate toDate
         "LEFT JOIN fines ON fines.carId = cars.id\n"
         "WHERE fines.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "GROUP BY cars.id, cars.sid\n";
+                                                                                      "GROUP BY cars.id, cars.sid\n";
 
     QVariantList result = db.executeGet(query);
 
@@ -731,7 +731,7 @@ QVariantList ReportOperations::getFinesByCarsReport(QDate fromDate, QDate toDate
 QVariantList ReportOperations::getAllFinesByCarsReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString query =
         "SELECT\n"
@@ -754,7 +754,7 @@ QVariantList ReportOperations::getAllFinesByCarsReport(QDate fromDate, QDate toD
 QVariantList ReportOperations::getFinesByDriversReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString query =
         "SELECT\n"
@@ -770,7 +770,7 @@ QVariantList ReportOperations::getFinesByDriversReport(QDate fromDate, QDate toD
         "LEFT JOIN fines ON fines.driverId = drivers.id\n"
         "WHERE fines.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "GROUP BY drivers.id, drivers.name\n";
+                                                                                      "GROUP BY drivers.id, drivers.name\n";
 
     QVariantList result = db.executeGet(query);
 
@@ -780,7 +780,7 @@ QVariantList ReportOperations::getFinesByDriversReport(QDate fromDate, QDate toD
 QVariantList ReportOperations::getAllFinesByDriversReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString query =
         "SELECT\n"
@@ -805,7 +805,7 @@ QVariantList ReportOperations::getCarReport(int carId, QDate fromDate, QDate toD
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    events.date as eventDate,\n"
@@ -818,7 +818,7 @@ QVariantList ReportOperations::getCarReport(int carId, QDate fromDate, QDate toD
         "LEFT JOIN types ON types.id = events.typeId\n"
         "WHERE events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "AND events.carId = " +
+                                                                                      "AND events.carId = " +
         QString::number(carId) +
         "\nORDER BY events.date DESC";
     result = db.executeGet(query);
@@ -829,7 +829,7 @@ QVariantList ReportOperations::getAllCarReport(int carId, QDate fromDate, QDate 
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "WITH grouped_events AS (\n"
         "    SELECT \n"
@@ -841,7 +841,7 @@ QVariantList ReportOperations::getAllCarReport(int carId, QDate fromDate, QDate 
         "    FROM events\n"
         "    WHERE carId = " +
         QString::number(carId) + "\n"
-        "        AND date BETWEEN '" +
+                                 "        AND date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
         "'\n"
         "    GROUP BY carId\n"
@@ -853,7 +853,7 @@ QVariantList ReportOperations::getAllCarReport(int carId, QDate fromDate, QDate 
         "    FROM charges\n"
         "    WHERE carId = " +
         QString::number(carId) + "\n"
-        "        AND date BETWEEN '" +
+                                 "        AND date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
         "'\n"
         "    GROUP BY carId\n"
@@ -895,7 +895,7 @@ QVariantList ReportOperations::getTypeReport(int typeId, QDate fromDate, QDate t
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    events.date as eventDate,\n"
@@ -908,7 +908,7 @@ QVariantList ReportOperations::getTypeReport(int typeId, QDate fromDate, QDate t
         "LEFT JOIN cars ON cars.id = events.carId\n"
         "WHERE events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "AND events.typeId = " +
+                                                                                      "AND events.typeId = " +
         QString::number(typeId) +
         "\nORDER BY events.date DESC";
     result = db.executeGet(query);
@@ -919,7 +919,7 @@ QVariantList ReportOperations::getAllTypeReport(int typeId, QDate fromDate, QDat
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    SUM(CASE WHEN events.amount > 0 THEN events.amount ELSE 0 END) as totalIncome,\n"
@@ -928,7 +928,7 @@ QVariantList ReportOperations::getAllTypeReport(int typeId, QDate fromDate, QDat
         "FROM events\n"
         "WHERE events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "AND events.typeId = " +
+                                                                                      "AND events.typeId = " +
         QString::number(typeId);
     QVariantList data = db.executeGet(query);
     if (!data.isEmpty())
@@ -943,7 +943,7 @@ QVariantList ReportOperations::getDriverReport(int driverId, QDate fromDate, QDa
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    events.date as eventDate,\n"
@@ -957,7 +957,7 @@ QVariantList ReportOperations::getDriverReport(int driverId, QDate fromDate, QDa
         "LEFT JOIN types ON types.id = events.typeId\n"
         "WHERE events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "AND events.driverId = " +
+                                                                                      "AND events.driverId = " +
         QString::number(driverId) +
         "\nORDER BY events.date DESC";
     result = db.executeGet(query);
@@ -968,7 +968,7 @@ QVariantList ReportOperations::getAllDriverReport(int driverId, QDate fromDate, 
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
 
     QString query =
         "WITH ChargesGrouped AS (\n"
@@ -976,7 +976,7 @@ QVariantList ReportOperations::getAllDriverReport(int driverId, QDate fromDate, 
         "    FROM charges\n"
         "    WHERE driverId = " +
         QString::number(driverId) + "\n"
-        "    AND date BETWEEN '" +
+                                    "    AND date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
         "'\n"
         "    GROUP BY driverId\n"
@@ -988,7 +988,7 @@ QVariantList ReportOperations::getAllDriverReport(int driverId, QDate fromDate, 
         "    FROM events\n"
         "    WHERE driverId = " +
         QString::number(driverId) + "\n"
-        "    AND date BETWEEN '" +
+                                    "    AND date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
         "'\n"
         "    GROUP BY driverId\n"
@@ -1003,7 +1003,7 @@ QVariantList ReportOperations::getAllDriverReport(int driverId, QDate fromDate, 
         "LEFT JOIN ChargesGrouped cg ON d.id = cg.driverId\n"
         "WHERE d.id = " +
         QString::number(driverId) + "\n"
-        "GROUP BY d.id;";
+                                    "GROUP BY d.id;";
 
     QVariantList data = db.executeGet(query);
     if (!data.isEmpty())
@@ -1017,7 +1017,7 @@ QVariantList ReportOperations::getInvestorReport(int investorId, QDate fromDate,
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "WITH event_stats AS (\n"
         "    SELECT\n"
@@ -1089,7 +1089,7 @@ QVariantList ReportOperations::getAllInvestorReport(int investorId, QDate fromDa
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "WITH event_stats AS (\n"
         "    SELECT\n"
@@ -1163,7 +1163,7 @@ QVariantList ReportOperations::getAllInvestorReport(int investorId, QDate fromDa
     }
     else
     {
-        result.append({ 0, 0, 0, 0, 0, 0, 0, 0 });
+        result.append({0, 0, 0, 0, 0, 0, 0, 0});
     }
 
     return result;
@@ -1173,7 +1173,7 @@ QVariantList ReportOperations::getLocationReport(int locationId, QDate fromDate,
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    charges.date as date,\n"
@@ -1187,7 +1187,7 @@ QVariantList ReportOperations::getLocationReport(int locationId, QDate fromDate,
         "LEFT JOIN drivers ON drivers.id = charges.driverId\n"
         "WHERE charges.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "AND locations.id = " +
+                                                                                      "AND locations.id = " +
         QString::number(locationId) +
         " ORDER BY charges.date DESC";
     result = db.executeGet(query);
@@ -1198,7 +1198,7 @@ QVariantList ReportOperations::getAllLocationReport(int locationId, QDate fromDa
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    SUM(charges.kwh) as kwhSum\n"
@@ -1206,7 +1206,7 @@ QVariantList ReportOperations::getAllLocationReport(int locationId, QDate fromDa
         "JOIN charges ON charges.locationId = locations.id\n"
         "WHERE charges.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "AND locations.id = " +
+                                                                                      "AND locations.id = " +
         QString::number(locationId);
     QVariantList data = db.executeGet(query);
     if (!data.isEmpty())
@@ -1220,7 +1220,7 @@ QVariantList ReportOperations::getChargesByCarReport(int id, QDate fromDate, QDa
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    charges.date as chargeDate,\n"
@@ -1234,9 +1234,9 @@ QVariantList ReportOperations::getChargesByCarReport(int id, QDate fromDate, QDa
         "JOIN locations ON locations.id = charges.locationId\n"
         "WHERE charges.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "AND cars.id = " +
+                                                                                      "AND cars.id = " +
         QString::number(id) + "\n"
-        "ORDER BY charges.date DESC";
+                              "ORDER BY charges.date DESC";
     result = db.executeGet(query);
     return result;
 }
@@ -1245,7 +1245,7 @@ QVariantList ReportOperations::getAllChargesByCarReport(int id, QDate fromDate, 
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    SUM(charges.kwh) as kwhSum\n"
@@ -1253,7 +1253,7 @@ QVariantList ReportOperations::getAllChargesByCarReport(int id, QDate fromDate, 
         "JOIN charges ON cars.id = charges.carId\n"
         "WHERE charges.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-        "AND cars.id = " +
+                                                                                      "AND cars.id = " +
         QString::number(id);
     QVariantList data = db.executeGet(query);
     if (!data.isEmpty())
@@ -1267,7 +1267,7 @@ QVariantList ReportOperations::getUserReport(int userId, QDate fromDate, QDate t
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    events.id as id,\n"
@@ -1282,9 +1282,9 @@ QVariantList ReportOperations::getUserReport(int userId, QDate fromDate, QDate t
         "LEFT JOIN types ON types.id = events.typeId\n"
         "WHERE events.userId = " +
         QString::number(userId) + "\n"
-        "  AND events.date BETWEEN '" +
+                                  "  AND events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd HH:mm:ss") + "' AND '" + toDate.toString("yyyy-MM-dd HH:mm:ss") + "'\n"
-        "ORDER BY events.date DESC";
+                                                                                                        "ORDER BY events.date DESC";
     result = db.executeGet(query);
     return result;
 }
@@ -1293,17 +1293,17 @@ QVariantList ReportOperations::getAllUserReport(int userId, QDate fromDate, QDat
 {
     toDate = toDate.addDays(1);
     QVariantList result;
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    COUNT(*) as loginCount,\n"
         "    (SELECT COUNT(*) FROM events WHERE events.userId = " +
         QString::number(userId) + " AND events.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd HH:mm:ss") + "' AND '" + toDate.toString("yyyy-MM-dd HH:mm:ss") + "') as eventCount\n"
-        "FROM logins\n"
-        "WHERE logins.userId = " +
+                                                                                                        "FROM logins\n"
+                                                                                                        "WHERE logins.userId = " +
         QString::number(userId) + "\n"
-        "  AND logins.date BETWEEN '" +
+                                  "  AND logins.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd HH:mm:ss") + "' AND '" + toDate.toString("yyyy-MM-dd HH:mm:ss") + "'";
     QVariantList data = db.executeGet(query);
     if (!data.isEmpty())
@@ -1316,7 +1316,7 @@ QVariantList ReportOperations::getAllUserReport(int userId, QDate fromDate, QDat
 QVariantList ReportOperations::getFinesByCarReport(int id, QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    fines.id,\n"
@@ -1329,9 +1329,9 @@ QVariantList ReportOperations::getFinesByCarReport(int id, QDate fromDate, QDate
         "LEFT JOIN drivers ON fines.driverId = drivers.id\n"
         "WHERE fines.carId = " +
         QString::number(id) + "\n"
-        "AND fines.date BETWEEN '" +
+                              "AND fines.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'"
-        "ORDER BY fines.date DESC";
+                                                                                      "ORDER BY fines.date DESC";
 
     QVariantList result = db.executeGet(query);
 
@@ -1341,7 +1341,7 @@ QVariantList ReportOperations::getFinesByCarReport(int id, QDate fromDate, QDate
 QVariantList ReportOperations::getAllFinesByCarReport(int id, QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    COALESCE(SUM(fines.amount), 0) AS totalFinesAmount,\n"
@@ -1354,7 +1354,7 @@ QVariantList ReportOperations::getAllFinesByCarReport(int id, QDate fromDate, QD
         "LEFT JOIN fines ON fines.carId = cars.id\n"
         "WHERE cars.id = " +
         QString::number(id) + "\n"
-        "AND fines.date BETWEEN '" +
+                              "AND fines.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n";
 
     QVariantList result = db.executeGet(query);
@@ -1365,7 +1365,7 @@ QVariantList ReportOperations::getAllFinesByCarReport(int id, QDate fromDate, QD
 QVariantList ReportOperations::getFinesByDriverReport(int id, QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    fines.id,\n"
@@ -1378,19 +1378,76 @@ QVariantList ReportOperations::getFinesByDriverReport(int id, QDate fromDate, QD
         "LEFT JOIN cars ON fines.carId = cars.id\n"
         "WHERE fines.driverId = " +
         QString::number(id) + "\n"
-        "AND fines.date BETWEEN '" +
+                              "AND fines.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'"
-        "ORDER BY fines.date DESC";
+                                                                                      "ORDER BY fines.date DESC";
 
     QVariantList result = db.executeGet(query);
 
     return result;
 }
 
+QVariantList ReportOperations::getDriverChargingReport(QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
+    QString query =
+        "SELECT\n"
+        "    drivers.name AS driver_name,\n"
+        "    ROUND(SUM(charges.kwh), 2) AS total_kwh\n"
+        "FROM drivers\n"
+        "JOIN charges ON charges.driverId = drivers.id\n"
+        "WHERE charges.date BETWEEN '" +
+        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+        "GROUP BY drivers.name\n"
+        "ORDER BY total_kwh DESC";
+
+    result = db.executeGet(query);
+    
+    // Добавляем отладочный вывод
+    qDebug() << "Driver Charging Report Query:" << query;
+    qDebug() << "Results:" << result;
+    
+    return result;
+}
+
+QVariantList ReportOperations::getAllDriverChargingReport(QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
+    QString query =
+        "SELECT\n"
+        "    ROUND(SUM(charges.kwh), 2) as totalKwh,\n"
+        "    COUNT(DISTINCT drivers.id) as driversCount,\n"
+        "    ROUND(AVG(driverKwh.avg_kwh), 2) as avgKwhPerDriver\n"
+        "FROM charges\n"
+        "JOIN drivers ON drivers.id = charges.driverId\n"
+        "LEFT JOIN (\n"
+        "    SELECT\n"
+        "        driverId,\n"
+        "        ROUND(SUM(kwh), 2) as avg_kwh\n"
+        "    FROM charges\n"
+        "    WHERE charges.date BETWEEN '" +
+        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+                                                                                      "    GROUP BY driverId\n"
+                                                                                      ") as driverKwh ON driverKwh.driverId = drivers.id\n"
+                                                                                      "WHERE charges.date BETWEEN '" +
+        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'";
+
+    QVariantList data = db.executeGet(query);
+    if (!data.isEmpty())
+    {
+        result.append(data[0]);
+    }
+    return result;
+}
+
 QVariantList ReportOperations::getAllFinesByDriverReport(int id, QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT\n"
         "    COALESCE(SUM(fines.amount), 0) AS totalFinesAmount,\n"
@@ -1403,7 +1460,7 @@ QVariantList ReportOperations::getAllFinesByDriverReport(int id, QDate fromDate,
         "LEFT JOIN fines ON fines.driverId = drivers.id\n"
         "WHERE drivers.id = " +
         QString::number(id) + "\n"
-        "AND fines.date BETWEEN '" +
+                              "AND fines.date BETWEEN '" +
         fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n";
 
     QVariantList result = db.executeGet(query);
@@ -1415,7 +1472,7 @@ QVariantList ReportOperations::getAllFinesByDriverReport(int id, QDate fromDate,
 
 QVariantList ReportOperations::getRepairsReport()
 {
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT "
         "   repairs.id,\n"
@@ -1434,7 +1491,7 @@ QVariantList ReportOperations::getRepairsReport()
 
 QVariantList ReportOperations::getNotDoneRepairsReport()
 {
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT "
         "   repairs.id,\n"
@@ -1454,7 +1511,7 @@ QVariantList ReportOperations::getNotDoneRepairsReport()
 
 QVariantList ReportOperations::getFinesReport()
 {
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT "
         "   fines.id,\n"
@@ -1474,7 +1531,7 @@ QVariantList ReportOperations::getFinesReport()
 
 QVariantList ReportOperations::getNotPaidFinesReport()
 {
-    dbManager& db = dbManager::getInstance();
+    dbManager &db = dbManager::getInstance();
     QString query =
         "SELECT "
         "   fines.id,\n"

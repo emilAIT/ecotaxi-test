@@ -45,6 +45,12 @@ void GeneralReport::setReport(Report mode, QDate from, QDate to)
 
     setHeader();
 
+    if (this->mode == Report::Cars) {
+        ui->ExportDateButton->show();
+    } else {
+        ui->ExportDateButton->hide();
+    }
+
     setTable();
     setBottomTable();
 
@@ -835,6 +841,9 @@ void GeneralReport::setTableSizes()
     }
 }
 
+
+
+
 void GeneralReport::on_SettingsButton_clicked()
 {
     switch (this->mode)
@@ -1123,4 +1132,26 @@ void GeneralReport::handleDoubleClick(const QModelIndex& index)
 void GeneralReport::onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order) {
     this->selectedColumn = logicalIndex;
     this->sortOrder = order;
+}
+
+
+void GeneralReport::on_ExportDateButton_clicked()
+{
+    // Проверяем, что отчет - это отчет по машинам
+    if (this->mode != Report::Cars) {
+        QMessageBox::information(this, "Информация", "Экспорт по датам доступен только для отчета по машинам");
+        return;
+    }
+    
+    QString title;
+    int start = 1;
+    
+    if (this->mode == Report::Cars) {
+        title = "Отчет по машинам";
+        start = 0;
+    }
+    
+    // Вызываем вашу новую функцию экспорта в PDF
+    PDFmanager::exportToPDFByDates(title, this->fromDate, this->toDate, 
+                                 { ui->tableView->model(), ui->bottomTable->model() }, start);
 }

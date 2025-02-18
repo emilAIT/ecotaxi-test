@@ -1,5 +1,6 @@
 #include "reportpage.h"
 #include "ui_reportpage.h"
+#include <QDebug>
 
 ReportPage::ReportPage(nm *nav, QWidget *parent)
     : QWidget(parent), ui(new Ui::ReportPage)
@@ -111,6 +112,11 @@ void ReportPage::setHeader()
     case Report::FinesByDrivers:
         ui->Header->setText("ПО ШТРАФАМ ПО ВОДИТЕЛЮ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ");
+        break;
+
+    case Report::DriverCharging:
+        ui->Header->setText("ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ");
+        ui->ReportButton->setText("ОТЧЕТ ПО ЛОКАЦИЯМ");
         break;
     
     default:
@@ -358,6 +364,41 @@ void ReportPage::setTable()
             model->appendRow(row);
         }
         break;
+
+        case Report::DriverCharging:
+        model->setHorizontalHeaderLabels({"Водитель", "KWH"});
+        for (const QVariant &reportData : ReportOperations::getDriverChargingReport(this->fromDate, this->toDate))
+        {
+            qDebug() << "Adding row to model";
+            QVariantList data = reportData.toList();
+            QList<QStandardItem *> row;
+            
+            QStandardItem *nameItem = new QStandardItem(data[0].toString());
+            qDebug() << "Name item created:" << nameItem->text();
+            row.append(nameItem);
+            
+            QStandardItem *kwhItem = new QStandardItem();
+            kwhItem->setData(data[1].toDouble(), Qt::DisplayRole);
+            qDebug() << "KWH item created:" << kwhItem->data(Qt::DisplayRole).toDouble();
+            row.append(kwhItem);
+            
+            model->appendRow(row);
+            qDebug() << "Row added to model";
+            
+            // Проверяем что было добавлено
+            qDebug() << "Checking added row:";
+            qDebug() << "Name in model:" << model->index(model->rowCount()-1, 0).data().toString();
+            qDebug() << "KWH in model:" << model->index(model->rowCount()-1, 1).data().toDouble();
+        }
+        
+        // После добавления всех строк проверяем содержимое модели
+        qDebug() << "Final model content:";
+        for(int i = 0; i < model->rowCount(); i++) {
+            qDebug() << "Row" << i << ":"
+                     << model->index(i, 0).data().toString()
+                     << model->index(i, 1).data().toDouble();
+        }
+        break;
     
     default:
         break;
@@ -592,6 +633,25 @@ void ReportPage::setBottomTable()
         }
         break;
 
+    case Report::DriverCharging:
+        {
+            QVariantList report = ReportOperations::getDriverChargingReport(this->fromDate, this->toDate);
+            model->setHorizontalHeaderLabels({
+                "Итого",
+                "KWH"
+            });
+        
+            QList<QStandardItem *> row;
+            double totalKwh = 0;
+            for (const QVariant &item : report) {
+                totalKwh += item.toList()[1].toDouble();
+            }
+            row.append(new QStandardItem("Итого"));
+            row.append(new QStandardItem(QString::number(totalKwh, 'f', 2)));
+            model->appendRow(row);
+        }
+        break;
+
     default:
         break;
     }
@@ -677,7 +737,10 @@ void ReportPage::setSideTable()
             model->appendRow({new QStandardItem(QString::number(user.getId())), new QStandardItem(user.getName())});
         }
         break;
+
     }
+    
+
 
     ui->sideTable->setModel(model);
 
@@ -778,6 +841,11 @@ void ReportPage::setTableSizes()
         ui->tableView->setColumnWidth(3, 160);
         ui->tableView->setColumnWidth(4, 160);
         ui->tableView->setColumnWidth(5, 160);
+        break;
+
+    case Report::DriverCharging:
+        ui->tableView->setColumnWidth(0, 430); // Для столбца "Водитель"
+        ui->tableView->setColumnWidth(1, 430); // Для столбца "KWH"
         break;
 
     default:
@@ -983,6 +1051,7 @@ void ReportPage::adjustColumnWidths()
         ui->tableView->setColumnWidth(ui->tableView->model()->columnCount() - 1, 150);
     }
 }
+
 
 void ReportPage::on_ItemButton_clicked()
 {
