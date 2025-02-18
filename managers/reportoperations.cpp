@@ -490,6 +490,48 @@ QVariantList ReportOperations::getChargesReport(QDate fromDate, QDate toDate)
     return result;
 }
 
+
+// QVariantList ReportOperations::getDriversChargesReport(QDate fromDate, QDate toDate)
+// {
+//     toDate = toDate.addDays(1);
+//     QVariantList result;
+//     dbManager &db = dbManager::getInstance();
+
+//     QString query =
+//         "SELECT\n"
+//         "    drivers.name AS driverName,\n"
+//         "    SUM(charges.kwh) AS totalKWH\n"
+//         "FROM drivers\n"
+//         "JOIN charges ON charges.driverId = drivers.id\n"
+//         "WHERE charges.date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+//                                                                                         "GROUP BY drivers.id";
+
+//     result = db.executeGet(query);
+//     return result;
+// }
+
+
+QVariantList ReportOperations::getDriversChargesReport(QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
+
+    QString query =
+        "SELECT\n"
+        "    drivers.id AS driverId,\n"  // Add driver id
+        "    drivers.name AS driverName,\n"
+        "    SUM(charges.kwh) AS totalKWH\n"
+        "FROM drivers\n"
+        "JOIN charges ON charges.driverId = drivers.id\n"
+        "WHERE charges.date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+                                                                                        "GROUP BY drivers.id";
+
+    result = db.executeGet(query);
+    return result;
+}
+
+
 QVariantList ReportOperations::getAllChargesReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
@@ -1491,3 +1533,5 @@ QVariantList ReportOperations::getNotPaidFinesReport()
     QVariantList data = db.executeGet(query);
     return data;
 }
+
+

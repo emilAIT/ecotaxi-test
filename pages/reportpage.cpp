@@ -112,7 +112,7 @@ void ReportPage::setHeader()
         ui->Header->setText("ПО ШТРАФАМ ПО ВОДИТЕЛЮ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ");
         break;
-    
+
     default:
         break;
     }

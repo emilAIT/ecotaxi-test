@@ -92,5 +92,7 @@ private:
 
     bool useSystemTime = true;
     QTime time;
+
+    bool isAdmin;
 };
 #endif // MAINWINDOW_H

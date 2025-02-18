@@ -44,6 +44,7 @@ void GeneralReport::setReport(Report mode, QDate from, QDate to)
     }
 
     setHeader();
+    qDebug() << "setHeader() called from:" << Q_FUNC_INFO;
 
     setTable();
     setBottomTable();
@@ -53,6 +54,8 @@ void GeneralReport::setReport(Report mode, QDate from, QDate to)
 
 void GeneralReport::setHeader()
 {
+    qDebug() << "Before setting header, Report Mode:" << static_cast<int>(this->mode);
+
     switch (this->mode)
     {
     case Report::Cars:
@@ -109,6 +112,11 @@ void GeneralReport::setHeader()
     
     case Report::FinesByDrivers:
         ui->Header->setText("ПО ШТРАФАМ ПО ВОДИТЕЛЯМ");
+        ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
+        break;
+
+    case Report::DriversCharges:     // xxx
+        ui->Header->setText("ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
         break;
     }
@@ -325,6 +333,35 @@ void GeneralReport::setTable()
             model->appendRow(row);
         }
         break;
+
+    case Report::DriversCharges:
+        model->setHorizontalHeaderLabels({"ID", "Водитель", "KWH"});
+
+        for (const QVariant &driverCharge : ReportOperations::getDriversChargesReport(this->fromDate, this->toDate))
+        {
+            QVariantList charges = driverCharge.toList();
+            QList<QStandardItem *> row;
+
+            // "ID" (Driver ID)
+            QStandardItem *idItem = new QStandardItem();
+            idItem->setData(charges[0].toString(), Qt::DisplayRole);
+            row.append(idItem);
+
+            // "Водитель" (Driver's name)
+            QStandardItem *nameItem = new QStandardItem();
+            nameItem->setData(charges[1].toString(), Qt::DisplayRole);
+            row.append(nameItem);
+
+            // "KWH" (Total KWH per driver)
+            QStandardItem *kwhItem = new QStandardItem();
+            kwhItem->setData(charges[2].toDouble(), Qt::DisplayRole);
+            row.append(kwhItem);
+
+            model->appendRow(row);
+        }
+        break;
+
+
 
     case Report::Users:
         model->setHorizontalHeaderLabels({"id", "Дата", "Машина", "Водитель", "Тип", "Сумма", "Пользователь"});
@@ -619,6 +656,23 @@ void GeneralReport::setBottomTable()
         }
         break;
 
+    case Report::DriversCharges:
+        for (const QVariant &charge : ReportOperations::getAllChargesReport(this->fromDate, this->toDate))
+        {
+            QVariantList charges = charge.toList();
+            model->setHorizontalHeaderLabels({
+                "Итого",
+                "KWH",
+            });
+
+            QList<QStandardItem *> row;
+
+            row << new QStandardItem("Итого");
+            row << new QStandardItem(charges[0].toString());
+            model->appendRow(row);
+        }
+        break;
+
     case Report::Users:
         for (const QVariant &user : ReportOperations::getAllUsersReport(this->fromDate, this->toDate))
         {
@@ -797,6 +851,11 @@ void GeneralReport::setTableSizes()
         break;
 
     case Report::Charges:
+        ui->tableView->setColumnWidth(1, 377);
+        ui->tableView->setColumnWidth(2, 377);
+        break;
+
+    case Report::DriversCharges:
         ui->tableView->setColumnWidth(1, 377);
         ui->tableView->setColumnWidth(2, 377);
         break;
