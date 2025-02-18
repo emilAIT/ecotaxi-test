@@ -1217,71 +1217,71 @@ void GeneralReport::on_PDFbyDate_clicked()
         break;
     }
 
-    if (this->mode == Report::Cars)
-    {
-        // Приводим модель таблицы к QStandardItemModel
-        QStandardItemModel *mainModel = qobject_cast<QStandardItemModel*>(ui->tableView->model());
-        if (!mainModel) {
-            PDFmanager pdfManager;
-            pdfManager.exportToPDF(title,
-                                   this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"),
-                                   { ui->tableView->model(), ui->bottomTable->model() },
-                                   start);
-            return;
-        }
+    if (this->mode != Report::Cars)
+        return;
 
-        // Группируем строки по дате (предполагается, что дата находится в первом столбце)
-        QMap<QDate, QStandardItemModel*> modelsByDay;
-        int colCount = mainModel->columnCount();
-        for (int i = 0; i < mainModel->rowCount(); i++) {
-            QModelIndex idx = mainModel->index(i, 0);
-            QDateTime dt = mainModel->data(idx, Qt::DisplayRole).toDateTime();
-            QDate day = dt.date();
-            if (!modelsByDay.contains(day)) {
-                // Создаем новую модель для данного дня и копируем заголовки
-                QStandardItemModel *dayModel = new QStandardItemModel();
-                QStringList headers;
-                for (int j = start; j < colCount; j++) {
-                    headers << mainModel->headerData(j, Qt::Horizontal).toString();
-                }
-                dayModel->setHorizontalHeaderLabels(headers);
-                modelsByDay.insert(day, dayModel);
-            }
-            // Копируем данные строки (начиная с нужного столбца)
-            QList<QStandardItem*> rowItems;
-            for (int j = start; j < colCount; j++) {
-                QStandardItem *item = mainModel->item(i, j);
-                if (item)
-                    rowItems.append(item->clone());
-                else
-                    rowItems.append(new QStandardItem(mainModel->data(mainModel->index(i, j), Qt::DisplayRole).toString()));
-            }
-            modelsByDay[day]->appendRow(rowItems);
-        }
+    // Use the new query that returns rows grouped by day.
+    // (You should create a separate function (getCarsReportByDays) that runs the modified query.)
+    QVariantList rawData = ReportOperations::getCarsReportByDays(this->fromDate, this->toDate);
 
-        // Преобразуем QMap<QDate, QStandardItemModel*> в QMap<QDate, QAbstractItemModel*>
-        QMap<QDate, QAbstractItemModel*> convertedMap;
-        for (auto it = modelsByDay.constBegin(); it != modelsByDay.constEnd(); ++it) {
-            convertedMap.insert(it.key(), static_cast<QAbstractItemModel*>(it.value()));
-        }
+    // Assume the new query returns rows with the following columns:
+    // 0: carId, 1: carSid, 2: investorName, 3: eventDay, 4: income, 5: tax, 6: kwh, ... etc.
+    // We will use column 3 (eventDay) to group the data.
+    const int eventDayCol = 3;
 
-        // Создаем экземпляр PDFmanager и вызываем функцию экспорта с разрывами страниц по дням
-        PDFmanager pdfManager;
-        pdfManager.exportCarReportByDays(convertedMap,
-                                         title,
-                                         this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"));
+    // Prepare a map to group rows by day.
+    QMap<QDate, QStandardItemModel*> modelsByDay;
 
-        // Освобождаем созданные модели
-        for (auto model : modelsByDay) {
-            model->deleteLater();
+    // Define the headers for the per‑day table.
+    // For example, if you want to exclude the eventDay column in the table itself, do:
+    QStringList headers;
+
+
+    headers << "carId" << "Id" << "Инвестор" << "Доход" << "Налог 10%" << "KWH x 10"
+            << "Расход" << "Общий" << "Дней" << ">0"
+            << "Средняя" << "%" << "Комиссия" << "Инвестору";
+    // (Adjust headers as needed for your report.)
+
+    // Group rows by eventDay.
+    for (int i = 0; i < rawData.size(); i++) {
+        QVariantList rowData = rawData[i].toList();
+        // Extract the event day (convert to QDate)
+        QDate eventDay = rowData[eventDayCol].toDate();
+
+        // If no model exists for this day, create one and set headers.
+        if (!modelsByDay.contains(eventDay)) {
+            QStandardItemModel *dayModel = new QStandardItemModel();
+            dayModel->setHorizontalHeaderLabels(headers);
+            modelsByDay.insert(eventDay, dayModel);
         }
+        QStandardItemModel *dayModel = modelsByDay.value(eventDay);
+
+        // Build a row for the day's model, skipping the eventDay column.
+        QList<QStandardItem*> items;
+        for (int col = 0; col < rowData.size(); col++) {
+            if (col == eventDayCol)
+                continue; // Skip the date column as header is printed once above.
+            items.append(new QStandardItem(rowData[col].toString()));
+        }
+        dayModel->appendRow(items);
     }
-    else
-    {
-        PDFmanager pdfManager;
-        pdfManager.exportToPDF(title,
-                               this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"),
-                               { ui->tableView->model(), ui->bottomTable->model() },
-                               start);
+
+    // Convert modelsByDay to QMap<QDate, QAbstractItemModel*>
+    QMap<QDate, QAbstractItemModel*> convertedMap;
+    for (auto it = modelsByDay.constBegin(); it != modelsByDay.constEnd(); ++it) {
+        convertedMap.insert(it.key(), static_cast<QAbstractItemModel*>(it.value()));
+    }
+
+    // Prepare report title and dates string.
+    QString reportTitle = "Отчет по машине " + Operations::getCar(this->id).getSid();
+    QString reportDates = this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy");
+
+    // Now call the PDF export function that separates the report by days.
+    PDFmanager pdfManager;
+    pdfManager.exportCarReportByDays(convertedMap, reportTitle, reportDates);
+
+    // Cleanup: delete the temporary models.
+    for (auto model : modelsByDay) {
+        model->deleteLater();
     }
 }

@@ -57,6 +57,14 @@ void ReportPage::setReport(Report mode, int id, QDate from, QDate to)
         ui->PDFbyDateButton->setVisible(false);
     }
 
+
+    if (this->mode == Report::ChargesByDrivers){
+        ui->ReportButton->setVisible(false);
+    } else {
+        ui->ReportButton->setVisible(true);
+    }
+
+
     setHeader();
     setSideTable();
 

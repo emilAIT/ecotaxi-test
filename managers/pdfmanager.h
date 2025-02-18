@@ -29,6 +29,10 @@ public:
 
     static void exportCarReportByDays(const QMap<QDate, QAbstractItemModel*> &modelsByDay,
                                       const QString &title, const QString &dates);
+    void exportPDFbyDays(const QMap<QDate, QAbstractItemModel*> &modelsByDay,
+                               const QString &title,
+                               const QString &dates);
+
 
     void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 

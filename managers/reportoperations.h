@@ -15,6 +15,7 @@ public:
     // general reports
     QVariantList static getCarsReport(QDate fromDate, QDate toDate);
     QVariantList static getAllCarsReport(QDate fromDate, QDate toDate);
+    QVariantList static getCarsReportByDays(QDate fromDate, QDate toDate);
 
     QVariantList static getTypesReport(QDate fromDate, QDate toDate);
     QVariantList static getAllTypesReport(QDate fromDate, QDate toDate);

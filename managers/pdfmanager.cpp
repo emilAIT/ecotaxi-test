@@ -364,3 +364,67 @@ void PDFmanager::exportCarReportByDays(const QMap<QDate, QAbstractItemModel*> &m
 
     QMessageBox::information(nullptr, "PDF", "Отчёт сохранён в папке 'отчеты' на рабочем столе и скопирован в буфер обмена");
 }
+
+void PDFmanager::exportPDFbyDays(const QMap<QDate, QAbstractItemModel*> &modelsByDay,
+                                       const QString &title, const QString &dates)
+{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
+    QString appDir = getDesktopDir();
+    QDir folder(appDir + "/отчеты");
+    if (!folder.exists()) {
+        folder.mkdir(appDir + "/отчеты");
+    }
+
+    QDateTime currentTime = QDateTime::currentDateTime();
+    QString fileName = title + " " + currentTime.toString("dd.MM.yyyy HH-mm-ss") + ".pdf";
+    fileName.replace(" ", "_");
+    QString filePath = appDir + "/отчеты/" + fileName;
+
+    QPrinter printer(QPrinter::PrinterResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setPageSize(QPageSize::A4);
+    printer.setOutputFileName(filePath);
+
+    // Получаем отсортированные ключи
+    QList<QDate> days = modelsByDay.keys();
+    std::sort(days.begin(), days.end());
+
+    QString combinedHtml;
+    bool firstDay = true;
+    for (const QDate &day : days) {
+        QAbstractItemModel *model = modelsByDay.value(day);
+
+        // Формируем контент для данного дня: выводим дату и ниже – таблицу
+        QString dayContent;
+        dayContent += "<p style='text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 10px;'>"
+                      + day.toString("dd.MM.yyyy") + "</p>";
+        dayContent += modelToHTML(model, 0);
+
+        // Для первого дня не добавляем разрыв, для остальных – принудительный разрыв страницы перед блоком.
+        if (!firstDay)
+            combinedHtml += "<div style='display: block; page-break-before: always;'>" + dayContent + "</div>";
+        else {
+            combinedHtml += "<div>" + dayContent + "</div>";
+            firstDay = false;
+        }
+    }
+
+    // Добавляем общий заголовок и подвал, если необходимо.
+    QString finalHtml = getHeader(currentTime) + combinedHtml + getFooter(currentTime);
+
+    QTextDocument doc;
+    doc.setDefaultStyleSheet(getStyleSheet());
+    doc.setHtml(finalHtml);
+    doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
+    doc.print(&printer);
+
+    QApplication::restoreOverrideCursor();
+
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setUrls({ QUrl::fromLocalFile(filePath) });
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setMimeData(mimeData);
+
+    QMessageBox::information(nullptr, "PDF", "Отчет сохранен в папке 'отчеты' на рабочем столе и скопирован в буфер обмена");
+}
