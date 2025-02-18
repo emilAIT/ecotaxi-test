@@ -957,8 +957,14 @@ void ReportPage::on_ToPDFButton_clicked()
     case Report::Cars:
         title = "Отчет по машине " + Operations::getCar(this->id).getSid();
         start = 0;
+        PDFmanager::exportToPDFByDates(
+            title, 
+            this->fromDate, 
+            this->toDate, 
+            {ui->tableView->model(), ui->bottomTable->model()}, 
+            start
+        );
         break;
-
     case Report::Drivers:
         title = "Отчет по водителю " + Operations::getDriver(this->id).getName();
         start = 0;
