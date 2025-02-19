@@ -1,6 +1,7 @@
 #include "pdfmanager.h"
 #include "reportoperations.h" // Путь может отличаться - используйте правильный путь
 #include "operations.h"       // Подключите заголовочный файл Operations
+#include <QStandardItemModel>
 
 PDFmanager::PDFmanager() {}
 
@@ -305,72 +306,129 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 }
 
 void PDFmanager::exportToPDFByDates(QString title, QDate fromDate, QDate toDate,
-                                    QList<QAbstractItemModel *> models, int start)
+  QList<QAbstractItemModel *> models, int start)
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
+QApplication::setOverrideCursor(Qt::WaitCursor);
 
-  QDateTime currentTime = QDateTime::currentDateTime();
-  QString appDir = getDesktopDir();
-  QDir folder(appDir + "/отчеты");
-  if (!folder.exists())
-  {
-    folder.mkdir(appDir + "/отчеты");
-  }
-
-  QString fileName = title + "_" + fromDate.toString("dd.MM.yyyy") + "_-_" +
-                     toDate.toString("dd.MM.yyyy") + "_" +
-                     currentTime.toString("HH-mm-ss") + ".pdf";
-  fileName.replace(" ", "_");
-
-  QString filePath = appDir + "/отчеты/" + fileName;
-
-  QPrinter printer(QPrinter::PrinterResolution);
-  printer.setOutputFormat(QPrinter::PdfFormat);
-  printer.setPageSize(QPageSize::A4);
-  printer.setOutputFileName(filePath);
-
-  QTextDocument doc;
-  doc.setDefaultStyleSheet(getStyleSheet());
-
-  QString html = "<h2>" + title + "</h2>";
-  html += "<p>Период: " + fromDate.toString("dd.MM.yyyy") + " - " + toDate.toString("dd.MM.yyyy") + "</p><br>";
-
-  QDate currentDate = fromDate;
-  while (currentDate <= toDate)
-  {
-    if (currentDate != fromDate)
-    {
-      html += "<div style='page-break-before: always;'></div>";
-    }
-
-    html += "<h2>Отчет за " + currentDate.toString("dd.MM.yyyy") + "</h2><br>";
-
-    // Используем существующий метод modelToHTML для каждой модели
-    for (QAbstractItemModel *model : models)
-    {
-      html += modelToHTML(model, start);
-    }
-
-    currentDate = currentDate.addDays(1);
-  }
-
-  doc.setHtml(getHeader(currentTime) + html + getFooter(currentTime));
-  doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
-
-  doc.print(&printer);
-
-  QMimeData *mimeData = new QMimeData();
-  mimeData->setUrls({QUrl::fromLocalFile(filePath)});
-  QClipboard *clipboard = QApplication::clipboard();
-  clipboard->setMimeData(mimeData);
-
-  QApplication::restoreOverrideCursor();
-
-  QMessageBox popup;
-  popup.setTextFormat(Qt::MarkdownText);
-  popup.setText("Отчет с разбивкой по дням сохранен в папке отчеты на рабочем столе и скопирован в буфер обмена");
-  popup.exec();
+QDateTime currentTime = QDateTime::currentDateTime();
+QString appDir = getDesktopDir();
+QDir folder(appDir + "/отчеты");
+if (!folder.exists())
+{
+folder.mkdir(appDir + "/отчеты");
 }
+
+QString fileName = title + "_" + fromDate.toString("dd.MM.yyyy") + "_-_" +
+toDate.toString("dd.MM.yyyy") + "_" +
+currentTime.toString("HH-mm-ss") + ".pdf";
+fileName.replace(" ", "_");
+
+QString filePath = appDir + "/отчеты/" + fileName;
+
+QPrinter printer(QPrinter::PrinterResolution);
+printer.setOutputFormat(QPrinter::PdfFormat);
+printer.setPageSize(QPageSize::A4);
+printer.setOutputFileName(filePath);
+
+QTextDocument doc;
+doc.setDefaultStyleSheet(getStyleSheet());
+
+QString html = "<h2>" + title + "</h2>";
+html += "<p>Период: " + fromDate.toString("dd.MM.yyyy") + " - " + toDate.toString("dd.MM.yyyy") + "</p><br>";
+
+// Для каждого дня запрашиваем отдельные данные
+QDate currentDate = fromDate;
+while (currentDate <= toDate)
+{
+if (currentDate != fromDate)
+{
+html += "<div style='page-break-before: always;'></div>";
+}
+
+html += "<h2>Отчет по машинам за " + currentDate.toString("dd.MM.yyyy") + "</h2><br>";
+
+// Получаем данные за текущий день
+QVariantList dailyCarsData = ReportOperations::getCarsReport(currentDate, currentDate);
+
+if (dailyCarsData.isEmpty()) {
+html += "<p style='text-align: center; margin: 20px 0;'>Нет данных за этот день</p>";
+} else {
+// Создаем временную модель данных для текущего дня
+QStandardItemModel dailyModel;
+
+// Копируем заголовки из оригинальной модели
+for (int col = 0; col < models[0]->columnCount(); col++) {
+QString headerText = models[0]->headerData(col, Qt::Horizontal).toString();
+dailyModel.setHorizontalHeaderItem(col, new QStandardItem(headerText));
+}
+
+// Заполняем модель данными за текущий день
+for (const QVariant &rowData : dailyCarsData) {
+QList<QStandardItem*> items;
+QVariantList dataList = rowData.toList();
+
+for (const QVariant &cellData : dataList) {
+QStandardItem *item = new QStandardItem();
+if (cellData.type() == QVariant::Int || cellData.type() == QVariant::Double) {
+item->setData(cellData, Qt::DisplayRole);
+} else {
+item->setText(cellData.toString());
+}
+items << item;
+}
+
+dailyModel.appendRow(items);
+}
+
+// Получаем итоговые данные за день
+QVariantList dailySummary = ReportOperations::getAllCarsReport(currentDate, currentDate);
+QStandardItemModel summaryModel;
+
+// Копируем заголовки для итоговой модели
+for (int col = 0; col < models[1]->columnCount(); col++) {
+QString headerText = models[1]->headerData(col, Qt::Horizontal).toString();
+summaryModel.setHorizontalHeaderItem(col, new QStandardItem(headerText));
+}
+
+if (!dailySummary.isEmpty()) {
+QList<QStandardItem*> summaryItems;
+summaryItems << new QStandardItem("Итого");
+
+for (int i = 0; i < dailySummary.size(); i++) {
+QStandardItem *item = new QStandardItem();
+item->setData(dailySummary[i], Qt::DisplayRole);
+summaryItems << item;
+}
+
+summaryModel.appendRow(summaryItems);
+}
+
+// Преобразуем модели в HTML
+html += modelToHTML(&dailyModel, start);
+html += modelToHTML(&summaryModel, 0);
+}
+
+currentDate = currentDate.addDays(1);
+}
+
+doc.setHtml(getHeader(currentTime) + html + getFooter(currentTime));
+doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
+
+doc.print(&printer);
+
+QMimeData *mimeData = new QMimeData();
+mimeData->setUrls({QUrl::fromLocalFile(filePath)});
+QClipboard *clipboard = QApplication::clipboard();
+clipboard->setMimeData(mimeData);
+
+QApplication::restoreOverrideCursor();
+
+QMessageBox popup;
+popup.setTextFormat(Qt::MarkdownText);
+popup.setText("Отчет с разбивкой по дням сохранен в папке отчеты на рабочем столе и скопирован в буфер обмена");
+popup.exec();
+}
+
 
 void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
