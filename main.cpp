@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    QFontDatabase::addApplicationFont("qrc:///Inter.ttf");
+    QFontDatabase::addApplicationFont(":/fonts/Inter.ttf");
 
     styleManager s(&a);
 

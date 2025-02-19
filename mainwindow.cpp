@@ -23,7 +23,9 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+        
+        ui->ReportsButton->clear();
+        ui->ReportsButton->addItem("По локациям");
     }
     else if (u.getId() != -1)
     {
