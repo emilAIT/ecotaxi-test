@@ -181,7 +181,7 @@ void ReportPage::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -439,7 +439,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -489,7 +489,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -647,7 +647,7 @@ void ReportPage::setBottomTable()
                 totalKwh += item.toList()[1].toDouble();
             }
             row.append(new QStandardItem("Итого"));
-            row.append(new QStandardItem(QString::number(totalKwh, 'f', 2)));
+            row.append(new QStandardItem(QString::number(totalKwh, 'f', 0))); // используем 'f', 0 для целых чисел
             model->appendRow(row);
         }
         break;
@@ -735,6 +735,18 @@ void ReportPage::setSideTable()
             if (this->id != 0 && user.getId() == this->id)
                 row = model->rowCount();
             model->appendRow({new QStandardItem(QString::number(user.getId())), new QStandardItem(user.getName())});
+        }
+        break;
+
+        // Найдите этот метод и добавьте кейс
+    case Report::DriverCharging:
+        model->setHorizontalHeaderLabels({"id", "Водители"});
+        for (Driver driver : Operations::selectAllDrivers())
+        {
+            model->appendRow({
+                new QStandardItem(QString::number(driver.getId())), 
+                new QStandardItem(driver.getName())
+            });
         }
         break;
 
