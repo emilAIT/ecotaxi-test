@@ -258,6 +258,9 @@ void addUpdateWindow::addRecord()
             case Setting::Drivers:
                 Operations::addDriver(Driver(QVariantList::fromList({id, ui->NameEdit->text(), ui->DescEdit->toPlainText()})));
                 break;
+            // case Setting::DriversCharges:
+            //     Operations::addDriversCharges(DriversChares(QVariantList::fromList({id, ui->NameEdit->text(), ui->DescEdit->toPlainText()})));
+            //     break;
             case Setting::Cars:
                 Operations::addCar(Car(QVariantList::fromList({0, ui->IdEdit->text(), ui->BrandEdit->text(), ui->ModelEdit->text(), ui->LicenseEdit->text(), ui->YearEdit->text(), investors.value(ui->investorBox->currentText()), ui->MilleageEdit->text(), ui->DescEdit->toPlainText(), ui->PercentEdit->text().toLongLong()})));
                 break;
