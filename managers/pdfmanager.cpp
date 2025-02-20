@@ -1,4 +1,7 @@
 #include "pdfmanager.h"
+#include "reportoperations.h" // Путь может отличаться - используйте правильный путь
+#include "operations.h"       // Подключите заголовочный файл Operations
+#include <QStandardItemModel>
 
 PDFmanager::PDFmanager() {}
 
@@ -161,7 +164,7 @@ QString PDFmanager::getAppDir()
 
 QString PDFmanager::getDesktopDir()
 {
-    return QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+  return QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
 }
 
 void PDFmanager::createPDF(QString html, QString title)
@@ -201,7 +204,7 @@ void PDFmanager::createPDF(QString html, QString title)
 
   QClipboard *clipboard = QApplication::clipboard();
   clipboard->setMimeData(mimeData);
-  
+
   QApplication::restoreOverrideCursor();
 
   QMessageBox popup;
@@ -237,69 +240,176 @@ void PDFmanager::ToPDF(QString title, QString dates, QList<QAbstractItemModel *>
 
 QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 {
-    QString html;
+  QString html;
+  html += "<div style='width: 100%; margin: 20px 0;'>";
+  html += "<table style='width: 100%; border-collapse: collapse; margin: 0 auto;'>";
 
-    // Start with a div container for better PDF rendering
-    html += "<div style='width: 100%; margin: 20px 0;'>";
+  // Добавляем заголовки
+  html += "<thead><tr>";
+  if (start == 1)
+  {
+    html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>#</th>";
+  }
 
-    // Add table with explicit styling for PDF rendering
-    html += "<table style='width: 100%; border-collapse: collapse; margin: 0 auto;'>";
-
-    // Add header row
-    html += "<thead><tr>";
-
-    // Add row number column if start == 1
-    if (start == 1)
-    {
-        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>#</th>";
-    }
-
-    // Add headers
+  // Специальная обработка для отчета по зарядкам водителей
+  if (model->headerData(0, Qt::Horizontal).toString() == "Водитель")
+  {
+    html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>Водитель</th>";
+    html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>KWH</th>";
+  }
+  else
+  {
+    // Стандартная обработка для других типов отчетов
     for (int i = start; i < model->columnCount(); i++)
     {
-        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>"
-                + model->headerData(i, Qt::Horizontal).toString()
-                + "</th>";
+      html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>" + model->headerData(i, Qt::Horizontal).toString() + "</th>";
     }
-    html += "</tr></thead><tbody>";
-
-    // Add rows
-    for (int i = 0; i < model->rowCount(); i++)
+  }
+  html += "</tr></thead><tbody>";
+  // Добавляем строки
+  for (int i = 0; i < model->rowCount(); i++)
+  {
+    html += "<tr>";
+    if (start == 1)
     {
-        html += "<tr>";
-        if (start == 1)
-        {
-            html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>"
-                    + QString::number(i + 1)
-                    + "</td>";
-        }
-
-        for (int j = start; j < model->columnCount(); j++)
-        {
-            QString cellData = model->index(i, j).data(Qt::DisplayRole).toString();
-            QString header = model->headerData(j, Qt::Horizontal).toString();
-
-            // Check if the header is "Инвестору" to apply green color
-            QString cellStyle = "border: 1px solid black; padding: 5px; text-align: center;";
-            if (header == "Инвестору" && start != 1)
-            {
-                cellStyle += " color: #007700;";
-            }
-
-            html += "<td style='" + cellStyle + "'>" + cellData + "</td>";
-        }
-        html += "</tr>";
+      html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>" + QString::number(i + 1) + "</td>";
     }
 
-    html += "</tbody></table></div>";
-    return html;
+    // Проверяем, нужна ли специальная обработка для отчета по зарядкам водителей
+    if (model->headerData(0, Qt::Horizontal).toString() == "Водитель")
+    {
+      // Водитель
+      QVariant driverNameData = model->index(i, 0).data(Qt::DisplayRole);
+      html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>" + driverNameData.toString() + "</td>";
+
+      // KWH
+      QVariant kwhData = model->index(i, 1).data(Qt::DisplayRole);
+      html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>" + kwhData.toString() + "</td>";
+    }
+    else
+    {
+      // Стандартная обработка для других типов отчетов
+      for (int j = start; j < model->columnCount(); j++)
+      {
+        QVariant cellData = model->index(i, j).data(Qt::DisplayRole);
+        QString cellText = cellData.toString();
+
+        QString cellStyle = "border: 1px solid black; padding: 5px; text-align: center;";
+        html += "<td style='" + cellStyle + "'>" + cellText + "</td>";
+      }
+    }
+    html += "</tr>";
+  }
+
+  html += "</tbody></table></div>";
+  return html;
 }
 
+void PDFmanager::exportToPDFByDates(QString title, QDate fromDate, QDate toDate,
+  QList<QAbstractItemModel *> models, int start)
+{
+QApplication::setOverrideCursor(Qt::WaitCursor);
+
+QDateTime currentTime = QDateTime::currentDateTime();
+QString appDir = getDesktopDir();
+QDir folder(appDir + "/отчеты");
+if (!folder.exists())
+{
+folder.mkdir(appDir + "/отчеты");
+}
+
+QString fileName = title + "_" + fromDate.toString("dd.MM.yyyy") + "_-_" +
+toDate.toString("dd.MM.yyyy") + "_" +
+currentTime.toString("HH-mm-ss") + ".pdf";
+fileName.replace(" ", "_");
+
+QString filePath = appDir + "/отчеты/" + fileName;
+
+QPrinter printer(QPrinter::PrinterResolution);
+printer.setOutputFormat(QPrinter::PdfFormat);
+printer.setPageSize(QPageSize::A4);
+printer.setOutputFileName(filePath);
+
+QTextDocument doc;
+doc.setDefaultStyleSheet(getStyleSheet());
+
+QString html = "<h2>" + title + "</h2>";
+html += "<p>Период: " + fromDate.toString("dd.MM.yyyy") + " - " + toDate.toString("dd.MM.yyyy") + "</p><br>";
+
+// Для каждого дня запрашиваем отдельные данные
+QDate currentDate = fromDate;
+while (currentDate <= toDate)
+{
+if (currentDate != fromDate)
+{
+html += "<div style='page-break-before: always;'></div>";
+}
+
+html += "<h2>Отчет по машинам за " + currentDate.toString("dd.MM.yyyy") + "</h2><br>";
+
+// Получаем данные за текущий день
+QVariantList dailyCarsData = ReportOperations::getCarsReport(currentDate, currentDate);
+
+if (dailyCarsData.isEmpty()) {
+html += "<p style='text-align: center; margin: 20px 0;'>Нет данных за этот день</p>";
+} else {
+// Создаем временную модель данных для текущего дня
+QStandardItemModel dailyModel;
+
+// Копируем заголовки из оригинальной модели
+for (int col = 0; col < models[0]->columnCount(); col++) {
+QString headerText = models[0]->headerData(col, Qt::Horizontal).toString();
+dailyModel.setHorizontalHeaderItem(col, new QStandardItem(headerText));
+}
+
+// Заполняем модель данными за текущий день
+for (const QVariant &rowData : dailyCarsData) {
+QList<QStandardItem*> items;
+QVariantList dataList = rowData.toList();
+
+for (const QVariant &cellData : dataList) {
+QStandardItem *item = new QStandardItem();
+if (cellData.type() == QVariant::Int || cellData.type() == QVariant::Double) {
+item->setData(cellData, Qt::DisplayRole);
+} else {
+item->setText(cellData.toString());
+}
+items << item;
+}
+
+dailyModel.appendRow(items);
+}
+
+
+// Преобразуем модели в HTML
+html += modelToHTML(&dailyModel, start);
+}
+
+currentDate = currentDate.addDays(1);
+}
+
+doc.setHtml(getHeader(currentTime) + html + getFooter(currentTime));
+doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
+
+doc.print(&printer);
+
+QMimeData *mimeData = new QMimeData();
+mimeData->setUrls({QUrl::fromLocalFile(filePath)});
+QClipboard *clipboard = QApplication::clipboard();
+clipboard->setMimeData(mimeData);
+
+QApplication::restoreOverrideCursor();
+
+QMessageBox popup;
+popup.setTextFormat(Qt::MarkdownText);
+popup.setText("Отчет с разбивкой по дням сохранен в папке отчеты на рабочем столе и скопирован в буфер обмена");
+popup.exec();
+}
 
 
 void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
-    ColumnSelectionDialog dialog(models, title, dates, start);
-    
-    dialog.exec();
+  ColumnSelectionDialog dialog(models, title, dates, start);
+
+  dialog.exec();
 }
