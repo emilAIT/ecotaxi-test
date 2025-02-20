@@ -7,8 +7,11 @@
   },
   "ExpandedNodes": [
     "",
+    "\\classes",
+    "\\enums",
     "\\managers",
     "\\pages"
   ],
+  "SelectedNode": "\\main.cpp",
   "PreviewInSolutionExplorer": false
 }

@@ -380,32 +380,9 @@ items << item;
 dailyModel.appendRow(items);
 }
 
-// Получаем итоговые данные за день
-QVariantList dailySummary = ReportOperations::getAllCarsReport(currentDate, currentDate);
-QStandardItemModel summaryModel;
-
-// Копируем заголовки для итоговой модели
-for (int col = 0; col < models[1]->columnCount(); col++) {
-QString headerText = models[1]->headerData(col, Qt::Horizontal).toString();
-summaryModel.setHorizontalHeaderItem(col, new QStandardItem(headerText));
-}
-
-if (!dailySummary.isEmpty()) {
-QList<QStandardItem*> summaryItems;
-summaryItems << new QStandardItem("Итого");
-
-for (int i = 0; i < dailySummary.size(); i++) {
-QStandardItem *item = new QStandardItem();
-item->setData(dailySummary[i], Qt::DisplayRole);
-summaryItems << item;
-}
-
-summaryModel.appendRow(summaryItems);
-}
 
 // Преобразуем модели в HTML
 html += modelToHTML(&dailyModel, start);
-html += modelToHTML(&summaryModel, 0);
 }
 
 currentDate = currentDate.addDays(1);
