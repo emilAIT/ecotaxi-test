@@ -29,6 +29,9 @@ public:
 
     void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
+    void static exportDailyReport(QAbstractItemModel *model);//
+    QString static generateTableHtml(const QList<QList<QVariant>>& data, QAbstractItemModel* model);//
+
     QString static modelToHTML(QAbstractItemModel *model, int start);
 
 private:
@@ -39,6 +42,8 @@ private:
 
     QString static getHeader(QDateTime time);
     QString static getFooter(QDateTime time);
+
+
 
     void static createPDF(QString html, QString title);
 };

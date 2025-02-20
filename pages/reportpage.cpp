@@ -1,5 +1,6 @@
 #include "reportpage.h"
 #include "ui_reportpage.h"
+#include <QDebug>
 
 ReportPage::ReportPage(nm *nav, QWidget *parent)
     : QWidget(parent), ui(new Ui::ReportPage)
@@ -97,6 +98,11 @@ void ReportPage::setHeader()
         ui->ReportButton->setText("ОТЧЕТ ПО ЗАРЯДКАМ");
         break;
 
+    case Report::Charges2:
+        ui->Header->setText("ПО ЗАРЯДКЕ2");
+        ui->ReportButton->setText("ОТЧЕТ ПО ЗАРЯДКАМ2");
+        break;
+
     case Report::Users:
     case Report::Users2:
         ui->Header->setText("ПО ПОЛЬЗОВАТЕЛЮ");
@@ -175,7 +181,7 @@ void ReportPage::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -284,7 +290,22 @@ void ReportPage::setTable()
         }
 
         break;
+    case Report::Charges2:
+        model->setHorizontalHeaderLabels({"Имя", "KWH"});
+        for (const QVariant &driverData : ReportOperations::getCharges2Report(this->fromDate, this->toDate))
+        {
+            QVariantList driver = driverData.toList();
+            QList<QStandardItem *> row;
 
+            row.append(new QStandardItem(driver[0].toString()));
+            QStandardItem *chargeCountItem = new QStandardItem();
+            chargeCountItem->setData(driver[1].toInt(), Qt::DisplayRole);
+            qDebug()<<driver[1];
+            row.append(chargeCountItem);
+
+            model->appendRow(row);
+        }
+        break;
     case Report::Users:
     case Report::Users2:
         model->setHorizontalHeaderLabels({"ID", "Дата", "Тип", "Водитель", "Машина", "Сумма"});
@@ -398,7 +419,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -448,7 +469,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -847,6 +868,10 @@ void ReportPage::on_ReportButton_clicked()
     case Report::Charges:
         nav->openReport(6, 0, fromDate, toDate);
         break;
+
+    case Report::Charges2:
+        nav->openReport(7, 0, fromDate, toDate);
+        break;
     case Report::Users:
     case Report::Users2:
         nav->openReport(5, 0, fromDate, toDate);
@@ -911,6 +936,11 @@ void ReportPage::on_ToPDFButton_clicked()
         break;
 
     case Report::Charges:
+        title = "Отчет по зарядке для машины " + Operations::getCar(this->id).getSid();
+        start = 0;
+        break;
+
+    case Report::Charges2:
         title = "Отчет по зарядке для машины " + Operations::getCar(this->id).getSid();
         start = 0;
         break;

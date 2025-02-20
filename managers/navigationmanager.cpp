@@ -192,6 +192,10 @@ bool navigationManager::openReport(int index, int id, QDate from, QDate to)
         lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Debts, from, to); };
         changeWindow(3);
         break;
+    case 16:
+        this->GReportPage->setReport(Report::Charges2, from, to);
+        lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Charges2, from, to); };
+        changeWindow(3);
     default:
         return false;
         break;
