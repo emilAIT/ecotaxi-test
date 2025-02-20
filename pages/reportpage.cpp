@@ -112,7 +112,11 @@ void ReportPage::setHeader()
         ui->Header->setText("ПО ШТРАФАМ ПО ВОДИТЕЛЮ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ");
         break;
-    
+    case Report::DriverCharge:
+        ui->Header->setText("ПО ВОДИТЕЛЯМ (ЗАРЯДКА)");
+        ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ");
+        break;
+
     default:
         break;
     }
@@ -174,8 +178,23 @@ void ReportPage::setTable()
             model->appendRow(row);
         }
         break;
+    case Report::DriverCharge:
+        model->setHorizontalHeaderLabels({"Имя", "KWH"});
+        for (const QVariant &driverData : ReportOperations::getDriverChargeReport(this->fromDate, this->toDate))
+        {
+            QVariantList driver = driverData.toList();
+            QList<QStandardItem *> row;
+
+            row.append(new QStandardItem(driver[0].toString()));
+            QStandardItem *chargeCountItem = new QStandardItem();
+            chargeCountItem->setData(driver[1].toInt(), Qt::DisplayRole);
+            row.append(chargeCountItem);
+
+            model->appendRow(row);
+        }
+        break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -398,7 +417,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -448,7 +467,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -887,7 +906,7 @@ void ReportPage::on_ToPDFButton_clicked()
     switch (this->mode)
     {
     case Report::Cars:
-        title = "Отчет по машине " + Operations::getCar(this->id).getSid();
+        title = "Отчет по машинам " + Operations::getCar(this->id).getSid();
         start = 0;
         break;
 
