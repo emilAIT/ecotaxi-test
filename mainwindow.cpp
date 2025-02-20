@@ -16,14 +16,15 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
 
     ui->timeEdit->setDisabled(true);
 
-    // hide settings and reports button if user is not admin
     if (!u.checkIsAdmin())
     {
-        // ui->SettingsButton->setDisabled(true);
+        ui->ReportsButton->clear();
+
+        ui->ReportsButton->addItem("ПО ЛОКАЦИЯМ", QVariant(4));
+
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
     }
     else if (u.getId() != -1)
     {
@@ -31,7 +32,6 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
         ui->SettingsButton->removeItem(5);
     }
 
-    // date & time
     date = QDate::currentDate();
     time = QTime::currentTime();
 
@@ -42,7 +42,6 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
     ui->dateButton->setText(date.toString("dd.MM.yyyy"));
     ui->timeEdit->setTime(time);
 
-    //
     ui->dateButton->setProperty("color", "gray");
 
     ui->eventFrame->setProperty("color", "green");
@@ -172,12 +171,28 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
     }
     setSettingIndex();
 }
+
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
     setReportIndex();
-    if (index > 7)
-        index += 7;
-    nav->openReport(index);
+    userSession& u = userSession::getInstance();
+
+    if (!u.checkIsAdmin())
+    {
+        // Берём реальный индекс из QVariant, а не просто index
+        int reportIndex = ui->ReportsButton->itemData(index).toInt();
+
+        if (reportIndex != 4) // Должен быть 4
+        {
+            return;
+        }
+
+        nav->openReport(reportIndex); // Передаём 4, а не 0
+    }
+    else
+    {
+        nav->openReport(index);
+    }
 }
 
 void MainWindow::on_FinesButton_currentIndexChanged(int index)
@@ -252,7 +267,6 @@ void MainWindow::on_addEventButton_clicked()
 {
     if (checkEventFill())
     {
-        // summa == int
         if (true)
         {
             QString datetime;
