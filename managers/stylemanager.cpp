@@ -3,20 +3,21 @@
 styleManager::styleManager(QApplication *app)
 {
     QVariantMap vars;
-    vars["mainColor"] = "#007700";
-    vars["mainHoverColor"] = "#005500";
-    vars["backgroundColor"] = "#eeeeee";
-    vars["backgroundHoverColor"] = "#aaaaaa";
-    vars["textColor"] = "#222222";
-    vars["grayColor"] = "#b9b9b9";
+    vars["mainColor"] = "#4A90E2";  // Глубокий синий
+    vars["mainHoverColor"] = "#D0021B";  // Яркий красный для эффекта
+    vars["backgroundColor"] = "#F5F7FA";  // Светлый фон
+    vars["backgroundHoverColor"] = "#E1E8ED";  // Чуть затемнённый вариант
+    vars["textColor"] = "#333333";  // Чуть мягче черного
+    vars["grayColor"] = "#7F8C8D";  // Стильный серый
 
-    vars["btnFontSize"] = "27px";
-    vars["textFontSize"] = "20px";
-    vars["editFontSize"] = "20px";
+    vars["btnFontSize"] = "24px";  // Чуть меньше, но эстетично
+    vars["textFontSize"] = "18px";
+    vars["editFontSize"] = "18px";
 
-    vars["bgBorderRadius"] = "30px";
-    vars["btnBorderRadius"] = "26px";
-    vars["editBorderRadius"] = "18px";
+    vars["bgBorderRadius"] = "20px";  // Скругление чуть менее выраженное
+    vars["btnBorderRadius"] = "22px";
+    vars["editBorderRadius"] = "15px";
+
 
     QString styles = R"A(
 * {

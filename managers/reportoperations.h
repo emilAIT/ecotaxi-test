@@ -11,7 +11,8 @@ class ReportOperations
 
 public:
     ReportOperations();
-
+    QVariantList static getChargesByCarReport(int carId, QDate fromDate, QDate toDate);
+    QVariantList static getAllChargesByCarReport(int carId, QDate fromDate, QDate toDate);
     // general reports
     QVariantList static getCarsReport(QDate fromDate, QDate toDate);
     QVariantList static getAllCarsReport(QDate fromDate, QDate toDate);
@@ -61,9 +62,6 @@ public:
 
     QVariantList static getLocationReport(int locationId, QDate fromDate, QDate toDate);
     QVariantList static getAllLocationReport(int locationId, QDate fromDate, QDate toDate);
-
-    QVariantList static getChargesByCarReport(int carId, QDate fromDate, QDate toDate);
-    QVariantList static getAllChargesByCarReport(int carId, QDate fromDate, QDate toDate);
 
     QVariantList static getUserReport(int userId, QDate fromDate, QDate toDate);
     QVariantList static getAllUserReport(int userId, QDate fromDate, QDate toDate);
