@@ -3,12 +3,12 @@
 styleManager::styleManager(QApplication *app)
 {
     QVariantMap vars;
-    vars["mainColor"] = "#007700";
-    vars["mainHoverColor"] = "#005500";
-    vars["backgroundColor"] = "#eeeeee";
-    vars["backgroundHoverColor"] = "#aaaaaa";
-    vars["textColor"] = "#222222";
-    vars["grayColor"] = "#b9b9b9";
+    vars["mainColor"] = "#E6C200"; // Мягкий золотой
+    vars["mainHoverColor"] = "#D1AD00"; // Чуть темнее золотого
+    vars["backgroundColor"] = "#1A1A1A"; // Глубокий, но не слишком темный черный
+    vars["backgroundHoverColor"] = "#333333"; // Смягченный темно-серый
+    vars["textColor"] = "#F5D580"; // Теплый золотистый оттенок
+    vars["grayColor"] = "#A8A8A8"; // Светло-серый для контраста
 
     vars["btnFontSize"] = "27px";
     vars["textFontSize"] = "20px";
@@ -17,6 +17,7 @@ styleManager::styleManager(QApplication *app)
     vars["bgBorderRadius"] = "30px";
     vars["btnBorderRadius"] = "26px";
     vars["editBorderRadius"] = "18px";
+
 
     QString styles = R"A(
 * {
