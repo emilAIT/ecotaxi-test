@@ -12,6 +12,12 @@ class ReportOperations
 public:
     ReportOperations();
 
+    QString static convertDataToHTML(const QVariantList &data);
+    void static createDailyPDF(QString title, QDate fromDate, QDate toDate);
+    QVariantList static getDailyReport(QDate fromDate, QDate toDate);
+
+    QVariantList static getDriverChargeReport(QDate fromDate, QDate toDate);
+
     // general reports
     QVariantList static getCarsReport(QDate fromDate, QDate toDate);
     QVariantList static getAllCarsReport(QDate fromDate, QDate toDate);
