@@ -25,6 +25,10 @@ public:
     PDFmanager();
 
     // general
+    static void exportToPDFByDates(QString title, QDate fromDate, QDate toDate, 
+        QList<QAbstractItemModel *> models, int start);
+
+
     void static exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
     void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
