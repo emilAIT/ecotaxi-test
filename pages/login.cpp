@@ -19,6 +19,7 @@ login::~login()
     delete ui;
 }
 
+
 void login::logIn()
 {
     userSession &u = userSession::getInstance();

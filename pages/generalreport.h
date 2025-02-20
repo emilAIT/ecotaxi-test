@@ -82,4 +82,4 @@ private:
     QDate toDate;
 };
 
-#endif // GENERALREPORT_H
+#endif // GENERALREPORT_H
