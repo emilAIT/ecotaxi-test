@@ -23,13 +23,25 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+        // ui->ReportsButton->setDisabled(true);
+        ui->ReportsButton->removeItem(10);
+        ui->ReportsButton->removeItem(9);
+        ui->ReportsButton->removeItem(8);
+        ui->ReportsButton->removeItem(7);
+        ui->ReportsButton->removeItem(6);
+        ui->ReportsButton->removeItem(5);
+        ui->ReportsButton->removeItem(3);
+        ui->ReportsButton->removeItem(2);
+        ui->ReportsButton->removeItem(1);
+        ui->ReportsButton->removeItem(0);
     }
     else if (u.getId() != -1)
     {
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
     }
+
+    // setupReportsMenu();
 
     // date & time
     date = QDate::currentDate();
@@ -86,6 +98,26 @@ bool MainWindow::checkEventFill()
         result = false;
     }
     return result;
+}
+
+void MainWindow::setupReportsMenu()
+{
+    userSession &u = userSession::getInstance();
+
+    if (!u.checkIsAdmin()){
+        ui->ReportsButton->addItem("ПО ЛОКАЦИЯМ");
+    } else {
+        ui->ReportsButton->addItem("ПО ИНВЕСТОРАМ");
+        ui->ReportsButton->addItem("ОБЩИЙ");
+        ui->ReportsButton->addItem("ПО МАШИНАМ");
+        ui->ReportsButton->addItem("ПО ВОДИТЕЛЯМ");
+        ui->ReportsButton->addItem("ПО ЛОКАЦИЯМ");
+        ui->ReportsButton->addItem("ПО ПОЛЬЗОВАТЕЛЯМ");
+        ui->ReportsButton->addItem("ПО ЗАРЯДКАМ");
+        ui->ReportsButton->addItem("ПО ТИПУ");
+        ui->ReportsButton->addItem("ДОЛГИ");
+        ui->ReportsButton->addItem("ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ");
+    }
 }
 
 bool MainWindow::checkChargeFill()
@@ -175,7 +207,12 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
     setReportIndex();
-    if (index > 7)
+    if (!userSession::getInstance().checkIsAdmin()){
+        if (index == 0){
+            index += 4;
+        }
+    }
+    else if (index > 7)
         index += 7;
     nav->openReport(index);
 }
