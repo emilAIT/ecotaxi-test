@@ -2,7 +2,7 @@
 using namespace std;
 
 Car::Car() {}
-
+  
 Car::Car(QVariantList car)
 {
     if (car.isEmpty())
