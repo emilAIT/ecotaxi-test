@@ -108,7 +108,6 @@ bool navigationManager::openEvents(int id, QDate date)
     changeWindow(2);
     return true;
 }
-
 bool navigationManager::openReport(int index, int id, QDate from, QDate to)
 {
     switch (index)
@@ -185,16 +184,21 @@ bool navigationManager::openReport(int index, int id, QDate from, QDate to)
         break;
     case 14:
         this->GReportPage->setReport(Report::Users, from, to);
-        lastFunc = [this](QDate from=QDate(), QDate to=QDate()) {this->GReportPage->setReport(Report::Users, from, to);};
+        lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Users, from, to); };
+        changeWindow(3);
         break;
     case 15:
         this->GReportPage->setReport(Report::Debts, from, to);
         lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Debts, from, to); };
         changeWindow(3);
         break;
+    case 16:
+        this->GReportPage->setReport(Report::DriverCharge, from, to);
+        lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::DriverCharge, from, to); };
+        changeWindow(3);
+        break;
     default:
         return false;
-        break;
     }
     return true;
 }
