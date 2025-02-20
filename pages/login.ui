@@ -29,7 +29,7 @@
    <item row="0" column="1">
     <widget class="QFrame" name="verticalFrame">
      <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item alignment="Qt::AlignHCenter|Qt::AlignBottom">
+      <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignBottom">
        <widget class="QLabel" name="Header">
         <property name="minimumSize">
          <size>
@@ -45,7 +45,7 @@
         </property>
        </widget>
       </item>
-      <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+      <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
        <widget class="QFrame" name="greenBack">
         <property name="minimumSize">
          <size>
@@ -63,10 +63,10 @@
          <string notr="true"/>
         </property>
         <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
+         <enum>QFrame::Shape::StyledPanel</enum>
         </property>
         <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
+         <enum>QFrame::Shadow::Raised</enum>
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <property name="leftMargin">
@@ -92,19 +92,35 @@
            <property name="rightMargin">
             <number>30</number>
            </property>
-           <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+           <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
             <widget class="QLabel" name="EcoTaxiWhite">
              <property name="minimumSize">
               <size>
-               <width>50</width>
-               <height>60</height>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>12354634</height>
               </size>
              </property>
              <property name="autoFillBackground">
               <bool>false</bool>
              </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255,0.2);
+border-top-left-radius: 15px; 
+border-bottom-right-radius: 15px; 
+color: white;
+border: 2px solid white;</string>
+             </property>
              <property name="text">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;ECO TAXI&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -135,13 +151,13 @@
                 </size>
                </property>
                <property name="echoMode">
-                <enum>QLineEdit::Password</enum>
+                <enum>QLineEdit::EchoMode::Password</enum>
                </property>
               </widget>
              </item>
             </layout>
            </item>
-           <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+           <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
             <widget class="QPushButton" name="loginButton">
              <property name="minimumSize">
               <size>

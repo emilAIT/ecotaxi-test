@@ -2,13 +2,12 @@
 #define COLUMNSELECTIONDIALOG_H
 
 #include <QDialog>
-#include <QCheckBox>
-#include <QVBoxLayout>
+#include <QComboBox>
 #include <QPushButton>
 #include <QAbstractItemModel>
 #include <QList>
-#include <QMessageBox>
-
+#include <QVBoxLayout>
+#include <QLayout>
 #include "../managers/pdfmanager.h"
 
 class ColumnSelectionDialog : public QDialog
@@ -16,17 +15,20 @@ class ColumnSelectionDialog : public QDialog
     Q_OBJECT
 
 public:
-    ColumnSelectionDialog(const QList<QAbstractItemModel*> &models, QString title, QString dates, int start, QWidget *parent = nullptr);
-
-    QList<QList<int>> getSelectedColumns() const;
+    ColumnSelectionDialog(const QList<QAbstractItemModel*> &models,
+                          QString title,
+                          QString dates,
+                          int start,
+                          QWidget *parent = nullptr);
+    bool isSeparatedByDays() const;
 
 private slots:
     void onExportClicked();
 
 private:
     QList<QAbstractItemModel*> models_;
-    QList<QList<QCheckBox*>> checkBoxes_; // 2D list for checkboxes
     QPushButton *exportButton_;
+    QComboBox *comboBoxExport_;
     QString title;
     QString dates;
     int start;

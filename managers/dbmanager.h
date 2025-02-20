@@ -36,13 +36,13 @@ private:
 
     void createTables();
 
-    void createInvestorTable();
+    void createLocationTable();
     void createCarTable();
     void createDriverTable();
     void createEventTable();
     void createChargeTable();
     void createTypeTable();
-    void createLocationTable();
+    void createInvestorTable();
     void createUserTable();
     void createLoginTable();
     void createRepairsTable();

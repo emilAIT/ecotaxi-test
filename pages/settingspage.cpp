@@ -92,6 +92,7 @@ bool SettingsPage::setTable()
             else
             {
                 model->setHorizontalHeaderLabels({"uid", "ID", "Марка", "Модель", "Госномер", "Год", "Инвестор", "Пробег", "Описание"});
+                ui->ReportButton->setDisabled(true);
                 for (const QVariant &car : Operations::selectAllCarsQuick())
                 {
                     QVariantList values = car.toList();

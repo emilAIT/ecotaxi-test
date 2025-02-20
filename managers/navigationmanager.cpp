@@ -114,8 +114,8 @@ bool navigationManager::openReport(int index, int id, QDate from, QDate to)
     switch (index)
     {
     case 0:
-        this->GReportPage->setReport(Report::Investors, from, to);
-        lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Investors, from, to); };
+        this->GReportPage->setReport(Report::Locations, from, to);
+        lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Locations, from, to); };
         changeWindow(3);
         break;
     case 1:
@@ -134,8 +134,8 @@ bool navigationManager::openReport(int index, int id, QDate from, QDate to)
         changeWindow(3);
         break;
     case 4:
-        this->GReportPage->setReport(Report::Locations, from, to);
-        lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Locations, from, to); };
+        this->GReportPage->setReport(Report::Investors, from, to);
+        lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Investors, from, to); };
         changeWindow(3);
         break;
     case 5:

@@ -23,7 +23,11 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+        for (int i = ui->ReportsButton->count() - 1; i >= 0; --i) {
+            if (i != 0) {
+                ui->ReportsButton->removeItem(i);
+            }
+        }
     }
     else if (u.getId() != -1)
     {

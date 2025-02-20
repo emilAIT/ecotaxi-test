@@ -175,7 +175,7 @@ void ReportPage::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -257,8 +257,8 @@ void ReportPage::setTable()
         break;
 
     case Report::Charges:
-        model->setHorizontalHeaderLabels({"Дата", "Водитель", "Локация", "KWH", "Время"});
-        for (const QVariant &chargeData : ReportOperations::getChargesByCarReport(this->id, this->fromDate, this->toDate))
+        model->setHorizontalHeaderLabels({"Дата", "Машина", "Локация", "KWH", "Время"});
+        for (const QVariant &chargeData : ReportOperations::getChargesByDriverReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList charge = chargeData.toList();
             QList<QStandardItem *> row;
@@ -368,12 +368,10 @@ void ReportPage::setTable()
     if (this->mode == Report::Investors)
     {
         ui->tableView->setColumnHidden(0, true);
-        ui->ItemButton->setDisabled(false);
     }
     else
     {
         ui->tableView->setColumnHidden(0, false);
-        ui->ItemButton->setDisabled(true);
     }
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
@@ -398,7 +396,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -448,7 +446,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -507,7 +505,7 @@ void ReportPage::setBottomTable()
     case Report::Charges:
         if (true)
         {
-            QVariantList report = ReportOperations::getAllChargesByCarReport(this->id, this->fromDate, this->toDate);
+            QVariantList report = ReportOperations::getAllChargesByDriverReport(this->id, this->fromDate, this->toDate);
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "KWH",
@@ -614,7 +612,6 @@ void ReportPage::setSideTable()
     switch (this->mode)
     {
     case Report::Cars:
-    case Report::Charges:
     case Report::FinesByCars:
         model->setHorizontalHeaderLabels({"id", "Машины"});
         for (Car car : Operations::selectAllCars())
@@ -626,6 +623,7 @@ void ReportPage::setSideTable()
         break;
 
     case Report::Drivers:
+    case Report::Charges:
     case Report::FinesByDrivers:
         model->setHorizontalHeaderLabels({"id", "Водители"});
         for (Driver driver : Operations::selectAllDrivers())
@@ -839,10 +837,10 @@ void ReportPage::on_ReportButton_clicked()
         nav->openReport(3, 0, fromDate, toDate);
         break;
     case Report::Investors:
-        nav->openReport(0, 0, fromDate, toDate);
+        nav->openReport(4, 0, fromDate, toDate);
         break;
     case Report::Locations:
-        nav->openReport(4, 0, fromDate, toDate);
+        nav->openReport(0, 0, fromDate, toDate);
         break;
     case Report::Charges:
         nav->openReport(6, 0, fromDate, toDate);
@@ -911,7 +909,7 @@ void ReportPage::on_ToPDFButton_clicked()
         break;
 
     case Report::Charges:
-        title = "Отчет по зарядке для машины " + Operations::getCar(this->id).getSid();
+        title = "Отчет по зарядке для водителя " + Operations::getDriver(this->id).getName();
         start = 0;
         break;
 
@@ -934,7 +932,10 @@ void ReportPage::on_ToPDFButton_clicked()
         break;
     }
 
-    PDFmanager::exportToPDF(title, this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"), { ui->tableView->model(), ui->bottomTable->model() }, start);
+    PDFmanager::exportToPDF(title,
+                            this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"),
+                            { ui->tableView->model(), ui->bottomTable->model() },
+                            0);
 }
 
 void ReportPage::setFromDate(QDate date)

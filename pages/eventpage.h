@@ -7,6 +7,7 @@
 #include "../managers/nm.h"
 #include "../managers/operations.h"
 #include "../managers/usersession.h"
+#include "../managers/pdfmanager.h"
 
 #include "../classes/event.h"
 #include "../classes/charge.h"

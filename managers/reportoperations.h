@@ -62,8 +62,8 @@ public:
     QVariantList static getLocationReport(int locationId, QDate fromDate, QDate toDate);
     QVariantList static getAllLocationReport(int locationId, QDate fromDate, QDate toDate);
 
-    QVariantList static getChargesByCarReport(int carId, QDate fromDate, QDate toDate);
-    QVariantList static getAllChargesByCarReport(int carId, QDate fromDate, QDate toDate);
+    QVariantList static getChargesByDriverReport(int driverId, QDate fromDate, QDate toDate);
+    QVariantList static getAllChargesByDriverReport(int driverId, QDate fromDate, QDate toDate);
 
     QVariantList static getUserReport(int userId, QDate fromDate, QDate toDate);
     QVariantList static getAllUserReport(int userId, QDate fromDate, QDate toDate);

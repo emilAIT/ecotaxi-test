@@ -13,34 +13,35 @@
 #include <QPdfWriter>
 #include <QPrinter>
 #include <QStandardPaths>
+#include <QDateTime>
+#include <QAbstractItemModel>
 
-#include <QDate>
+#include <QStandardItemModel>
+#include <QStandardItem>
+#include "operations.h"
 
-#include "qstandarditemmodel.h"
-#include "../scripts/columnselectiondialog.h"
 
 class PDFmanager
 {
 public:
     PDFmanager();
 
-    // general
-    void static exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
+    // Экспорт в PDF
+    static void exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
-    void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
+    static void ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start, bool separateByDays);
 
-    QString static modelToHTML(QAbstractItemModel *model, int start);
+    // Конвертация модели в HTML (учитывая выбранные колонки)
+    static QString modelToHTML(QAbstractItemModel *model, int start);
 
 private:
-    QString static getAppDir();
-    QString static getDesktopDir();
+    static QString getAppDir();
+    static QString getDesktopDir();
+    static QString getStyleSheet();
+    static QString getHeader(QDateTime time);
+    static QString getFooter(QDateTime time);
 
-    QString static getStyleSheet();
-
-    QString static getHeader(QDateTime time);
-    QString static getFooter(QDateTime time);
-
-    void static createPDF(QString html, QString title);
+    static void createPDF(QString html, QString title);
 };
 
 #endif // PDFMANAGER_H

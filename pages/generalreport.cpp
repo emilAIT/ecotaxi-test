@@ -121,7 +121,7 @@ void GeneralReport::setTable()
     switch (this->mode)
     {
     case Report::Cars:
-        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
         for (const QVariant &car : ReportOperations::getCarsReport(this->fromDate, this->toDate))
         {
             QVariantList cars = car.toList();
@@ -242,7 +242,7 @@ void GeneralReport::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
         for (const QVariant &investor : ReportOperations::getInvestorsReport(this->fromDate, this->toDate))
         {
             QVariantList investors = investor.toList();
@@ -303,17 +303,23 @@ void GeneralReport::setTable()
         }
         break;
     case Report::Charges:
-        model->setHorizontalHeaderLabels({"id", "ID Машины", "KWH", "Время"});
+        model->setHorizontalHeaderLabels({"id", "Водитель", "KWH", "Время"});
         for (const QVariant &charge : ReportOperations::getChargesReport(this->fromDate, this->toDate))
         {
             QVariantList charges = charge.toList();
             QList<QStandardItem *> row;
 
-            // Create QStandardItem for ID Машины as string
-            row.append(new QStandardItem(charges[0].toString()));  // id Машины
-            row.append(new QStandardItem(charges[1].toString()));  // ID Машины
+            // Получаем ID водителя из данных
+            int driverId = charges[1].toInt();
 
-            // Ensure numerical data is set correctly for sorting as integers
+            // Получаем имя водителя по его ID
+            QString driverName = Operations::getDriver(driverId).getName();
+
+            // Добавляем данные в строку
+            row.append(new QStandardItem(charges[0].toString()));  // id
+            row.append(new QStandardItem(driverName));  // Имя водителя
+
+            // Остальные данные
             QStandardItem *kwhItem = new QStandardItem();
             kwhItem->setData(charges[2].toInt(), Qt::DisplayRole);  // KWH
             row.append(kwhItem);
@@ -489,7 +495,7 @@ void GeneralReport::setBottomTable()
             QVariantList cars = car.toList();
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -563,7 +569,7 @@ void GeneralReport::setBottomTable()
             qDebug() << investors;
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -899,10 +905,10 @@ void GeneralReport::on_ReportButton_clicked()
             nav->openReport(10, id, fromDate, toDate);
             break;
         case Report::Investors:
-            nav->openReport(8, id, fromDate, toDate);
+            nav->openReport(12, id, fromDate, toDate);
             break;
         case Report::Locations:
-            nav->openReport(12, id, fromDate, toDate);
+            nav->openReport(8, id, fromDate, toDate);
             break;
         case Report::Charges:
             nav->openReport(13, id, fromDate, toDate);
@@ -1065,8 +1071,15 @@ void GeneralReport::on_ToPDFButton_clicked()
     default:
         break;
     }
-    PDFmanager::exportToPDF(title, this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"), { ui->tableView->model(), ui->bottomTable->model() });
+
+    // Вызываем экспорт
+    PDFmanager::exportToPDF(title,
+                            this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"),
+                            { ui->tableView->model(), ui->bottomTable->model() },
+                            0);
+
 }
+
 
 void GeneralReport::onSectionResized(int logicalIndex, int oldSize, int newSize)
 {

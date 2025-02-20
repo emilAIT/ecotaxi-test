@@ -3,12 +3,12 @@
 
 enum class Report
 {
-    Investors,
+    Locations,
     Types,
     Cars,
     Debts,
     Drivers,
-    Locations,
+    Investors,
     Charges,
     Users,
     Users2,
