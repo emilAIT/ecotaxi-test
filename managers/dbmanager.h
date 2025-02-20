@@ -28,6 +28,8 @@ public:
 
     void resetDB();
 
+    QVariantList getReportData(QDate from, QDate to);
+
 private:
     dbManager();
     ~dbManager();

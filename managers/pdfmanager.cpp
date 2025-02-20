@@ -1,11 +1,13 @@
 #include "pdfmanager.h"
+#include "ReportOperations.h"
 
-PDFmanager::PDFmanager() {}
+// Конструктор с параметром для инициализации reportOperations
+
 
 QString PDFmanager::getStyleSheet()
 {
-  return
-      R"S(
+    return
+        R"S(
 /*
 reset css
 */
@@ -156,7 +158,7 @@ h1 {
 
 QString PDFmanager::getAppDir()
 {
-  return QCoreApplication::applicationDirPath();
+    return QCoreApplication::applicationDirPath();
 }
 
 QString PDFmanager::getDesktopDir()
@@ -166,102 +168,94 @@ QString PDFmanager::getDesktopDir()
 
 void PDFmanager::createPDF(QString html, QString title)
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
 
-  QDateTime time = QDateTime::currentDateTime();
-  QString appDir = getDesktopDir();
-  QDir folder(appDir + "/отчеты");
-  if (!folder.exists())
-  {
-    folder.mkdir(appDir + "/отчеты");
-  }
+    QDateTime time = QDateTime::currentDateTime();
+    QString appDir = getDesktopDir();
+    QDir folder(appDir + "/отчеты");
+    if (!folder.exists())
+    {
+        folder.mkdir(appDir + "/отчеты");
+    }
 
-  QString fileName = title + " " + time.toString("dd.MM.yyyy HH-mm-ss") + ".pdf";
-  fileName.replace(" ", "_");
+    QString fileName = title + " " + time.toString("dd.MM.yyyy HH-mm-ss") + ".pdf";
+    fileName.replace(" ", "_");
 
-  QString filePath = appDir + "/отчеты/" + fileName;
+    QString filePath = appDir + "/отчеты/" + fileName;
 
-  QPrinter printer(QPrinter::PrinterResolution);
-  printer.setOutputFormat(QPrinter::PdfFormat);
-  printer.setPageSize(QPageSize::A4);
-  printer.setOutputFileName(filePath);
+    QPrinter printer(QPrinter::PrinterResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setPageSize(QPageSize::A4);
+    printer.setOutputFileName(filePath);
 
-  qDebug() << printer.outputFileName();
+    qDebug() << printer.outputFileName();
 
-  QTextDocument doc;
+    QTextDocument doc;
 
-  doc.setDefaultStyleSheet(getStyleSheet());
-  doc.setHtml(getHeader(time) + html + getFooter(time));
-  doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
+    doc.setDefaultStyleSheet(getStyleSheet());
+    doc.setHtml(getHeader(time) + html + getFooter(time));
+    doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
 
-  doc.print(&printer);
+    doc.print(&printer);
 
-  QMimeData *mimeData = new QMimeData();
-  mimeData->setUrls({QUrl::fromLocalFile(filePath)});
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setUrls({QUrl::fromLocalFile(filePath)});
 
-  QClipboard *clipboard = QApplication::clipboard();
-  clipboard->setMimeData(mimeData);
-  
-  QApplication::restoreOverrideCursor();
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setMimeData(mimeData);
 
-  QMessageBox popup;
+    QApplication::restoreOverrideCursor();
 
-  popup.setTextFormat(Qt::MarkdownText);
-  popup.setText("Отчет сохранен в папке отчеты на рабочем столе и скопирован в буфер обмена");
+    QMessageBox popup;
 
-  popup.exec();
+    popup.setTextFormat(Qt::MarkdownText);
+    popup.setText("Отчет сохранен в папке отчеты на рабочем столе и скопирован в буфер обмена");
+
+    popup.exec();
 }
 
 QString PDFmanager::getHeader(QDateTime time)
 {
-  return "<p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p><h1 width=100% color='#007700'>ECO TAXI</h1>";
+    return "<p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p><h1 width=100% color='#007700'>ECO TAXI</h1>";
 }
 
 QString PDFmanager::getFooter(QDateTime time)
 {
-  return "<br><p>ECO TAXI</p><p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p>";
+    return "<br><p>ECO TAXI</p><p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p>";
 }
 
 void PDFmanager::ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
-  QString html = "<h2>" + title + "</h2>";
-  html += "<p>" + dates + "</p><br>";
+    QString html = "<h2>" + title + "</h2>";
+    html += "<p>" + dates + "</p><br>";
 
-  for (int i = 0; i < models.size(); i++)
-  {
-    html += modelToHTML(models[i], start != 0 && i == 0 ? 1 : 0);
-  }
+    for (int i = 0; i < models.size(); i++)
+    {
+        html += modelToHTML(models[i], start != 0 && i == 0 ? 1 : 0);
+    }
 
-  createPDF(html, title + " " + dates);
+    createPDF(html, title + " " + dates);
 }
 
 QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 {
     QString html;
 
-    // Start with a div container for better PDF rendering
-    html += "<div style='width: 100%; margin: 20px 0;'>";
-
-    // Add table with explicit styling for PDF rendering
-    html += "<table style='width: 100%; border-collapse: collapse; margin: 0 auto;'>";
-
-    // Add header row
-    html += "<thead><tr>";
+    // Remove margin, and set table width to 100%
+    html += "<table style='margin: 0;' margin=0 width=100%><tr>";
 
     // Add row number column if start == 1
     if (start == 1)
     {
-        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>#</th>";
+        html += "<th>#</th>";
     }
 
     // Add headers
     for (int i = start; i < model->columnCount(); i++)
     {
-        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>"
-                + model->headerData(i, Qt::Horizontal).toString()
-                + "</th>";
+        html += "<th>" + model->headerData(i, Qt::Horizontal).toString() + "</th>";
     }
-    html += "</tr></thead><tbody>";
+    html += "</tr>";
 
     // Add rows
     for (int i = 0; i < model->rowCount(); i++)
@@ -269,9 +263,7 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
         html += "<tr>";
         if (start == 1)
         {
-            html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>"
-                    + QString::number(i + 1)
-                    + "</td>";
+            html += "<td>" + QString::number(i + 1) + "</td>";
         }
 
         for (int j = start; j < model->columnCount(); j++)
@@ -280,26 +272,182 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
             QString header = model->headerData(j, Qt::Horizontal).toString();
 
             // Check if the header is "Инвестору" to apply green color
-            QString cellStyle = "border: 1px solid black; padding: 5px; text-align: center;";
             if (header == "Инвестору" && start != 1)
             {
-                cellStyle += " color: #007700;";
+                html += "<td style='border: 1px solid black; color:#007700;'>" + cellData + "</td>";
             }
-
-            html += "<td style='" + cellStyle + "'>" + cellData + "</td>";
+            else
+            {
+                html += "<td>" + cellData + "</td>";
+            }
         }
         html += "</tr>";
     }
 
-    html += "</tbody></table></div>";
+    html += "</table>";
     return html;
 }
-
-
 
 void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
     ColumnSelectionDialog dialog(models, title, dates, start);
-    
+
     dialog.exec();
 }
+
+void PDFmanager::setEventsByDay(const QMap<QDate, QList<QVariantList>> &events) {
+    this->eventsByDay = events;
+}
+
+QString PDFmanager::modelToHTMLByDay()
+{
+    QString html;
+    bool firstPage = true;
+
+    for (const QDate &date : eventsByDay.keys()) {
+        if (!firstPage) {
+            html += "<div style='page-break-before: always;'></div>"; // Разрыв страницы
+        }
+        firstPage = false;
+
+        html += "<h2>" + date.toString("dd.MM.yyyy") + "</h2>";
+
+        // События
+        html += "<h3>События</h3>";
+        html += "<table border='1' width='100%'><tr><th>I</th><th>ID</th><th>Инвестор</th><th>Доход</th><th>Налог</th><th>KWH</th><th>Расход</th><th>Прибыль</th><th>Дней</th><th>>0</th><th>Средняя</th><th>%</th><th>Комиссия</th><th>Инвестору</th></tr>";
+        for (const QVariantList &event : eventsByDay[date]) {
+            html += "<tr>";
+            for (const QVariant &value : event) {
+                html += "<td>" + value.toString() + "</td>";
+            }
+            html += "</tr>";
+        }
+        html += "</table><br>";
+
+        // Зарядки
+        if (chargesByDay.contains(date)) {
+            html += "<h3>Зарядки</h3>";
+            html += "<table border='1' width='100%'><tr><th>I</th><th>ID</th><th>Инвестор</th><th>Доход</th><th>Налог</th><th>KWH</th><th>Расход</th><th>Прибыль</th><th>Дней</th><th>>0</th><th>Средняя</th><th>%</th><th>Комиссия</th><th>Инвестору</th></tr>";
+            for (const QVariantList &charge : chargesByDay[date]) {
+                html += "<tr>";
+                for (const QVariant &value : charge) {
+                    html += "<td>" + value.toString() + "</td>";
+                }
+                html += "</tr>";
+            }
+            html += "</table><br>";
+        }
+    }
+    return html;
+}
+
+// QString PDFmanager::modelToHTMLByDay()
+// {
+//     QString html;
+//     bool firstPage = true;
+
+//     QList<QDate> sortedDates = eventsByDay.keys();
+//     std::sort(sortedDates.begin(), sortedDates.end());
+
+//     for (const QDate &date : sortedDates) {
+//         if (!firstPage) {
+//             html += "<div style='page-break-before: always;'></div>"; // Разрыв страницы
+//         }
+//         firstPage = false;
+
+//         html += "<h2>" + date.toString("dd.MM.yyyy") + "</h2>";
+
+//         // Фильтрация и группировка событий по датам
+//         if (eventsByDay.contains(date)) {
+//             html += "<h3>События</h3>";
+//             for (const QVariantList &event : eventsByDay.value(date)) {
+//                 html += "<tr>";
+//                 for (const QVariant &value : event) {
+//                     html += "<td>" + value.toString() + "</td>";
+//                 }
+//                 html += "</tr>";
+//             }
+//             html += "</table><br>";
+//         }
+
+//         // Фильтрация и группировка зарядок по датам
+//         if (chargesByDay.contains(date)) {
+//             html += "<h3>Зарядки</h3>";
+//             html += "<table border='1' width='100%'><tr><th>ID</th><th>Машина</th><th>Водитель</th><th>Локация</th><th>КВт</th><th>Время</th></tr>";
+//             for (const QVariantList &charge : chargesByDay.value(date)) {
+//                 html += "<tr>";
+//                 for (const QVariant &value : charge) {
+//                     html += "<td>" + value.toString() + "</td>";
+//                 }
+//                 html += "</tr>";
+//             }
+//             html += "</table><br>";
+//         }
+//     }
+//     return html;
+// }
+
+
+// QString PDFmanager::modelToHTMLByDay(QAbstractItemModel *model)
+// {
+//     QString html;
+//     bool firstPage = true;
+
+//     // Получаем список дат и сортируем их
+//     QList<QDate> sortedDates = eventsByDay.keys();
+//     std::sort(sortedDates.begin(), sortedDates.end());
+
+//     for (const QDate &date : sortedDates) {
+//         if (!firstPage) {
+//             html += "<div style='page-break-before: always;'></div>"; // Разрыв страницы
+//         }
+//         firstPage = false;
+
+//         html += "<h2>" + date.toString("dd.MM.yyyy") + "</h2>";
+
+//         // Фильтрация и группировка данных из модели по датам
+//         if (eventsByDay.contains(date)) {
+//             html += "<h3>События</h3>";
+//             html += "<table border='1' width='100%'><tr>";
+
+//             // Добавляем заголовки
+//             for (int col = 0; col < model->columnCount(); ++col) {
+//                 html += "<th>" + model->headerData(col, Qt::Horizontal).toString() + "</th>";
+//             }
+//             html += "</tr>";
+
+//             // Заполняем строки таблицы
+//             for (const QVariantList &event : eventsByDay.value(date)) {
+//                 html += "<tr>";
+//                 for (const QVariant &value : event) {
+//                     html += "<td>" + value.toString() + "</td>";
+//                 }
+//                 html += "</tr>";
+//             }
+//             html += "</table><br>";
+//         }
+
+//         // Фильтрация и группировка зарядок по датам
+//         if (chargesByDay.contains(date)) {
+//             html += "<h3>Зарядки</h3>";
+//             html += "<table border='1' width='100%'><tr>";
+
+//             // Добавляем заголовки
+//             for (int col = 0; col < model->columnCount(); ++col) {
+//                 html += "<th>" + model->headerData(col, Qt::Horizontal).toString() + "</th>";
+//             }
+//             html += "</tr>";
+
+//             for (const QVariantList &charge : chargesByDay.value(date)) {
+//                 html += "<tr>";
+//                 for (const QVariant &value : charge) {
+//                     html += "<td>" + value.toString() + "</td>";
+//                 }
+//                 html += "</tr>";
+//             }
+//             html += "</table><br>";
+//         }
+//     }
+//     return html;
+// }
+

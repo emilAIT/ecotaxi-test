@@ -33,6 +33,8 @@ class navigationManager : public QWidget, public nm
 public:
     static navigationManager &getInstance();
 
+    void onExportPDF();
+
     void changeWindow(int id);
 
     bool openSettings(int id);
@@ -61,8 +63,10 @@ private:
 
     EditableReport *EditReport;
 
+
 private slots:
     void reload();
+
 };
 
 #endif // NAVIGATIONMANAGER_H

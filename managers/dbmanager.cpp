@@ -367,3 +367,14 @@ void dbManager::createFinesTable()
         qDebug() << "Column 'driverId' already not NOT NULL or error in query (fines).";
     }
 }
+
+QVariantList dbManager::getReportData(QDate from, QDate to) {
+    QString query = QString(R"Q(
+        SELECT id, инвестор, доход, налог, kwh, расход, общий, дни, средняя, комиссия, инвестору
+        FROM reports
+        WHERE date BETWEEN '%1' AND '%2'
+    )Q").arg(from.toString("yyyy-MM-dd")).arg(to.toString("yyyy-MM-dd"));
+
+    return executeGet(query);
+}
+
