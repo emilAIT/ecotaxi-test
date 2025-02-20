@@ -36,7 +36,7 @@ QString User::getDescription() {
     return description;
 }
 
-bool User::getIsAdmin() {
+bool User::getIsAdmin() { //вот здесь надо будет начать чтобы показывать пользователю
     return isAdmin;
 }
 

@@ -235,63 +235,60 @@ void PDFmanager::ToPDF(QString title, QString dates, QList<QAbstractItemModel *>
   createPDF(html, title + " " + dates);
 }
 
+
+
+
+
+
+
 QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 {
     QString html;
-
-    // Start with a div container for better PDF rendering
-    html += "<div style='width: 100%; margin: 20px 0;'>";
-
-    // Add table with explicit styling for PDF rendering
-    html += "<table style='width: 100%; border-collapse: collapse; margin: 0 auto;'>";
-
-    // Add header row
-    html += "<thead><tr>";
-
+    
+    // Remove margin, and set table width to 100%
+    html += "<table style='margin: 0;' margin=0 width=100%><tr>";
+    
     // Add row number column if start == 1
     if (start == 1)
     {
-        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>#</th>";
+        html += "<th>#</th>";
     }
-
+    
     // Add headers
     for (int i = start; i < model->columnCount(); i++)
     {
-        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>"
-                + model->headerData(i, Qt::Horizontal).toString()
-                + "</th>";
+        html += "<th>" + model->headerData(i, Qt::Horizontal).toString() + "</th>";
     }
-    html += "</tr></thead><tbody>";
-
+    html += "</tr>";
+    
     // Add rows
     for (int i = 0; i < model->rowCount(); i++)
     {
         html += "<tr>";
         if (start == 1)
         {
-            html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>"
-                    + QString::number(i + 1)
-                    + "</td>";
+            html += "<td>" + QString::number(i + 1) + "</td>";
         }
-
+        
         for (int j = start; j < model->columnCount(); j++)
         {
             QString cellData = model->index(i, j).data(Qt::DisplayRole).toString();
             QString header = model->headerData(j, Qt::Horizontal).toString();
-
+            
             // Check if the header is "Инвестору" to apply green color
-            QString cellStyle = "border: 1px solid black; padding: 5px; text-align: center;";
             if (header == "Инвестору" && start != 1)
             {
-                cellStyle += " color: #007700;";
+                html += "<td style='border: 1px solid black; color:#007700;'>" + cellData + "</td>";
             }
-
-            html += "<td style='" + cellStyle + "'>" + cellData + "</td>";
+            else
+            {
+                html += "<td>" + cellData + "</td>";
+            }
         }
         html += "</tr>";
     }
-
-    html += "</tbody></table></div>";
+    
+    html += "</table>";
     return html;
 }
 
@@ -303,3 +300,4 @@ void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemMo
     
     dialog.exec();
 }
+

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 project(EcoTaxiQt VERSION 0.4.17.9 LANGUAGES CXX)
+# set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -18,6 +19,8 @@ set(PROJECT_SOURCES
         mainwindow.h
         mainwindow.ui
 )
+
+
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(EcoTaxiQt
@@ -65,6 +68,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         scripts/columnselectiondialog.h scripts/columnselectiondialog.cpp
         enums/eSetting.h
         scripts/awss3uploader.h scripts/awss3uploader.cpp
+        resources.qrc
 
 
     )
