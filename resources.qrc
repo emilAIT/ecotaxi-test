@@ -1,0 +1,6 @@
+<RCC><qresource prefix="/"> 
+<file>Inter.ttf</file> 
+<file>qml/MainView.qml</file> 
+<file>qml/StoreView.qml</file> 
+<file>images/logo.png</file> 
+</qresource></RCC> 
