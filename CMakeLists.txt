@@ -130,3 +130,9 @@ if(QT_VERSION_MAJOR EQUAL 6)
     # qt_add_executable(EcoTaxi main.cpp ${app_icon_resource_windows})
     qt_finalize_executable(EcoTaxiQt)
 endif()
+
+
+include_directories(${CMAKE_SOURCE_DIR}/enums)
+include_directories(${CMAKE_SOURCE_DIR}/managers)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+

@@ -1,5 +1,7 @@
 #include "ColumnSelectionDialog.h"
-
+#include <QStandardItemModel> // <== Добавлено для корректной работы QStandardItemModel
+#include <QStandardItemModel>
+#include "../managers/pdfmanager.h"
 ColumnSelectionDialog::ColumnSelectionDialog(const QList<QAbstractItemModel*> &models, QString title, QString dates, int start, QWidget *parent)
     : QDialog(parent), models_(models)
 {
@@ -85,7 +87,9 @@ void ColumnSelectionDialog::onExportClicked()
         selectedModels.append(filteredModel); // This works because filteredModel is a QStandardItemModel*
     }
 
-    PDFmanager::ToPDF(this->title, this->dates, selectedModels, start); // Now this will work correctly
-
+    // Исправленный вызов ToPDF:
+    PDFmanager *pdfManager = new PDFmanager();
+    pdfManager->ToPDF(this->title, this->dates, selectedModels, start);
+    delete pdfManager;
     accept(); // Close the dialog
 }

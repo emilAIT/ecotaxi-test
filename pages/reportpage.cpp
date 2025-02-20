@@ -96,6 +96,10 @@ void ReportPage::setHeader()
         ui->Header->setText("ПО ЗАРЯДКЕ");
         ui->ReportButton->setText("ОТЧЕТ ПО ЗАРЯДКАМ");
         break;
+    case Report::DriverCharge:
+        ui->Header->setText("ПО ВОДИТЕЛЯМ+ЗАРЯДКАМ");
+        ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ+ЗАРЯДКАМ");
+        break;
 
     case Report::Users:
     case Report::Users2:
@@ -123,6 +127,21 @@ void ReportPage::setTable()
     QStandardItemModel *model = new QStandardItemModel();
     switch (this->mode)
     {
+    case Report::DriverCharge:
+        model->setHorizontalHeaderLabels({"Имя", "Количество зарядок"});
+        for (const QVariant &driverData : ReportOperations::getDriverChargeReport(this->fromDate, this->toDate))
+        {
+            QVariantList driver = driverData.toList();
+            QList<QStandardItem *> row;
+
+            row.append(new QStandardItem(driver[0].toString()));
+            QStandardItem *chargeCountItem = new QStandardItem();
+            chargeCountItem->setData(driver[1].toInt(), Qt::DisplayRole);
+            row.append(chargeCountItem);
+
+            model->appendRow(row);
+        }
+        break;
     case Report::Cars:
         model->setHorizontalHeaderLabels({"Дата", "Тип", "Водитель", "Сумма", "Описание"});
         for (const QVariant &carData : ReportOperations::getCarReport(this->id, this->fromDate, this->toDate))
@@ -175,7 +194,7 @@ void ReportPage::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -258,7 +277,7 @@ void ReportPage::setTable()
 
     case Report::Charges:
         model->setHorizontalHeaderLabels({"Дата", "Водитель", "Локация", "KWH", "Время"});
-        for (const QVariant &chargeData : ReportOperations::getChargesByCarReport(this->id, this->fromDate, this->toDate))
+        for (const QVariant &chargeData : ReportOperations::getChargesReport(this->fromDate, this->toDate))
         {
             QVariantList charge = chargeData.toList();
             QList<QStandardItem *> row;
@@ -398,7 +417,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -448,7 +467,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -507,7 +526,7 @@ void ReportPage::setBottomTable()
     case Report::Charges:
         if (true)
         {
-            QVariantList report = ReportOperations::getAllChargesByCarReport(this->id, this->fromDate, this->toDate);
+            QVariantList report = ReportOperations::getChargesReport(this->fromDate, this->toDate);
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "KWH",
@@ -880,7 +899,8 @@ void ReportPage::on_ToDateButton_clicked()
     c->show();
 }
 
-void ReportPage::on_ToPDFButton_clicked()
+\
+    void ReportPage::on_ToPDFButton_clicked()
 {
     QString title;
     int start = 1;
@@ -919,12 +939,12 @@ void ReportPage::on_ToPDFButton_clicked()
     case Report::Users2:
         title = "Отчет по пользователю " + Operations::getUser(this->id).getName();
         break;
-    
+
     case Report::FinesByCars:
         title = "Отчет по штрафам по машине " + Operations::getCar(this->id).getSid();
         start = 0;
         break;
-    
+
     case Report::FinesByDrivers:
         title = "Отчет по штрафам по водителю " + Operations::getDriver(this->id).getName();
         start = 0;
@@ -936,6 +956,8 @@ void ReportPage::on_ToPDFButton_clicked()
 
     PDFmanager::exportToPDF(title, this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"), { ui->tableView->model(), ui->bottomTable->model() }, start);
 }
+
+
 
 void ReportPage::setFromDate(QDate date)
 {

@@ -3,8 +3,8 @@
 styleManager::styleManager(QApplication *app)
 {
     QVariantMap vars;
-    vars["mainColor"] = "#007700";
-    vars["mainHoverColor"] = "#005500";
+    vars["mainColor"] = "#FF1493";
+    vars["mainHoverColor"] = "#c8a2c8";
     vars["backgroundColor"] = "#eeeeee";
     vars["backgroundHoverColor"] = "#aaaaaa";
     vars["textColor"] = "#222222";
@@ -106,10 +106,8 @@ QPushButton:disabled {
 }
 
 QPushButton[color="gray"] {
-    background-color: )A" +
-                     vars["grayColor"].toString() + R"A(;
-    color: )A" +
-                     vars["mainColor"].toString() + R"A(;
+    background-color: 	#DB7093;
+    color: white;
     border-radius: )A" +
                      vars["editBorderRadius"].toString() + R"A(;
     padding: 4px;
@@ -328,7 +326,7 @@ QHeaderView::section {
     font-family: Inter;
     color: )A" +
             vars["textColor"].toString() + R"A(;
-    background-color: #b9b9b9;
+    background-color: #FFC0CB;
     font-size: 20px;
     padding: 4px;
     text-align: center;

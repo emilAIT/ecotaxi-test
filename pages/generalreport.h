@@ -20,7 +20,7 @@
 
 namespace Ui
 {
-    class GeneralReport;
+class GeneralReport;
 }
 
 class GeneralReport : public QWidget

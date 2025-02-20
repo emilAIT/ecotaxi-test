@@ -9,7 +9,6 @@
 #include <QList>
 #include <QMessageBox>
 
-#include "../managers/pdfmanager.h"
 
 class ColumnSelectionDialog : public QDialog
 {

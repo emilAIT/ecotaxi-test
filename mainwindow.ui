@@ -120,6 +120,11 @@
             <string>ДОЛГИ</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>ПО ВОДИТЕЛЯМ+ЗАРЯДКАМ</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
@@ -129,6 +134,10 @@
             <width>0</width>
             <height>0</height>
            </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: #FF1493;
+color: #eeeeee;</string>
           </property>
           <property name="text">
            <string>ECO TAXI</string>

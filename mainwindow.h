@@ -5,6 +5,8 @@
 #include <QDate>
 #include <QTime>
 
+
+#include "enums/Report.h"
 #include "managers/nm.h"
 #include "managers/usersession.h"
 #include "managers/operations.h"

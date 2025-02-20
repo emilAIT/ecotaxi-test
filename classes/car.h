@@ -23,8 +23,6 @@ public:
     Car();
     Car(QVariantList car);
 
-    int getId();
-    QString getSid();
     QString getBrand();
     QString getModel();
     QString getLicensePlate();
@@ -35,11 +33,13 @@ public:
     int getPercentage();
 
     void setBrand(QString newBrand);
+    int getId();
+    QString getSid();
     void setModel(QString newModel);
     void setLicensePlate(QString newLicensePlate);
     void setYear(int newYear);
     void setInvestor(int newInvestorId);
-    void setMilleage(float newMilleage);
+    void setMilleage(float newMilleage);  // Исправлено
     void setDescription(QString newDescription);
     void setPercentage(int newPercentage);
 };
