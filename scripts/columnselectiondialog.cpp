@@ -85,7 +85,7 @@ void ColumnSelectionDialog::onExportClicked()
         selectedModels.append(filteredModel); // This works because filteredModel is a QStandardItemModel*
     }
 
-    PDFmanager::ToPDF(this->title, this->dates, selectedModels, start); // Now this will work correctly
+    PDFmanager::ToPDF(this->title, this->dates, selectedModels); // Now this will work correctly
 
     accept(); // Close the dialog
 }

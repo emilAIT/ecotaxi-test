@@ -16,6 +16,8 @@
 
 #include <QDate>
 
+
+
 #include "qstandarditemmodel.h"
 #include "../scripts/columnselectiondialog.h"
 
@@ -28,14 +30,17 @@ public:
     void static exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
     void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
+    void static ToPDF2(QString title, QString dates, int start = 1);
 
-    QString static modelToHTML(QAbstractItemModel *model, int start);
+    QString static modelToHTML(QAbstractItemModel *model, int start = 1);
+    QString static modelToHTML2(QStandardItemModel *model, QDate date, int start = 1);
 
 private:
     QString static getAppDir();
     QString static getDesktopDir();
 
     QString static getStyleSheet();
+    QList<QDate> static generateDateRange(const QString &dateRange);
 
     QString static getHeader(QDateTime time);
     QString static getFooter(QDateTime time);

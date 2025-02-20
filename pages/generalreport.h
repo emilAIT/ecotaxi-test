@@ -47,6 +47,7 @@ private slots:
     void on_FromDateButton_clicked();
     void on_ToDateButton_clicked();
 
+    void on_ToPDFDailyButton_clicked();
     void on_ToPDFButton_clicked();
 
     void handleDoubleClick(const QModelIndex &index);

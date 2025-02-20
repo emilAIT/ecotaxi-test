@@ -12,6 +12,7 @@ login::login(QWidget *parent)
     this->setWindowTitle("Авторизация | EcoTaxi");
     this->setWindowIcon(QIcon());
     ui->password->setProperty("color", "white");
+    ui->username->setProperty("color", "white");
 }
 
 login::~login()
@@ -22,7 +23,7 @@ login::~login()
 void login::logIn()
 {
     userSession &u = userSession::getInstance();
-    if (u.logMe(ui->passwordEdit->text()))
+    if (u.logMe(ui->passwordEdit->text(), ui->usernameEdit->text()))
     {
         navigationManager &w = navigationManager::getInstance();
         this->hide();
@@ -39,5 +40,9 @@ void login::on_loginButton_clicked() {
 }
 
 void login::on_passwordEdit_returnPressed() {
+    logIn();
+}
+
+void login::on_usernameEdit_returnPressed() {
     logIn();
 }

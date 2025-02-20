@@ -23,6 +23,7 @@ public:
 private slots:
     void on_loginButton_clicked();
     void on_passwordEdit_returnPressed();
+    void on_usernameEdit_returnPressed();
 
 private:
     Ui::login *ui;
