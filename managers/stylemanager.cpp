@@ -3,16 +3,16 @@
 styleManager::styleManager(QApplication *app)
 {
     QVariantMap vars;
-    vars["mainColor"] = "#007700";
-    vars["mainHoverColor"] = "#005500";
+    vars["mainColor"] = "#004D40";
+    vars["mainHoverColor"] = "#37474F";
     vars["backgroundColor"] = "#eeeeee";
-    vars["backgroundHoverColor"] = "#aaaaaa";
+    vars["backgroundHoverColor"] = "#37474F";
     vars["textColor"] = "#222222";
     vars["grayColor"] = "#b9b9b9";
 
-    vars["btnFontSize"] = "27px";
-    vars["textFontSize"] = "20px";
-    vars["editFontSize"] = "20px";
+    vars["btnFontSize"] = "32px";
+    vars["textFontSize"] = "28px";
+    vars["editFontSize"] = "24px";
 
     vars["bgBorderRadius"] = "30px";
     vars["btnBorderRadius"] = "26px";

@@ -465,7 +465,7 @@ QList<int> Operations::checkLoginUser(QString password)
     if (data.size() != 0)
     {
         data = data.toList()[0].toList();
-        db.executeSet("INSERT INTO logins (userId) VALUES (" + QString::number(data[0].toInt()) + ")");
+        db.executeSet("INSERT INTO logins (userId)   VALUES (" + QString::number(data[0].toInt()) + ")");
         return *new QList<int>({data[0].toInt(), data[1].toInt()});
     }
     return *new QList<int>({-9, 0});

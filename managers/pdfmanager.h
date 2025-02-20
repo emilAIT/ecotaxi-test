@@ -26,16 +26,24 @@ public:
 
     // general
     void static exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
+    void static pdfmanagerbydays(QString title, QString dates, QList<QAbstractItemModel*> models);
 
     void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
     QString static modelToHTML(QAbstractItemModel *model, int start);
 
+    void createCarReport(const QString& startDate, const QString& endDate, QList<QAbstractItemModel*> dailyModels);
 private:
+    void insertPageBreak(QTextDocument& doc);
+    // Make formatDateHeader static if it doesn't depend on instance data
+    static QString formatDateHeader(const QDateTime& date);
+
     QString static getAppDir();
     QString static getDesktopDir();
 
     QString static getStyleSheet();
+    // Make it static
+    static QString createDailyReportPage(const QDateTime& date, QAbstractItemModel* model);
 
     QString static getHeader(QDateTime time);
     QString static getFooter(QDateTime time);
