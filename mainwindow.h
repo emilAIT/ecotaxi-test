@@ -92,5 +92,6 @@ private:
 
     bool useSystemTime = true;
     QTime time;
+
 };
 #endif // MAINWINDOW_H
