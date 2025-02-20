@@ -113,6 +113,11 @@ void ReportPage::setHeader()
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ");
         break;
 
+    case Report::DriversCharges:
+        ui->Header->setText("ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ");
+        ui->ReportButton->setText("ОТЧЕТ ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ");
+        break;
+
     default:
         break;
     }
@@ -282,8 +287,39 @@ void ReportPage::setTable()
 
             model->appendRow(row);
         }
-
         break;
+
+
+    case Report::DriversCharges:
+        model->setHorizontalHeaderLabels({"ДАТА", "ID МАШИНЫ", "ЛОКАЦИЯ", "KWH", "ВРЕМЯ"});
+        for (const QVariant &chargeData : ReportOperations::getChargesByDriverReport(this->id, this->fromDate, this->toDate))
+        {
+            QVariantList charge = chargeData.toList();
+            QList<QStandardItem *> row;
+
+            // Store Date properly for correct sorting
+            QStandardItem *dateItem = new QStandardItem();
+            dateItem->setData(charge[0].toDateTime(), Qt::DisplayRole);
+            row.append(dateItem);
+
+            // ID МАШИНЫ & ЛОКАЦИЯ as Strings
+            row.append(new QStandardItem(charge[1].toString())); // Car ID
+            row.append(new QStandardItem(charge[2].toString())); // Location
+
+            // Store KWH as a number
+            QStandardItem *kwhItem = new QStandardItem();
+            kwhItem->setData(charge[3].toDouble(), Qt::DisplayRole);
+            row.append(kwhItem);
+
+            // Store Duration as a number
+            QStandardItem *timeItem = new QStandardItem();
+            timeItem->setData(charge[4].toDouble(), Qt::DisplayRole);
+            row.append(timeItem);
+
+            model->appendRow(row);
+        }
+        break;
+
 
     case Report::Users:
     case Report::Users2:
@@ -420,6 +456,33 @@ void ReportPage::setBottomTable()
             model->appendRow(row);
         }
         break;
+    case Report::DriversCharges:
+        if (true)
+        {
+            model->setHorizontalHeaderLabels({"ИТОГО", "KWH", "ВРЕМЯ"});
+
+            // Get total kWh and duration from the database (related to the user)
+            QVariantList report = ReportOperations::getTotalChargesByDriver(this->id, this->fromDate, this->toDate);
+
+            // Log the report size and values for debugging
+            qDebug() << "Report size: " << report.size();
+            qDebug() << "Report values: " << report;
+
+            // Check if the report has the correct number of items
+            if (report.size() == 2) {
+                QList<QStandardItem *> row;
+                row.append(new QStandardItem("Итого")); // Label
+                row.append(new QStandardItem(report[0].toString())); // Total KWH
+                row.append(new QStandardItem(report[1].toString())); // Total Duration
+                qDebug() << "equl to 2";
+
+                model->appendRow(row);
+            } else {
+                qDebug() << "Error: Report doesn't contain enough data.";
+            }
+        }
+        break;
+
     case Report::Drivers:
         if (true)
         {
@@ -677,6 +740,20 @@ void ReportPage::setSideTable()
             model->appendRow({new QStandardItem(QString::number(user.getId())), new QStandardItem(user.getName())});
         }
         break;
+
+    case Report::DriversCharges:
+        model->setHorizontalHeaderLabels({"id", "Водители"});
+        for (Driver driver : Operations::selectAllDrivers())
+        {
+            if (this->id != 0 && driver.getId() == this->id)
+                row = model->rowCount();
+            model->appendRow({
+                new QStandardItem(QString::number(driver.getId())),
+                new QStandardItem(driver.getName())
+            });
+        }
+        break;
+
     }
 
     ui->sideTable->setModel(model);
@@ -716,6 +793,15 @@ void ReportPage::setTableSizes()
         ui->tableView->setColumnWidth(3, 172);
         ui->tableView->setColumnWidth(4, 172);
         break;
+
+    case Report::DriversCharges:
+        ui->tableView->setColumnWidth(0, 172);
+        ui->tableView->setColumnWidth(1, 172);
+        ui->tableView->setColumnWidth(2, 172);
+        ui->tableView->setColumnWidth(3, 172);
+        ui->tableView->setColumnWidth(4, 172);
+        ui->tableView->setColumnWidth(5, 172);
+
 
     case Report::Drivers:
         ui->tableView->setColumnWidth(0, 172);
@@ -851,6 +937,9 @@ void ReportPage::on_ReportButton_clicked()
     case Report::Users2:
         nav->openReport(5, 0, fromDate, toDate);
         break;
+    case Report::DriversCharges:
+        nav->openReport(16, 0, fromDate, toDate);
+        break;
     case Report::FinesByCars:
         nav->openFines(1, 0, fromDate, toDate);
         break;
@@ -937,6 +1026,7 @@ void ReportPage::on_ToPDFButton_clicked()
 
     PDFmanager::exportToPDF(title, this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"), { ui->tableView->model(), ui->bottomTable->model() }, start);
 }
+
 
 void ReportPage::setFromDate(QDate date)
 {

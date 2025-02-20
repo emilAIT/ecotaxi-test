@@ -61,6 +61,7 @@ void GeneralReport::setHeader()
     case Report::Cars:
         ui->Header->setText("ПО МАШИНАМ");
         ui->ReportButton->setText("ОТЧЕТ ПО МАШИНЕ");
+        ui->SecondReportButton->setText("PDF ПО ДНЯМ");
         break;
 
     case Report::Drivers:
@@ -976,6 +977,10 @@ void GeneralReport::on_ReportButton_clicked()
         case Report::FinesByDrivers:
             nav->openFines(4, id, fromDate, toDate);
             break;
+        case Report::DriversCharges:
+            nav->openReport(17, id, fromDate, toDate); // ***********
+            break;
+
         default:
             break;
         }
@@ -1013,6 +1018,10 @@ void GeneralReport::on_ReportButton_clicked()
         case Report::FinesByDrivers:
             nav->openFines(4, 0, fromDate, toDate);
             break;
+        case Report::DriversCharges:
+            nav->openReport(17, 0, fromDate, toDate); // ***********
+            break;
+
         default:
             break;
         }
@@ -1126,6 +1135,8 @@ void GeneralReport::on_ToPDFButton_clicked()
     }
     PDFmanager::exportToPDF(title, this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"), { ui->tableView->model(), ui->bottomTable->model() });
 }
+
+
 
 void GeneralReport::onSectionResized(int logicalIndex, int oldSize, int newSize)
 {

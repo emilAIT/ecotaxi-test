@@ -490,27 +490,6 @@ QVariantList ReportOperations::getChargesReport(QDate fromDate, QDate toDate)
     return result;
 }
 
-
-// QVariantList ReportOperations::getDriversChargesReport(QDate fromDate, QDate toDate)
-// {
-//     toDate = toDate.addDays(1);
-//     QVariantList result;
-//     dbManager &db = dbManager::getInstance();
-
-//     QString query =
-//         "SELECT\n"
-//         "    drivers.name AS driverName,\n"
-//         "    SUM(charges.kwh) AS totalKWH\n"
-//         "FROM drivers\n"
-//         "JOIN charges ON charges.driverId = drivers.id\n"
-//         "WHERE charges.date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-//                                                                                         "GROUP BY drivers.id";
-
-//     result = db.executeGet(query);
-//     return result;
-// }
-
-
 QVariantList ReportOperations::getDriversChargesReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
@@ -530,6 +509,8 @@ QVariantList ReportOperations::getDriversChargesReport(QDate fromDate, QDate toD
     result = db.executeGet(query);
     return result;
 }
+
+
 
 
 QVariantList ReportOperations::getAllChargesReport(QDate fromDate, QDate toDate)
@@ -1282,6 +1263,34 @@ QVariantList ReportOperations::getChargesByCarReport(int id, QDate fromDate, QDa
     return result;
 }
 
+QVariantList ReportOperations::getChargesByDriverReport(int id, QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
+
+    QString query =
+        "SELECT\n"
+        "    charges.date as chargeDate,\n"
+        "    cars.id as carId,\n"
+        "    locations.name as locationName,\n"
+        "    charges.kwh as kwh,\n"
+        "    charges.duration as duration\n"
+        "FROM drivers\n"
+        "JOIN charges ON drivers.id = charges.driverId\n"
+        "JOIN cars ON cars.id = charges.carId\n"
+        "JOIN locations ON locations.id = charges.locationId\n"
+        "WHERE charges.date BETWEEN '" +
+        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+                                                                                      "AND drivers.id = " +
+        QString::number(id) + "\n"
+                              "ORDER BY charges.date DESC";
+
+    result = db.executeGet(query);
+    return result;
+}
+
+
 QVariantList ReportOperations::getAllChargesByCarReport(int id, QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
@@ -1303,6 +1312,52 @@ QVariantList ReportOperations::getAllChargesByCarReport(int id, QDate fromDate, 
     }
     return result;
 }
+
+QVariantList ReportOperations::getTotalChargesByDriver(int id, QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
+
+    QString query =
+        "SELECT\n"
+        "    COALESCE(SUM(charges.kwh), 0) as total_kwh,\n"
+        "    COALESCE(SUM(charges.duration), 0) as total_duration\n"
+        "FROM charges\n"
+        "WHERE charges.date BETWEEN '" +
+        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+                                                                                      "AND charges.driverId = " + QString::number(id);
+
+    result = db.executeGet(query);
+
+    // Check if the result contains any entries
+    if (!result.isEmpty()) {
+        QVariantList row = result[0].toList(); // Access first row
+        // Check that the row contains at least 2 items (total_kwh, total_duration)
+        if (row.size() >= 2) {
+            double totalKwh = row[0].toDouble(); // First element: total_kwh
+            double totalDuration = row[1].toDouble(); // Second element: total_duration
+
+            qDebug() << "Total KWH: " << totalKwh;
+            qDebug() << "Total Duration: " << totalDuration;
+
+            // Return the final result
+            return QVariantList({totalKwh, totalDuration});
+        } else {
+            qDebug() << "Error: Result doesn't have enough columns.";
+        }
+    } else {
+        qDebug() << "Error: Query returned no results.";
+    }
+
+    // If we reach here, return empty or default values
+    return QVariantList();
+}
+
+
+
+
+
 
 QVariantList ReportOperations::getUserReport(int userId, QDate fromDate, QDate toDate)
 {

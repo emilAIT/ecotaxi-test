@@ -188,18 +188,22 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
     setSettingIndex();
 }
 
-
-
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
     setReportIndex();
-    if (index > 7) {
-        index += 7;
-    } else if (index == 0) {
-        index += 4;
+
+    if (!userSession::getInstance().checkIsAdmin()) {
+        if (index == 0) {
+            index += 4;
+        }
     }
+    else if (index > 7) {
+        index += 7;
+    }
+
     nav->openReport(index);
 }
+
 
 
 void MainWindow::on_FinesButton_currentIndexChanged(int index)
