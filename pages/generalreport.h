@@ -31,6 +31,8 @@ public:
     explicit GeneralReport(nm *nav, QWidget *parent = nullptr);
     ~GeneralReport();
 
+    void generatePDFReport(QVariantList reportData);
+
     void setReport(Report mode, QDate from = QDate(), QDate to = QDate());
 
 private slots:

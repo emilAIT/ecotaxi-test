@@ -1,7 +1,88 @@
 #include "reportoperations.h"
 
-ReportOperations::ReportOperations() {}
+QVariantList ReportOperations::getCarsReportByDays(QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    dbManager &db = dbManager::getInstance();
 
+    QString query =
+        "WITH grouped_events AS (\n"
+        "    SELECT carId, DATE(date) AS reportDate,\n"
+        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) AS income,\n"
+        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.1 AS tax,\n"
+        "           SUM(CASE WHEN amount < 0 THEN COALESCE(amount, 0) ELSE 0 END) AS outcome,\n"
+        "           SUM(COALESCE(amount, 0)) AS totalAmount\n"
+        "    FROM events\n"
+        "    WHERE date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+                                                                                        "    GROUP BY carId, DATE(date)\n"
+                                                                                        "),\n"
+                                                                                        "grouped_charges AS (\n"
+                                                                                        "    SELECT carId, DATE(date) AS reportDate, SUM(COALESCE(kwh, 0)) AS totalKwh\n"
+                                                                                        "    FROM charges\n"
+                                                                                        "    WHERE date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+                                                                                        "    GROUP BY carId, DATE(date)\n"
+                                                                                        ")\n"
+                                                                                        "SELECT\n"
+                                                                                        "    cars.id AS carId,\n"
+                                                                                        "    cars.sid AS carSid,\n"
+                                                                                        "    investors.name AS investorName,\n"
+                                                                                        "    grouped_events.reportDate,\n"
+                                                                                        "    COALESCE(grouped_events.income, 0) AS income,\n"
+                                                                                        "    FLOOR(COALESCE(grouped_events.tax, 0)) AS tax,\n"
+                                                                                        "    COALESCE(grouped_charges.totalKwh * 10, 0) AS kwh,\n"
+                                                                                        "    COALESCE(grouped_events.outcome, 0) AS outcome,\n"
+                                                                                        "    FLOOR((grouped_events.income * 0.9) - (COALESCE(grouped_charges.totalKwh, 0) * 10) + grouped_events.outcome) AS profit\n"
+                                                                                        "FROM cars\n"
+                                                                                        "LEFT JOIN grouped_events ON grouped_events.carId = cars.id\n"
+                                                                                        "LEFT JOIN grouped_charges ON grouped_charges.carId = cars.id AND grouped_charges.reportDate = grouped_events.reportDate\n"
+                                                                                        "JOIN investors ON investors.id = cars.investorId\n"
+                                                                                        "ORDER BY grouped_events.reportDate, cars.id;";
+
+    QVariantList queryResult = db.executeGet(query);
+    QMap<QDate, QVariantList> reportsByDay;
+
+    qDebug() << "SQL Query Result Size:" << queryResult.size();
+
+    for (const QVariant &row : queryResult) {
+        QVariantList rowList = row.toList();
+        if (rowList.size() < 9) {
+            qDebug() << "Skipping invalid row:" << rowList;
+            continue;
+        }
+
+        QVariantMap rowData;
+        rowData["carId"] = rowList[0];
+        rowData["carSid"] = rowList[1];
+        rowData["investorName"] = rowList[2];
+
+        QDate reportDate = rowList[3].toDate();
+        rowData["reportDate"] = reportDate.isValid() ? reportDate.toString("yyyy-MM-dd") : "Дата отсутствует";
+
+        rowData["income"] = rowList[4].toDouble();
+        rowData["tax"] = rowList[5].toDouble();
+        rowData["kwh"] = rowList[6].toDouble();
+        rowData["outcome"] = rowList[7].toDouble();
+        rowData["profit"] = rowList[8].toDouble();
+
+        reportsByDay[reportDate].append(rowData);
+    }
+
+    QVariantList finalList;
+    for (const QDate &date : reportsByDay.keys()) {
+        QVariantMap dayReport;
+        if (!date.isValid())
+            dayReport["date"] = "Дата отсутствует";
+        else
+            dayReport["date"] = date.toString("yyyy-MM-dd");
+        dayReport["reports"] = reportsByDay[date];
+        finalList.append(dayReport);
+
+    }
+
+    return finalList;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 QVariantList ReportOperations::getCarsReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
@@ -10,7 +91,7 @@ QVariantList ReportOperations::getCarsReport(QDate fromDate, QDate toDate)
     QString query =
         "WITH grouped_events AS (\n"
         "    SELECT carId, SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) AS income,\n"
-        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.05 AS tax,\n"
+        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.1 AS tax,\n"
         "           SUM(CASE WHEN amount < 0 THEN COALESCE(amount, 0) ELSE 0 END) AS outcome,\n"
         "           SUM(COALESCE(amount, 0)) AS totalAmount,\n"
         "           COUNT(DISTINCT DATE(date)) AS daysWorked,\n"
@@ -37,19 +118,19 @@ QVariantList ReportOperations::getCarsReport(QDate fromDate, QDate toDate)
         "    FLOOR(COALESCE(events.tax, 0)) AS tax,\n"
         "    COALESCE(charges.totalKwh * 10, 0) AS kwh,\n"
         "    COALESCE(events.outcome, 0) AS outcome,\n"
-        "    FLOOR((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) AS profit,\n"
+        "    FLOOR((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) AS profit,\n"
         "    COALESCE(events.daysWorked, 0) AS daysWorked,\n"
         "    COALESCE(events.nonZeroDays, 0) AS nonZeroDays,\n"
         "    CASE WHEN events.nonZeroDays > 0 THEN \n"
-        "        FLOOR(((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / events.nonZeroDays)\n"
+        "        FLOOR(((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / events.nonZeroDays)\n"
         "    ELSE 0 END AS averageProfitPerDay,\n"
         "    COALESCE(cars.percentage, 0) AS percentage,\n"
-        "    CASE WHEN ((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) >= 0 THEN\n"
-        "        FLOOR(COALESCE(cars.percentage, 0) * ((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
+        "    CASE WHEN ((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) >= 0 THEN\n"
+        "        FLOOR(COALESCE(cars.percentage, 0) * ((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
         "    ELSE 0 END AS ourIncome,\n"
-        "    CASE WHEN ((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) >= 0 THEN\n"
-        "        FLOOR((100 - COALESCE(cars.percentage, 0)) * ((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
-        "    ELSE FLOOR((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome)\n"
+        "    CASE WHEN ((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) >= 0 THEN\n"
+        "        FLOOR((100 - COALESCE(cars.percentage, 0)) * ((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
+        "    ELSE FLOOR((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome)\n"
         "    END AS investorsIncome\n"
         "FROM cars\n"
         "LEFT JOIN grouped_events AS events ON events.carId = cars.id\n"
@@ -59,7 +140,132 @@ QVariantList ReportOperations::getCarsReport(QDate fromDate, QDate toDate)
     result = db.executeGet(query);
     return result;
 }
+///////////////////////////////////////////////////////////////////////
+QVariantList ReportOperations::getDriversChargesReport( QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
+    QString query =
+        "SELECT\n"
+        "    drivers.id as driverId,\n"
+        "    drivers.name as driverName,\n"
+        "    SUM(charges.kwh) as kwhSum,\n"
+        "    SUM(charges.duration) as durationSum\n"
+        "FROM drivers\n"
+        "JOIN charges ON charges.driverId = drivers.id\n"
+        "WHERE charges.date BETWEEN '" +
+        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+                                                                                      "GROUP BY drivers.id, drivers.name";
 
+    result = db.executeGet(query);
+    return result;
+}
+QVariantList ReportOperations::getAllDriversChargesReport( QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
+    QString query =
+        "SELECT\n"
+        "    SUM(charges.kwh) as kwhSum,\n"
+        "    SUM(charges.duration) as durationSum\n"
+        "FROM charges\n"
+        "WHERE charges.date BETWEEN '" +
+        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'";
+
+    QVariantList data = db.executeGet(query);
+    if (!data.isEmpty())
+    {
+        result.append(data[0]);
+    }
+    return result;
+}
+
+QVariantList ReportOperations::getAllDriversChargesByCarReport(int driverId, QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
+
+    QString query =
+        "WITH ChargesByCar AS ( "
+        "    SELECT charges.carId AS carId, "
+        "           SUM(COALESCE(charges.kwh, 0)) AS kwhSum, "
+        "           SUM(COALESCE(charges.duration, 0)) AS durationSum "
+        "    FROM charges "
+        "    WHERE charges.driverId = " + QString::number(driverId) + " "
+                                      "      AND charges.date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "' "
+                                                                                        "    GROUP BY charges.carId "
+                                                                                        ") "
+                                                                                        "SELECT 0 AS dummy, '' AS dummyText, COALESCE(SUM(kwhSum), 0) AS totalKwh, COALESCE(SUM(durationSum), 0) AS totalDuration "
+                                                                                        "FROM ChargesByCar;";
+
+    QVariantList data = db.executeGet(query);
+    if (!data.isEmpty())
+    {
+        result.append(data[0]);
+    }
+    else
+    {
+        // Если нет данных, создаём строку с 4 столбцами, чтобы избежать index out of range
+        QVariantList dummy;
+        dummy.append(0);    // dummy
+        dummy.append("");   // dummyText
+        dummy.append(0);    // totalKwh
+        dummy.append(0);    // totalDuration
+        result.append(dummy);
+    }
+    return result;
+}
+
+QVariantList ReportOperations::getDriversChargesByCarReport(int id, QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
+    QString query =
+        "SELECT\n"
+        "    charges.date AS chargeDate,\n"
+        "    cars.sid AS chargeCars,\n"
+        "    locations.name AS locationName,\n"
+        "    charges.kwh AS kwh,\n"
+        "    charges.duration AS duration\n"
+        "FROM drivers\n"
+        "JOIN charges ON drivers.id = charges.driverId\n"
+        "JOIN cars ON cars.id = charges.carId\n"
+        "JOIN locations ON locations.id = charges.locationId\n"
+        "WHERE charges.date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+                                                                                        "  AND drivers.id = " + QString::number(id) + "\n"
+                                "ORDER BY charges.date DESC";
+    result = db.executeGet(query);
+    return result;
+}
+
+
+///////////////////////////////////////////////////////////////////////
+
+QVariantList ReportOperations::getAllChargesByCarReport(int id, QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
+    QString query =
+        "SELECT\n"
+        "    SUM(charges.kwh) as kwhSum\n"
+        "FROM cars\n"
+        "JOIN charges ON cars.id = charges.carId\n"
+        "WHERE charges.date BETWEEN '" +
+        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
+                                                                                      "AND cars.id = " +
+        QString::number(id);
+    QVariantList data = db.executeGet(query);
+    if (!data.isEmpty())
+    {
+        result = data[0].toList();
+    }
+    return result;
+}
 QVariantList ReportOperations::getAllCarsReport(QDate fromDate, QDate toDate)
 {
     toDate = toDate.addDays(1);
@@ -69,7 +275,7 @@ QVariantList ReportOperations::getAllCarsReport(QDate fromDate, QDate toDate)
         "WITH grouped_events AS (\n"
         "    SELECT carId, \n"
         "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) AS income,\n"
-        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.05 AS incomeTax,\n"
+        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.1 AS incomeTax,\n"
         "           SUM(CASE WHEN amount < 0 THEN COALESCE(amount, 0) ELSE 0 END) AS outcome,\n"
         "           SUM(COALESCE(amount, 0)) AS totalAmount\n"
         "    FROM events\n"
@@ -93,20 +299,20 @@ QVariantList ReportOperations::getAllCarsReport(QDate fromDate, QDate toDate)
         "        COALESCE(events.income, 0) AS income,\n"
         "        COALESCE(events.incomeTax, 0) AS incomeTax,\n"
         "        COALESCE(events.outcome, 0) AS outcome,\n"
-        "        FLOOR((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) AS profit,\n"
+        "        FLOOR((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) AS profit,\n"
         "        COALESCE(charges.totalKwh, 0) AS kwh,\n"
         "        COALESCE(cars.percentage, 0) AS percentage,\n"
         "        CASE \n"
-        "            WHEN (events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome >=0 THEN \n"
-        "                FLOOR(cars.percentage * ((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
+        "            WHEN (events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome >=0 THEN \n"
+        "                FLOOR(cars.percentage * ((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
         "            ELSE \n"
         "                0 \n"
         "        END AS ourIncome,\n"
         "        CASE \n"
-        "            WHEN (events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome > 0 THEN \n"
-        "                FLOOR((100 - cars.percentage) * ((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
+        "            WHEN (events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome > 0 THEN \n"
+        "                FLOOR((100 - cars.percentage) * ((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
         "            ELSE \n"
-        "                FLOOR((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome)\n"
+        "                FLOOR((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome)\n"
         "        END AS investorsIncome\n"
         "    FROM cars\n"
         "    LEFT JOIN grouped_events AS events ON cars.id = events.carId\n"
@@ -300,7 +506,7 @@ QVariantList ReportOperations::getInvestorsReport(QDate fromDate, QDate toDate)
         "    SELECT\n"
         "        cars.id AS carId,\n"
         "        SUM(CASE WHEN events.amount > 0 THEN events.amount ELSE 0 END) AS income,\n"
-        "        SUM(CASE WHEN events.amount > 0 THEN events.amount ELSE 0 END) * 0.05 AS incomeTax,\n"
+        "        SUM(CASE WHEN events.amount > 0 THEN events.amount ELSE 0 END) * 0.1 AS incomeTax,\n"
         "        SUM(CASE WHEN events.amount < 0 THEN events.amount ELSE 0 END) AS outcome\n"
         "    FROM events\n"
         "    LEFT JOIN cars ON cars.id = events.carId\n"
@@ -328,22 +534,22 @@ QVariantList ReportOperations::getInvestorsReport(QDate fromDate, QDate toDate)
         "    COALESCE(SUM(charge_stats.totalKwh), 0) AS totalKwh,\n"
         "    COALESCE(SUM(event_stats.outcome), 0) AS outcome,\n"
         "    FLOOR(SUM(\n"
-        "        (COALESCE(event_stats.income, 0) * 0.95 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0))\n"
+        "        (COALESCE(event_stats.income, 0) * 0.9 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0))\n"
         "    )) AS totalProfit,\n"
         "    FLOOR(SUM(\n"
         "        CASE \n"
-        "            WHEN (COALESCE(event_stats.income, 0) * 0.95 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0)) >= 0 THEN\n"
-        "                (COALESCE(event_stats.income, 0) * 0.95 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0)) \n"
+        "            WHEN (COALESCE(event_stats.income, 0) * 0.9 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0)) >= 0 THEN\n"
+        "                (COALESCE(event_stats.income, 0) * 0.9 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0)) \n"
         "                * COALESCE(cars.percentage, 0) / 100\n"
         "            ELSE 0\n"
         "        END\n"
         "    )) AS ourIncome,\n"
         "    FLOOR(SUM(\n"
         "        CASE \n"
-        "            WHEN (COALESCE(event_stats.income, 0) * 0.95 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0)) >= 0 THEN\n"
-        "                (COALESCE(event_stats.income, 0) * 0.95 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0))\n"
+        "            WHEN (COALESCE(event_stats.income, 0) * 0.9 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0)) >= 0 THEN\n"
+        "                (COALESCE(event_stats.income, 0) * 0.9 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0))\n"
         "                * (100 - COALESCE(cars.percentage, 0)) / 100\n"
-        "            ELSE (COALESCE(event_stats.income, 0) * 0.95 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0))\n"
+        "            ELSE (COALESCE(event_stats.income, 0) * 0.9 - COALESCE(charge_stats.totalKwh, 0) + COALESCE(event_stats.outcome, 0))\n"
         "        END\n"
         "    )) AS investorsIncome\n"
         "FROM investors\n"
@@ -367,7 +573,7 @@ QVariantList ReportOperations::getAllInvestorsReport(QDate fromDate, QDate toDat
         "WITH grouped_events AS (\n"
         "    SELECT carId,\n"
         "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) AS income,\n"
-        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.05 AS incomeTax,\n"
+        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.1 AS incomeTax,\n"
         "           SUM(CASE WHEN amount < 0 THEN COALESCE(amount, 0) ELSE 0 END) AS outcome,\n"
         "           SUM(COALESCE(amount, 0)) AS totalAmount\n"
         "    FROM events\n"
@@ -391,20 +597,20 @@ QVariantList ReportOperations::getAllInvestorsReport(QDate fromDate, QDate toDat
         "        COALESCE(events.income, 0) AS income,\n"
         "        COALESCE(events.incomeTax, 0) AS incomeTax,\n"
         "        COALESCE(events.outcome, 0) AS outcome,\n"
-        "        FLOOR((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) AS totalProfit,\n"
+        "        FLOOR((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) AS totalProfit,\n"
         "        COALESCE(charges.totalKwh, 0) AS totalKwh,\n"
         "        COALESCE(cars.percentage, 0) AS percentage,\n"
         "        CASE \n"
-        "            WHEN (events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome >= 0 THEN \n"
-        "                FLOOR(cars.percentage * ((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
+        "            WHEN (events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome >= 0 THEN \n"
+        "                FLOOR(cars.percentage * ((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
         "            ELSE \n"
         "                0 \n"
         "        END AS ourIncome,\n"
         "        CASE \n"
-        "            WHEN (events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome > 0 THEN \n"
-        "                FLOOR((100 - cars.percentage) * ((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
+        "            WHEN (events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome > 0 THEN \n"
+        "                FLOOR((100 - cars.percentage) * ((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome) / 100)\n"
         "            ELSE \n"
-        "                FLOOR((events.income * 0.95) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome)\n"
+        "                FLOOR((events.income * 0.9) - (COALESCE(charges.totalKwh, 0) * 10) + events.outcome)\n"
         "        END AS investorsIncome\n"
         "    FROM cars\n"
         "    LEFT JOIN grouped_events AS events ON cars.id = events.carId\n"
@@ -834,9 +1040,9 @@ QVariantList ReportOperations::getAllCarReport(int carId, QDate fromDate, QDate 
         "    SELECT \n"
         "        carId,\n"
         "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) AS totalIncome,\n"
-        "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05, 0) AS totalIncomeTax,\n"
+        "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.1, 0) AS totalIncomeTax,\n"
         "        COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) AS totalOutcome,\n"
-        "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount * 0.95 ELSE 0 END), 0) AS totalEventProfit\n"
+        "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount * 0.9 ELSE 0 END), 0) AS totalEventProfit\n"
         "    FROM events\n"
         "    WHERE carId = " +
         QString::number(carId) + "\n"
@@ -1022,7 +1228,7 @@ QVariantList ReportOperations::getInvestorReport(int investorId, QDate fromDate,
         "    SELECT\n"
         "        carId,\n"
         "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as income,\n"
-        "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05 as incomeTax,\n"
+        "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.1 as incomeTax,\n"
         "        SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) as outcome\n"
         "    FROM events\n"
         "    WHERE date BETWEEN '" +
@@ -1064,19 +1270,19 @@ QVariantList ReportOperations::getInvestorReport(int investorId, QDate fromDate,
         "    incomeTax,\n"
         "    kwh,\n"
         "    outcome,\n"
-        "    FLOOR(income * 0.95 - kwh + outcome) as profit,\n"
+        "    FLOOR(income * 0.9 - kwh + outcome) as profit,\n"
         "    percentage,\n"
         "    CASE \n"
-        "        WHEN (FLOOR(income * 0.95 - kwh + outcome) < 0) THEN \n"
+        "        WHEN (FLOOR(income * 0.9 - kwh + outcome) < 0) THEN \n"
         "            0 \n"
         "        ELSE \n"
-        "            FLOOR((income * 0.95 - kwh + outcome) * COALESCE(percentage, 0) / 100) \n"
+        "            FLOOR((income * 0.9 - kwh + outcome) * COALESCE(percentage, 0) / 100) \n"
         "    END AS ourProfit,\n"
         "    CASE \n"
-        "        WHEN (FLOOR(income * 0.95 - kwh + outcome) < 0) THEN \n"
-        "            FLOOR(income * 0.95 - kwh + outcome) \n"
+        "        WHEN (FLOOR(income * 0.9 - kwh + outcome) < 0) THEN \n"
+        "            FLOOR(income * 0.9 - kwh + outcome) \n"
         "        ELSE \n"
-        "            FLOOR((income * 0.95 - kwh + outcome) * COALESCE(100 - percentage, 0) / 100) \n"
+        "            FLOOR((income * 0.9 - kwh + outcome) * COALESCE(100 - percentage, 0) / 100) \n"
         "    END AS investorsProfit\n"
         "FROM car_stats;";
 
@@ -1094,7 +1300,7 @@ QVariantList ReportOperations::getAllInvestorReport(int investorId, QDate fromDa
         "    SELECT\n"
         "        carId,\n"
         "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS income,\n"
-        "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05 AS incomeTax,\n"
+        "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.1 AS incomeTax,\n"
         "        SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) AS outcome\n"
         "    FROM events\n"
         "    WHERE date BETWEEN '" +
@@ -1121,16 +1327,16 @@ QVariantList ReportOperations::getAllInvestorReport(int investorId, QDate fromDa
         "        COALESCE(event_stats.outcome, 0) AS outcome,\n"
         "        COALESCE(charge_stats.kwh, 0) AS kwh,\n"
         "        COALESCE(cars.percentage, 0) AS percentage,\n"
-        "        FLOOR(COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) AS profit,\n"
+        "        FLOOR(COALESCE(event_stats.income, 0) * 0.9 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) AS profit,\n"
         "        FLOOR(CASE \n"
-        "            WHEN (COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) < 0 THEN 0 \n"
-        "            ELSE (COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) * (COALESCE(cars.percentage, 0) / 100) \n"
+        "            WHEN (COALESCE(event_stats.income, 0) * 0.9 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) < 0 THEN 0 \n"
+        "            ELSE (COALESCE(event_stats.income, 0) * 0.9 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) * (COALESCE(cars.percentage, 0) / 100) \n"
         "        END) AS ourProfit,\n"
         "        FLOOR(CASE \n"
-        "            WHEN (COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) < 0 THEN \n"
-        "                (COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) \n"
+        "            WHEN (COALESCE(event_stats.income, 0) * 0.9 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) < 0 THEN \n"
+        "                (COALESCE(event_stats.income, 0) * 0.9 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) \n"
         "            ELSE \n"
-        "                (COALESCE(event_stats.income, 0) * 0.95 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) * ((100 - COALESCE(cars.percentage, 0)) / 100) \n"
+        "                (COALESCE(event_stats.income, 0) * 0.9 + COALESCE(event_stats.outcome, 0) - COALESCE(charge_stats.kwh, 0)) * ((100 - COALESCE(cars.percentage, 0)) / 100) \n"
         "        END) AS investorsProfit\n"
         "    FROM investors\n"
         "    LEFT JOIN cars ON cars.investorId = investors.id\n"
@@ -1237,28 +1443,6 @@ QVariantList ReportOperations::getChargesByCarReport(int id, QDate fromDate, QDa
         QString::number(id) + "\n"
                               "ORDER BY charges.date DESC";
     result = db.executeGet(query);
-    return result;
-}
-
-QVariantList ReportOperations::getAllChargesByCarReport(int id, QDate fromDate, QDate toDate)
-{
-    toDate = toDate.addDays(1);
-    QVariantList result;
-    dbManager &db = dbManager::getInstance();
-    QString query =
-        "SELECT\n"
-        "    SUM(charges.kwh) as kwhSum\n"
-        "FROM cars\n"
-        "JOIN charges ON cars.id = charges.carId\n"
-        "WHERE charges.date BETWEEN '" +
-        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
-                                                                                      "AND cars.id = " +
-        QString::number(id);
-    QVariantList data = db.executeGet(query);
-    if (!data.isEmpty())
-    {
-        result = data[0].toList();
-    }
     return result;
 }
 

@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <QMessageBox>
+
 
 MainWindow::MainWindow(nm *nav, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -23,12 +25,17 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
-    }
+        ui->ReportsButton->clear();  // Удаляем все отчеты
+        ui->ReportsButton->addItem("ПО ЛОКАЦИЯМ");
+
+   }
     else if (u.getId() != -1)
     {
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
+        ////////////////////////////////////////////////////////////////////
+        ui->ReportsButton->addItem("По зарядкам водителей");  // Новый отчет
+
     }
 
     // date & time
@@ -172,13 +179,23 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
     }
     setSettingIndex();
 }
+
+// ########################################################################################################################################################
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
     setReportIndex();
-    if (index > 7)
-        index += 7;
-    nav->openReport(index);
+    userSession &u = userSession::getInstance();
+    if(index==0 && !u.checkIsAdmin()){
+        nav->openReport(4);
+    }
+    else{
+        setReportIndex();
+        if (index > 7)
+            index += 7;
+        nav->openReport(index);
+    }
 }
+// ########################################################################################################################################################
 
 void MainWindow::on_FinesButton_currentIndexChanged(int index)
 {

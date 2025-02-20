@@ -61,7 +61,12 @@ public:
     bool static updateDriver(Driver driver);
     bool static deleteDriver(int id);
     Driver static getDriver(int id);
-
+    ///////////////////////////////////////////////////////////////////////
+    bool static addDriversCharges(Driver driver);
+    bool static updateDriversCharges(Driver driver);
+    bool static deleteDriversCharges(int id);
+    Driver static getDriversCharges(int id);
+//////////////////////////////////////////////////////////////////////////
     bool static addEvent(Event event);
     bool static updateEvent(Event newEvent);
     bool static deleteEvent(int id);

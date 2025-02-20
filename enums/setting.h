@@ -8,6 +8,7 @@ enum class Setting {
     Types,
     Locations,
     Users,
+    DriversCharges
 };
 
 #endif // SETTING_H

@@ -292,7 +292,37 @@ Driver Operations::getDriver(int id)
     else
         return Driver(data[0].toList());
 }
+// DriversCharges///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// bool Operations::addDriversCharges(DriversCharges driver)
+// {
+//     dbManager &db = dbManager::getInstance();
+//     QString name = driver.getName();
+//     QString description = driver.getDescription();
+//     return db.executeSet("INSERT INTO drivers (name, description) VALUES ('" + name + "','" + description + "')");
+// }
 
+// bool Operations::updateDriversCharegs(DriversCharges driver)
+// {
+//     dbManager &db = dbManager::getInstance();
+//     return db.executeSet("UPDATE drivers SET name = '" + driver.getName() + "', description = '" + driver.getDescription() + "' WHERE id = " + QString::number(driver.getId()));
+// }
+
+// bool Operations::deleteDriversCharges(int id)
+// {
+//     dbManager &db = dbManager::getInstance();
+//     backupManager::createDriverBackup(id);
+//     return db.executeSet("DELETE FROM drivers WHERE id = " + QString::number(id));
+// }
+
+// DriversCharges Operations::getDriversCharges(int id)
+// {
+//     dbManager &db = dbManager::getInstance();
+//     QVariantList data = db.executeGet("SELECT * FROM drivers WHERE id = " + QString::number(id));
+//     if (data.isEmpty())
+//         return Driver(QVariantList());
+//     else
+//         return Driver(data[0].toList());
+// }
 // Event
 bool Operations::addEvent(Event event)
 {
