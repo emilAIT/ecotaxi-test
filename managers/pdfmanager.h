@@ -26,7 +26,7 @@ public:
 
     // general
     void static exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
-    void static pdfmanagerbydays(QString title, QString dates, QList<QAbstractItemModel*> models);
+    void static dailyPDF(QString title, QString dates, QList<QAbstractItemModel*> models);
 
     void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 

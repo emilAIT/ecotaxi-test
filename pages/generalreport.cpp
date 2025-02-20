@@ -1024,7 +1024,7 @@ void GeneralReport::on_SecondReportButton_clicked()
         nav->openReport(14, 0, fromDate, toDate);
         break;
     case Report::Cars:
-        PDFmanager::pdfmanagerbydays("Отчет по дням", this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"), { ui->tableView->model(), ui->bottomTable->model() });
+        PDFmanager::dailyPDF("Отчет по дням", this->fromDate.toString("dd.MM.yyyy") + " - " + this->toDate.toString("dd.MM.yyyy"), { ui->tableView->model(), ui->bottomTable->model() });
         break;
     default:
         break;

@@ -248,7 +248,7 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
         html += "<th>#</th>";
     }
 
-    // Add headers
+    // Add headers for report
     for (int i = start; i < model->columnCount(); i++)
     {
         html += "<th>" + model->headerData(i, Qt::Horizontal).toString() + "</th>";
@@ -269,7 +269,6 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
             QString cellData = model->index(i, j).data(Qt::DisplayRole).toString();
             QString header = model->headerData(j, Qt::Horizontal).toString();
 
-            // Check if the header is "Инвестору" to apply green color
             if (header == "Инвестору" && start != 1)
             {
                 html += "<td style='border: 1px solid black; color:#007700;'>" + cellData + "</td>";
@@ -358,7 +357,7 @@ void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemMo
     dialog.exec();
 }
 
-void PDFmanager::pdfmanagerbydays(QString title, QString dates, QList<QAbstractItemModel *> models)
+void PDFmanager::dailyPDF(QString title, QString dates, QList<QAbstractItemModel *> models)
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
@@ -370,12 +369,10 @@ void PDFmanager::pdfmanagerbydays(QString title, QString dates, QList<QAbstractI
 
     int pageIndex = 0;
     while (startDate <= endDate) {
-        // Add page break after first page
         if (pageIndex > 0) {
             html += "<div style='page-break-before: always;'></div>";
         }
 
-        // Find the model for current date
         int modelIndex = pageIndex < models.size() ? pageIndex : -1;
         if (modelIndex >= 0) {
             html += createDailyReportPage(startDate, models[modelIndex]);
