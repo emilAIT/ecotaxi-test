@@ -11,9 +11,9 @@ userSession::userSession(QObject *parent)
 {
 }
 
-bool userSession::logMe(QString password)
+bool userSession::logMe(QString password, QString username)
 {
-    if (password == "123")
+    if (password == "123", username == "admin")
     {
         isAdminSession = true;
         id = -1;

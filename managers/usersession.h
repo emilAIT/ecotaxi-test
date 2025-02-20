@@ -18,7 +18,7 @@ public:
     int getId();
 
     bool checkIsAdmin();
-    bool logMe(QString password);
+    bool logMe(QString password, QString username);
 
     const int getSecretKey();
 

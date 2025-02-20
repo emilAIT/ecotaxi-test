@@ -19,7 +19,7 @@
   <property name="maximumSize">
    <size>
     <width>444</width>
-    <height>350</height>
+    <height>650</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
    <item row="0" column="1">
     <widget class="QFrame" name="verticalFrame">
      <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item alignment="Qt::AlignHCenter|Qt::AlignBottom">
+      <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignBottom">
        <widget class="QLabel" name="Header">
         <property name="minimumSize">
          <size>
@@ -45,7 +45,7 @@
         </property>
        </widget>
       </item>
-      <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+      <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
        <widget class="QFrame" name="greenBack">
         <property name="minimumSize">
          <size>
@@ -56,17 +56,17 @@
         <property name="maximumSize">
          <size>
           <width>400</width>
-          <height>250</height>
+          <height>350</height>
          </size>
         </property>
         <property name="styleSheet">
          <string notr="true"/>
         </property>
         <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
+         <enum>QFrame::Shape::StyledPanel</enum>
         </property>
         <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
+         <enum>QFrame::Shadow::Raised</enum>
         </property>
         <layout class="QGridLayout" name="gridLayout">
          <property name="leftMargin">
@@ -84,7 +84,7 @@
          <item row="0" column="0">
           <layout class="QVBoxLayout" name="verticalLayout">
            <property name="spacing">
-            <number>20</number>
+            <number>40</number>
            </property>
            <property name="leftMargin">
             <number>30</number>
@@ -92,7 +92,10 @@
            <property name="rightMargin">
             <number>30</number>
            </property>
-           <item alignment="Qt::AlignHCenter|Qt::AlignTop">
+           <property name="bottomMargin">
+            <number>10</number>
+           </property>
+           <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop">
             <widget class="QLabel" name="EcoTaxiWhite">
              <property name="minimumSize">
               <size>
@@ -109,9 +112,33 @@
             </widget>
            </item>
            <item>
+            <layout class="QVBoxLayout" name="verticalLayout_4">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="username">
+               <property name="text">
+                <string>ИМЯ:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="usernameEdit">
+               <property name="minimumSize">
+                <size>
+                 <width>300</width>
+                 <height>35</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <property name="spacing">
-              <number>0</number>
+              <number>2</number>
              </property>
              <item>
               <widget class="QLabel" name="password">
@@ -131,17 +158,17 @@
                <property name="minimumSize">
                 <size>
                  <width>300</width>
-                 <height>0</height>
+                 <height>35</height>
                 </size>
                </property>
                <property name="echoMode">
-                <enum>QLineEdit::Password</enum>
+                <enum>QLineEdit::EchoMode::Password</enum>
                </property>
               </widget>
              </item>
             </layout>
            </item>
-           <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+           <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
             <widget class="QPushButton" name="loginButton">
              <property name="minimumSize">
               <size>
