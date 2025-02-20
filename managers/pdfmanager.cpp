@@ -4,12 +4,12 @@ PDFmanager::PDFmanager() {}
 
 QString PDFmanager::getStyleSheet()
 {
-  return
-      R"S(
+    return
+        R"S(
 /*
 reset css
 */
-* {
+•⁠  ⁠{
   -webkit-tap-highlight-color: transparent;
 }
 *:focus {
@@ -292,6 +292,104 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
     }
 
     html += "</tbody></table></div>";
+    return html;
+}
+
+void PDFmanager::exportDailyReport(QAbstractItemModel *model) {
+    if (!model || model->rowCount() == 0) {
+        QMessageBox::warning(nullptr, "Ошибка", "Модель данных пуста!");
+        return;
+    }
+
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString title = "Отчет_по_Дням_" + QDate::currentDate().toString("dd.MM.yyyy");
+
+    // Открываем окно выбора колонок
+    // ColumnSelectionDialog dialog({model}, "Выбор колонок для ежедневного отчета", QDate::currentDate().toString("dd.MM.yyyy"), 0);
+    // if (dialog.exec() != QDialog::Accepted) {
+    //     QApplication::restoreOverrideCursor();
+    //     return;
+    // }
+
+    // Получаем отфильтрованную модель
+    QAbstractItemModel* filteredModel = model;
+
+    // Определяем, в каком столбце находится дата
+    int dateColumnIndex = -1;
+    for (int j = 0; j < filteredModel->columnCount(); j++) {
+        QString header = filteredModel->headerData(j, Qt::Horizontal).toString().toLower();
+        if (header.contains("дата") || header.contains("date")) {
+            dateColumnIndex = j;
+            break;
+        }
+    }
+    if (dateColumnIndex == -1) {
+        QMessageBox::warning(nullptr, "Ошибка", "Не найдена колонка с датой!");
+        QApplication::restoreOverrideCursor();
+        return;
+    }
+
+    // Группируем и сортируем данные по дате
+    QMap<QDate, QList<QList<QVariant>>> groupedData;
+    for (int i = 0; i < filteredModel->rowCount(); i++) {
+        QVariant dateVariant = filteredModel->index(i, dateColumnIndex).data(Qt::DisplayRole);
+        QDate date = QDate::fromString(dateVariant.toString(), "yyyy-MM-dd");
+        if (!date.isValid()) date = dateVariant.toDate();
+        if (!date.isValid()) continue;
+
+        QList<QVariant> row;
+        for (int j = 0; j < filteredModel->columnCount(); j++) {
+            row.append(filteredModel->index(i, j).data(Qt::DisplayRole));
+        }
+        groupedData[date].append(row);
+    }
+
+    QList<QDate> sortedDates = groupedData.keys();
+    std::sort(sortedDates.begin(), sortedDates.end());
+
+    // Генерация HTML с разбиением по дням на разные страницы
+    QString html;
+    bool firstPage = true;
+    for (const QDate& date : sortedDates) {
+        if (!firstPage) {
+            html += "<div style='page-break-before: always'></div>";  // Разрыв страницы после первой
+        }
+        firstPage = false;
+
+        html += "<h2>Отчет за " + date.toString("dd.MM.yyyy") + "</h2>";
+        html += generateTableHtml(groupedData[date], filteredModel);
+    }
+
+    createPDF(html, title);
+    QApplication::restoreOverrideCursor();
+}
+
+
+
+
+
+QString PDFmanager::generateTableHtml(const QList<QList<QVariant>>& data, QAbstractItemModel* model) {
+    QString html;
+    html += "<table style='width: 100%; border-collapse: collapse; margin: 0 auto;'>";
+    html += "<thead><tr>";
+
+    // Добавляем заголовки
+    for (int j = 0; j < model->columnCount(); j++) {
+        QString header = model->headerData(j, Qt::Horizontal).toString();
+        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>" + header + "</th>";
+    }
+    html += "</tr></thead><tbody>";
+
+    // Добавляем строки
+    for (const QList<QVariant>& row : data) {
+        html += "<tr>";
+        for (const QVariant& cell : row) {
+            html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>" + cell.toString() + "</td>";
+        }
+        html += "</tr>";
+    }
+    html += "</tbody></table>";
     return html;
 }
 
