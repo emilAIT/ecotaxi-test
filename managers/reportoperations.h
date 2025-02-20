@@ -5,12 +5,18 @@
 #include <QVariantList>
 #include "QString"
 #include "dbmanager.h"
-
+#include "pdfmanager.h"
 class ReportOperations
 {
 
 public:
     ReportOperations();
+    PDFmanager *manager;
+    QVariantList static getDailyReport(QDate fromDate, QDate toDate);
+    QVariantList static getDriverChargesReport(QDate fromDate, QDate toDate);
+    QVariantList static getAllDriverChargesReport(QDate fromDate, QDate toDate);
+    QString static convertDataToHTML(const QVariantList &data);
+    void static createDailyPDF(QString title, QDate fromDate, QDate toDate);
 
     // general reports
     QVariantList static getCarsReport(QDate fromDate, QDate toDate);
@@ -47,6 +53,11 @@ public:
     QVariantList static getAllFinesByDriversReport(QDate fromDate, QDate toDate);
 
     // reports by item
+    QVariantList static getDriverChargesByCarReport( QDate fromDate, QDate toDate);
+    QVariantList static getAllDriverChargesByCarReport(QDate fromDate, QDate toDate);
+
+
+
     QVariantList static getCarReport(int carId, QDate fromDate, QDate toDate);
     QVariantList static getAllCarReport(int carId, QDate fromDate, QDate toDate);
 
@@ -73,6 +84,9 @@ public:
 
     QVariantList static getFinesByDriverReport(int driverId, QDate fromDate, QDate toDate);
     QVariantList static getAllFinesByDriverReport(int driverId, QDate fromDate, QDate toDate);
+
+    QVariantList static getDriverChargesReport(int driverId, QDate fromDate, QDate toDate);
+    QVariantList static getAllDriverChargesReport(int driverId, QDate fromDate, QDate toDate);
 
     // other reports
     QVariantList static getRepairsReport();
