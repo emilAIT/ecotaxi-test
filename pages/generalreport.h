@@ -11,10 +11,13 @@
 #include "../managers/reportoperations.h"
 #include "../managers/operations.h"
 
+
+
 #include "../enums/Report.h"
 #include "../managers/nm.h"
 
 #include "../managers/pdfmanager.h"
+#include "../managers/pdfmanagersecond.h"
 
 #include "calendarpage.h"
 
@@ -49,6 +52,8 @@ private slots:
 
     void on_ToPDFButton_clicked();
 
+    void on_ToPDFButtonSecond_clicked();
+
     void handleDoubleClick(const QModelIndex &index);
 
     void onSectionResized(int logicalIndex, int oldSize, int newSize);
@@ -80,6 +85,7 @@ private:
 
     QDate fromDate;
     QDate toDate;
+
 };
 
 #endif // GENERALREPORT_H

@@ -224,6 +224,13 @@ void EditableReport::on_checkBox_checkStateChanged(Qt::CheckState state)
     setTable();
 }
 
+void EditableReport::on_ToPDFButtonSecond_clicked()
+{
+    // Здесь реализуйте логику кнопки
+    QMessageBox::information(this, "Успех", "Кнопка 'PDF по дням' нажата");
+}
+
+
 void EditableReport::on_ToPDFButton_clicked()
 {
     QString title;

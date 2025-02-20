@@ -65,6 +65,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         scripts/columnselectiondialog.h scripts/columnselectiondialog.cpp
         enums/eSetting.h
         scripts/awss3uploader.h scripts/awss3uploader.cpp
+        managers/pdfmanagersecond.h managers/pdfmanagersecond.cpp
 
 
     )
