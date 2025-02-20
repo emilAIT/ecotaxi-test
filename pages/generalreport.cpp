@@ -120,8 +120,27 @@ void GeneralReport::setTable()
 
     switch (this->mode)
     {
+    case Report::DriverCharge:
+        model->setHorizontalHeaderLabels({"id","Имя", "KWH"});
+        for (const QVariant &driver : ReportOperations::getDriverChargeReport(this->fromDate, this->toDate))
+        {
+            QVariantList drivers = driver.toList();
+
+            // Отладочная информация
+            qDebug() << "Driver name:" << drivers[0].toString();  // Проверяем значение имени водителя
+            qDebug() << "Charge count:" << drivers[1].toInt();  // Проверяем значение chargeCount
+
+            QList<QStandardItem *> row;
+
+            row.append(new QStandardItem(drivers[0].toString()));  // Добавляем имя водителя
+            row.append(new QStandardItem(drivers[1].toString()));  // Добавляем количество зарядок
+            row.append(new QStandardItem(drivers[2].toString()));
+            model->appendRow(row);
+        }
+        break;
+
     case Report::Cars:
-        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
         for (const QVariant &car : ReportOperations::getCarsReport(this->fromDate, this->toDate))
         {
             QVariantList cars = car.toList();
@@ -242,7 +261,7 @@ void GeneralReport::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
         for (const QVariant &investor : ReportOperations::getInvestorsReport(this->fromDate, this->toDate))
         {
             QVariantList investors = investor.toList();
@@ -489,7 +508,7 @@ void GeneralReport::setBottomTable()
             QVariantList cars = car.toList();
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -563,7 +582,7 @@ void GeneralReport::setBottomTable()
             qDebug() << investors;
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -619,6 +638,7 @@ void GeneralReport::setBottomTable()
         }
         break;
 
+
     case Report::Users:
         for (const QVariant &user : ReportOperations::getAllUsersReport(this->fromDate, this->toDate))
         {
@@ -634,6 +654,22 @@ void GeneralReport::setBottomTable()
             row << new QStandardItem("Итого");
             row << new QStandardItem(users[0].toString());
             row << new QStandardItem(users[1].toString());
+            model->appendRow(row);
+        }
+        break;
+    case Report::DriverCharge:
+        for (const QVariant &location : ReportOperations::getAllLocationsReport(this->fromDate, this->toDate))
+        {
+            QVariantList locations = location.toList();
+            model->setHorizontalHeaderLabels({
+                "Итого",
+                "KWH",
+            });
+
+            QList<QStandardItem *> row;
+
+            row << new QStandardItem("Итого");
+            row << new QStandardItem(locations[0].toString());
             model->appendRow(row);
         }
         break;

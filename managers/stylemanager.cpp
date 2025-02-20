@@ -203,9 +203,7 @@ QComboBox::drop-down:button {
 }
 
 QComboBox::item {
-    color: )A" +
-                     vars["textColor"].toString() + R"A(;
-    padding: 5px;
+
 }
 
 QComboBox::down-arrow {
