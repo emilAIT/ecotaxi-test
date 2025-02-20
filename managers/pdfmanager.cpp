@@ -4,8 +4,8 @@ PDFmanager::PDFmanager() {}
 
 QString PDFmanager::getStyleSheet()
 {
-  return
-      R"S(
+    return
+        R"S(
 /*
 reset css
 */
@@ -154,9 +154,10 @@ h1 {
 )S";
 }
 
+
 QString PDFmanager::getAppDir()
 {
-  return QCoreApplication::applicationDirPath();
+    return QCoreApplication::applicationDirPath();
 }
 
 QString PDFmanager::getDesktopDir()
@@ -166,74 +167,183 @@ QString PDFmanager::getDesktopDir()
 
 void PDFmanager::createPDF(QString html, QString title)
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
 
-  QDateTime time = QDateTime::currentDateTime();
-  QString appDir = getDesktopDir();
-  QDir folder(appDir + "/отчеты");
-  if (!folder.exists())
-  {
-    folder.mkdir(appDir + "/отчеты");
-  }
+    QDateTime time = QDateTime::currentDateTime();
+    QString appDir = getDesktopDir();
+    QDir folder(appDir + "/отчеты");
+    if (!folder.exists())
+    {
+        folder.mkdir(appDir + "/отчеты");
+    }
 
-  QString fileName = title + " " + time.toString("dd.MM.yyyy HH-mm-ss") + ".pdf";
-  fileName.replace(" ", "_");
+    QString fileName = title + " " + time.toString("dd.MM.yyyy HH-mm-ss") + ".pdf";
+    fileName.replace(" ", "_");
 
-  QString filePath = appDir + "/отчеты/" + fileName;
+    QString filePath = appDir + "/отчеты/" + fileName;
 
-  QPrinter printer(QPrinter::PrinterResolution);
-  printer.setOutputFormat(QPrinter::PdfFormat);
-  printer.setPageSize(QPageSize::A4);
-  printer.setOutputFileName(filePath);
+    QPrinter printer(QPrinter::PrinterResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setPageSize(QPageSize::A4);
+    printer.setOutputFileName(filePath);
 
-  qDebug() << printer.outputFileName();
+    qDebug() << printer.outputFileName();
 
-  QTextDocument doc;
+    QTextDocument doc;
 
-  doc.setDefaultStyleSheet(getStyleSheet());
-  doc.setHtml(getHeader(time) + html + getFooter(time));
-  doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
+    doc.setDefaultStyleSheet(getStyleSheet());
+    doc.setHtml(getHeader(time) + html + getFooter(time));
+    doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
 
-  doc.print(&printer);
+    doc.print(&printer);
 
-  QMimeData *mimeData = new QMimeData();
-  mimeData->setUrls({QUrl::fromLocalFile(filePath)});
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setUrls({QUrl::fromLocalFile(filePath)});
 
-  QClipboard *clipboard = QApplication::clipboard();
-  clipboard->setMimeData(mimeData);
-  
-  QApplication::restoreOverrideCursor();
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setMimeData(mimeData);
 
-  QMessageBox popup;
+    QApplication::restoreOverrideCursor();
 
-  popup.setTextFormat(Qt::MarkdownText);
-  popup.setText("Отчет сохранен в папке отчеты на рабочем столе и скопирован в буфер обмена");
+    QMessageBox popup;
 
-  popup.exec();
+    popup.setTextFormat(Qt::MarkdownText);
+    popup.setText("Отчет сохранен в папке отчеты на рабочем столе и скопирован в буфер обмена");
+
+    popup.exec();
 }
 
 QString PDFmanager::getHeader(QDateTime time)
 {
-  return "<p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p><h1 width=100% color='#007700'>ECO TAXI</h1>";
+    return "<p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p><h1 width=100% color='#007700'>ECO TAXI</h1>";
 }
 
 QString PDFmanager::getFooter(QDateTime time)
 {
-  return "<br><p>ECO TAXI</p><p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p>";
+    return "<br><p>ECO TAXI</p><p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p>";
 }
 
 void PDFmanager::ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
-  QString html = "<h2>" + title + "</h2>";
-  html += "<p>" + dates + "</p><br>";
+    QString html = "<h2>" + title + "</h2>";
+    html += "<p>" + dates + "</p><br>";
 
-  for (int i = 0; i < models.size(); i++)
-  {
-    html += modelToHTML(models[i], start != 0 && i == 0 ? 1 : 0);
-  }
+    for (int i = 0; i < models.size(); i++)
+    {
+        html += modelToHTML(models[i], start != 0 && i == 0 ? 1 : 0);
+    }
 
-  createPDF(html, title + " " + dates);
+    createPDF(html, title + " " + dates);
 }
+
+
+
+void PDFmanager::exportDailyReport(QAbstractItemModel *model) {
+    if (!model || model->rowCount() == 0) {
+        QMessageBox::warning(nullptr, "Ошибка", "Модель данных пуста!");
+        return;
+    }
+
+
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    QString title = "Отчет_по_Дням_" + QDate::currentDate().toString("dd.MM.yyyy");
+
+    // Открываем окно выбора колонок
+    // ColumnSelectionDialog dialog({model}, "Выбор колонок для ежедневного отчета", QDate::currentDate().toString("dd.MM.yyyy"), 0);
+    // if (dialog.exec() != QDialog::Accepted) {
+    //     QApplication::restoreOverrideCursor();
+    //     return;
+    // }
+
+    // Получаем отфильтрованную модель
+    QAbstractItemModel* filteredModel = model;
+
+    // Определяем, в каком столбце находится дата
+    int dateColumnIndex = -1;
+    for (int j = 0; j < filteredModel->columnCount(); j++) {
+        QString header = filteredModel->headerData(j, Qt::Horizontal).toString().toLower();
+        if (header.contains("дата") || header.contains("date")) {
+            dateColumnIndex = j;
+            break;
+        }
+    }
+    if (dateColumnIndex == -1) {
+        QMessageBox::warning(nullptr, "Ошибка", "Не найдена колонка с датой!");
+        QApplication::restoreOverrideCursor();
+        return;
+    }
+
+    // Группируем и сортируем данные по дате
+    QMap<QDate, QList<QList<QVariant>>> groupedData;
+    for (int i = 0; i < filteredModel->rowCount(); i++) {
+        QVariant dateVariant = filteredModel->index(i, dateColumnIndex).data(Qt::DisplayRole);
+        QDate date = QDate::fromString(dateVariant.toString(), "yyyy-MM-dd");
+        if (!date.isValid()) date = dateVariant.toDate();
+        if (!date.isValid()) continue;
+
+        QList<QVariant> row;
+        for (int j = 0; j < filteredModel->columnCount(); j++) {
+            row.append(filteredModel->index(i, j).data(Qt::DisplayRole));
+        }
+        groupedData[date].append(row);
+    }
+
+    QList<QDate> sortedDates = groupedData.keys();
+    std::sort(sortedDates.begin(), sortedDates.end());
+
+    // Генерация HTML с разбиением по дням на разные страницы
+    QString html;
+    bool firstPage = true;
+    for (const QDate& date : sortedDates) {
+        if (!firstPage) {
+            html += "<div style='page-break-before: always'></div>";  // Разрыв страницы после первой
+        }
+        firstPage = false;
+
+        html += "<h2>Отчет за " + date.toString("dd.MM.yyyy") + "</h2>";
+        html += generateTableHtml(groupedData[date], filteredModel);
+    }
+
+    createPDF(html, title);
+    QApplication::restoreOverrideCursor();
+}
+
+
+
+
+
+QString PDFmanager::generateTableHtml(const QList<QList<QVariant>>& data, QAbstractItemModel* model) {
+    QString html;
+    html += "<table style='width: 100%; border-collapse: collapse; margin: 0 auto;'>";
+    html += "<thead><tr>";
+
+    // Добавляем заголовки
+    for (int j = 0; j < model->columnCount(); j++) {
+        QString header = model->headerData(j, Qt::Horizontal).toString();
+        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>" + header + "</th>";
+    }
+    html += "</tr></thead><tbody>";
+
+    // Добавляем строки
+    for (const QList<QVariant>& row : data) {
+        html += "<tr>";
+        for (const QVariant& cell : row) {
+            html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>" + cell.toString() + "</td>";
+        }
+        html += "</tr>";
+    }
+    html += "</tbody></table>";
+    return html;
+}
+
+
+
+
+
+
+
+
+
 
 QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 {
@@ -297,9 +407,12 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 
 
 
+
+
 void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
     ColumnSelectionDialog dialog(models, title, dates, start);
-    
+
     dialog.exec();
 }
+

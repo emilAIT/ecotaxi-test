@@ -14,16 +14,17 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
     ui->ReportsButton->setCurrentIndex(-1);
     ui->FinesButton->setCurrentIndex(-1);
 
+
     ui->timeEdit->setDisabled(true);
 
-    // hide settings and reports button if user is not admin
     if (!u.checkIsAdmin())
     {
-        // ui->SettingsButton->setDisabled(true);
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+        //
+        ui->ReportsButton->clear();
+        ui->ReportsButton->addItem("По локациям");
     }
     else if (u.getId() != -1)
     {
@@ -175,9 +176,17 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
     setReportIndex();
-    if (index > 7)
-        index += 7;
-    nav->openReport(index);
+    userSession &u = userSession::getInstance();
+    if (index ==0 && !u.checkIsAdmin()){
+        nav->openReport(4);
+    }else{
+        setReportIndex();
+        if (index>7)
+            index+=7;
+        nav->openReport(index);
+    }
+
+
 }
 
 void MainWindow::on_FinesButton_currentIndexChanged(int index)
