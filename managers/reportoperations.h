@@ -62,8 +62,8 @@ public:
     QVariantList static getLocationReport(int locationId, QDate fromDate, QDate toDate);
     QVariantList static getAllLocationReport(int locationId, QDate fromDate, QDate toDate);
 
-    QVariantList static getChargesByCarReport(int carId, QDate fromDate, QDate toDate);
-    QVariantList static getAllChargesByCarReport(int carId, QDate fromDate, QDate toDate);
+    QVariantList static getDriversChargesByDriversReport(int id, QDate fromDate, QDate toDate);
+    QVariantList static getAllChargesByCarReport(int id, QDate fromDate, QDate toDate);
 
     QVariantList static getUserReport(int userId, QDate fromDate, QDate toDate);
     QVariantList static getAllUserReport(int userId, QDate fromDate, QDate toDate);
@@ -80,6 +80,21 @@ public:
 
     QVariantList static getFinesReport();
     QVariantList static getNotPaidFinesReport();
+
+    ///////////////////////////////////
+
+    QVariantList static getDriversChargesReport(QDate fromDate, QDate toDate);
+    QVariantList static getAllDriversChargesReport(QDate fromDate, QDate toDate);
+
+    QVariantList static getDriversChargesByCarReport(int id, QDate fromDate, QDate toDate);
+    QVariantList static getAllChargesByDriversReport(int id, QDate fromDate, QDate toDate);
+
+    /// //////////////////////////////
+    QVariantList static getCarsReportByDays(QDate fromDate, QDate toDate);
+    /// //////////////////////////////
+    ///
+    ///
+    /// /// /////////////////////////
 };
 
 #endif // REPORTOPERATIONS_H

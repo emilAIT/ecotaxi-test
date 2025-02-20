@@ -112,6 +112,10 @@ void ReportPage::setHeader()
         ui->Header->setText("ПО ШТРАФАМ ПО ВОДИТЕЛЮ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ");
         break;
+    case Report::DriversCharges:
+        ui->Header->setText("ПО ЗАРЯДКАМ ПО ВОДИТЕЛЯМ");
+        ui->ReportButton->setText("ОТЧЕТ ПО ЗАР. ВОДИТЕЛЕЙ");
+        break;
     
     default:
         break;
@@ -123,6 +127,40 @@ void ReportPage::setTable()
     QStandardItemModel *model = new QStandardItemModel();
     switch (this->mode)
     {
+
+
+
+    case Report::DriversCharges:
+        model->setHorizontalHeaderLabels({"Дата", "Машины", "Локация", "KWH", "Время"});
+        for (const QVariant &chargeData : ReportOperations::getDriversChargesByCarReport(this -> id, this->fromDate, this->toDate))
+        {
+            QVariantList charge = chargeData.toList();
+            QList<QStandardItem *> row;
+
+            QStandardItem *dateItem = new QStandardItem();
+            dateItem->setData(charge[0].toDateTime(), Qt::DisplayRole);
+            row.append(dateItem);
+
+            // Create QStandardItem for Водитель and Локация as strings
+            row.append(new QStandardItem(charge[1].toString())); // Водитель
+            row.append(new QStandardItem(charge[2].toString())); // Локация
+
+            // Ensure numerical data (KWH and Время) is set correctly for sorting as integers
+            QStandardItem *kwhItem = new QStandardItem();
+            kwhItem->setData(charge[3].toInt(), Qt::DisplayRole); // KWH
+            row.append(kwhItem);
+
+            QStandardItem *timeItem = new QStandardItem();
+            timeItem->setData(charge[4].toInt(), Qt::DisplayRole); // Время
+            row.append(timeItem);
+
+            model->appendRow(row);
+        }
+        break;
+
+
+
+
     case Report::Cars:
         model->setHorizontalHeaderLabels({"Дата", "Тип", "Водитель", "Сумма", "Описание"});
         for (const QVariant &carData : ReportOperations::getCarReport(this->id, this->fromDate, this->toDate))
@@ -175,7 +213,7 @@ void ReportPage::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -258,7 +296,7 @@ void ReportPage::setTable()
 
     case Report::Charges:
         model->setHorizontalHeaderLabels({"Дата", "Водитель", "Локация", "KWH", "Время"});
-        for (const QVariant &chargeData : ReportOperations::getChargesByCarReport(this->id, this->fromDate, this->toDate))
+        for (const QVariant &chargeData : ReportOperations::getDriversChargesByDriversReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList charge = chargeData.toList();
             QList<QStandardItem *> row;
@@ -358,7 +396,7 @@ void ReportPage::setTable()
             model->appendRow(row);
         }
         break;
-    
+
     default:
         break;
     }
@@ -375,6 +413,7 @@ void ReportPage::setTable()
         ui->tableView->setColumnHidden(0, false);
         ui->ItemButton->setDisabled(true);
     }
+
     ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
@@ -398,7 +437,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -448,7 +487,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -508,6 +547,22 @@ void ReportPage::setBottomTable()
         if (true)
         {
             QVariantList report = ReportOperations::getAllChargesByCarReport(this->id, this->fromDate, this->toDate);
+            model->setHorizontalHeaderLabels({
+                "Итого",
+                "KWH",
+            });
+
+            QList<QStandardItem *> row;
+            row.append(new QStandardItem("Итого"));
+            row.append(new QStandardItem(report[0].toString()));
+            model->appendRow(row);
+        }
+        break;
+
+    case Report::DriversCharges:
+        if (true)
+        {
+            QVariantList report = ReportOperations::getAllChargesByDriversReport(this->id, this->fromDate, this->toDate);
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "KWH",
@@ -591,7 +646,6 @@ void ReportPage::setBottomTable()
             model->appendRow(row);
         }
         break;
-
     default:
         break;
     }
@@ -675,6 +729,16 @@ void ReportPage::setSideTable()
             if (this->id != 0 && user.getId() == this->id)
                 row = model->rowCount();
             model->appendRow({new QStandardItem(QString::number(user.getId())), new QStandardItem(user.getName())});
+        }
+        break;
+
+    case Report::DriversCharges:
+        model->setHorizontalHeaderLabels({"id", "Водители"});
+        for (Driver driver : Operations::selectAllDrivers())
+        {
+            if (this->id != 0 && driver.getId() == this->id)
+                row = model->rowCount();
+            model->appendRow({new QStandardItem(QString::number(driver.getId())), new QStandardItem(driver.getName())});
         }
         break;
     }
@@ -779,7 +843,6 @@ void ReportPage::setTableSizes()
         ui->tableView->setColumnWidth(4, 160);
         ui->tableView->setColumnWidth(5, 160);
         break;
-
     default:
         break;
     }
@@ -857,6 +920,9 @@ void ReportPage::on_ReportButton_clicked()
     case Report::FinesByDrivers:
         nav->openFines(2, 0, fromDate, toDate);
         break;
+    case Report::DriversCharges:
+        nav->openReport(16, 0, fromDate, toDate);
+        break;
     default:
         break;
     }
@@ -927,6 +993,10 @@ void ReportPage::on_ToPDFButton_clicked()
     
     case Report::FinesByDrivers:
         title = "Отчет по штрафам по водителю " + Operations::getDriver(this->id).getName();
+        start = 0;
+        break;
+    case Report::DriversCharges:
+        title = "Отчет по зар. по водителю " + Operations::getDriver(this->id).getName();
         start = 0;
         break;
 

@@ -54,7 +54,7 @@ private slots:
     void on_chargesButton_clicked();
     void on_repairsButton_clicked();
 
-    void on_addImagesButton_clicked();
+   void on_addImagesButton_clicked();
 
     void on_dateButton_clicked();
 
