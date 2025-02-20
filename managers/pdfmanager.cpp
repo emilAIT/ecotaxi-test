@@ -303,3 +303,5 @@ void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemMo
     
     dialog.exec();
 }
+
+

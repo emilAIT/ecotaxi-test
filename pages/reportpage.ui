@@ -73,14 +73,14 @@
        <property name="spacing">
         <number>0</number>
        </property>
-       <item alignment="Qt::AlignHCenter">
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QLabel" name="EcoTaxi">
          <property name="text">
           <string>ОТЧЁТ</string>
          </property>
         </widget>
        </item>
-       <item alignment="Qt::AlignHCenter">
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QLabel" name="Header">
          <property name="text">
           <string>TextLabel</string>
@@ -132,13 +132,13 @@
           </size>
          </property>
          <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
+          <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
          </property>
          <property name="selectionMode">
-          <enum>QAbstractItemView::SingleSelection</enum>
+          <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
          </property>
          <property name="selectionBehavior">
-          <enum>QAbstractItemView::SelectRows</enum>
+          <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
          </property>
          <attribute name="verticalHeaderVisible">
           <bool>true</bool>
@@ -156,14 +156,14 @@
          <property name="rightMargin">
           <number>0</number>
          </property>
-         <item alignment="Qt::AlignRight">
+         <item alignment="Qt::AlignmentFlag::AlignRight">
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>от </string>
            </property>
           </widget>
          </item>
-         <item alignment="Qt::AlignRight">
+         <item alignment="Qt::AlignmentFlag::AlignRight">
           <widget class="QPushButton" name="FromDateButton">
            <property name="minimumSize">
             <size>
@@ -180,7 +180,7 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_9">
-         <item alignment="Qt::AlignRight">
+         <item alignment="Qt::AlignmentFlag::AlignRight">
           <widget class="QLabel" name="label">
            <property name="text">
             <string>     до</string>
@@ -212,13 +212,13 @@
        <item>
         <widget class="QTableView" name="tableView">
          <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
+          <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
          </property>
          <property name="selectionMode">
-          <enum>QAbstractItemView::SingleSelection</enum>
+          <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
          </property>
          <property name="selectionBehavior">
-          <enum>QAbstractItemView::SelectRows</enum>
+          <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
          </property>
          <property name="sortingEnabled">
           <bool>true</bool>
@@ -243,7 +243,7 @@
           </size>
          </property>
          <property name="editTriggers">
-          <set>QAbstractItemView::NoEditTriggers</set>
+          <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
          </property>
          <attribute name="verticalHeaderVisible">
           <bool>false</bool>
@@ -284,7 +284,7 @@
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignLeft">
+     <item>
       <widget class="QPushButton" name="ReportButton">
        <property name="minimumSize">
         <size>
@@ -310,7 +310,7 @@
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignRight">
+     <item>
       <widget class="QPushButton" name="ToPDFButton">
        <property name="minimumSize">
         <size>

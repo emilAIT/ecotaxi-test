@@ -12,6 +12,10 @@ class ReportOperations
 public:
     ReportOperations();
 
+    QString static convertDataToHTML(const QVariantList &data);
+    void static createDailyPDF(QString title, QDate fromDate, QDate toDate);
+    QVariantList static getDailyReport(QDate fromDate, QDate toDate);
+
     // general reports
     QVariantList static getCarsReport(QDate fromDate, QDate toDate);
     QVariantList static getAllCarsReport(QDate fromDate, QDate toDate);
@@ -45,6 +49,10 @@ public:
 
     QVariantList static getFinesByDriversReport(QDate fromDate, QDate toDate);
     QVariantList static getAllFinesByDriversReport(QDate fromDate, QDate toDate);
+
+    QVariantList static getDriverChargesReportt(QDate fromDate, QDate toDate);
+    QVariantList static getAllDriverChargesReportt(QDate fromDate, QDate toDate);
+
 
     // reports by item
     QVariantList static getCarReport(int carId, QDate fromDate, QDate toDate);
@@ -80,6 +88,9 @@ public:
 
     QVariantList static getFinesReport();
     QVariantList static getNotPaidFinesReport();
+
+    QVariantList static getDriverChargesReport(int driverId, QDate fromDate, QDate toDate);
+    QVariantList static getAllDriverChargesReport(int driverId, QDate fromDate, QDate toDate);
 };
 
 #endif // REPORTOPERATIONS_H
