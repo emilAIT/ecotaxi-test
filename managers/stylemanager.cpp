@@ -1,5 +1,6 @@
 #include "stylemanager.h"
 
+
 styleManager::styleManager(QApplication *app)
 {
     QVariantMap vars;
