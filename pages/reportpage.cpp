@@ -75,6 +75,7 @@ void ReportPage::setHeader()
     case Report::Drivers:
         ui->Header->setText("ПО ВОДИТЕЛЮ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ");
+
         break;
 
     case Report::Investors:
@@ -123,6 +124,21 @@ void ReportPage::setTable()
     QStandardItemModel *model = new QStandardItemModel();
     switch (this->mode)
     {
+    case Report::DriverCharge:
+        model->setHorizontalHeaderLabels({"Имя", "KWH"});
+        for (const QVariant &driverData : ReportOperations::getDriverChargeReport(this->fromDate, this->toDate))
+        {
+            QVariantList driver = driverData.toList();
+            QList<QStandardItem *> row;
+
+            row.append(new QStandardItem(driver[0].toString()));
+            QStandardItem *chargeCountItem = new QStandardItem();
+            chargeCountItem->setData(driver[1].toInt(), Qt::DisplayRole);
+            row.append(chargeCountItem);
+
+            model->appendRow(row);
+        }
+        break;
     case Report::Cars:
         model->setHorizontalHeaderLabels({"Дата", "Тип", "Водитель", "Сумма", "Описание"});
         for (const QVariant &carData : ReportOperations::getCarReport(this->id, this->fromDate, this->toDate))
@@ -134,16 +150,14 @@ void ReportPage::setTable()
             dateItem->setData(car[0].toDateTime(), Qt::DisplayRole);
             row.append(dateItem);
 
-            // Other columns as string
-            row.append(new QStandardItem(car[1].toString())); // Тип
-            row.append(new QStandardItem(car[2].toString())); // Водитель
+            row.append(new QStandardItem(car[1].toString()));
+            row.append(new QStandardItem(car[2].toString()));
 
-            // Ensure numerical data (Сумма) is set correctly for sorting as integers
             QStandardItem *amountItem = new QStandardItem();
-            amountItem->setData(car[3].toInt(), Qt::DisplayRole); // Сумма
+            amountItem->setData(car[3].toInt(), Qt::DisplayRole);
             row.append(amountItem);
 
-            row.append(new QStandardItem(car[4].toString())); // Описание
+            row.append(new QStandardItem(car[4].toString()));
 
             model->appendRow(row);
         }
@@ -159,23 +173,20 @@ void ReportPage::setTable()
             dateItem->setData(driver[0].toDateTime(), Qt::DisplayRole);
             row.append(dateItem);
 
-            // Create QStandardItem for Тип and Машина as strings
-            row.append(new QStandardItem(driver[1].toString())); // Тип
-            row.append(new QStandardItem(driver[2].toString())); // Машина
+            row.append(new QStandardItem(driver[1].toString()));
+            row.append(new QStandardItem(driver[2].toString()));
 
-            // Ensure numerical data (Сумма) is set correctly for sorting as integers
             QStandardItem *amountItem = new QStandardItem();
-            amountItem->setData(driver[3].toInt(), Qt::DisplayRole); // Сумма
+            amountItem->setData(driver[3].toInt(), Qt::DisplayRole);
             row.append(amountItem);
 
-            // Create QStandardItem for Описание as string
-            row.append(new QStandardItem(driver[4].toString())); // Описание
+            row.append(new QStandardItem(driver[4].toString()));
 
             model->appendRow(row);
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -212,16 +223,13 @@ void ReportPage::setTable()
             dateItem->setData(type[0].toDateTime(), Qt::DisplayRole);
             row.append(dateItem);
 
-            // Create QStandardItem for Водитель, Машина, and Описание as strings
             row.append(new QStandardItem(type[1].toString())); // Водитель
             row.append(new QStandardItem(type[2].toString())); // Машина
 
-            // Ensure numerical data (Сумма) is set correctly for sorting as integers
             QStandardItem *amountItem = new QStandardItem();
             amountItem->setData(type[3].toInt(), Qt::DisplayRole); // Сумма
             row.append(amountItem);
 
-            // Create QStandardItem for Описание as string
             row.append(new QStandardItem(type[4].toString())); // Описание
 
             model->appendRow(row);
@@ -398,7 +406,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -448,7 +456,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -857,6 +865,7 @@ void ReportPage::on_ReportButton_clicked()
     case Report::FinesByDrivers:
         nav->openFines(2, 0, fromDate, toDate);
         break;
+
     default:
         break;
     }
