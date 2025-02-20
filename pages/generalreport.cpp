@@ -60,6 +60,12 @@ void GeneralReport::setHeader()
         ui->ReportButton->setText("ОТЧЕТ ПО МАШИНЕ");
         break;
 
+    case Report::ChargesOfDrivers:
+        ui->Header->setText("ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ");
+        ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
+        break;
+
+
     case Report::Drivers:
         ui->Header->setText("ПО ВОДИТЕЛЯМ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
@@ -121,7 +127,7 @@ void GeneralReport::setTable()
     switch (this->mode)
     {
     case Report::Cars:
-        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
         for (const QVariant &car : ReportOperations::getCarsReport(this->fromDate, this->toDate))
         {
             QVariantList cars = car.toList();
@@ -177,6 +183,27 @@ void GeneralReport::setTable()
             investorsIncomeItem->setData(cars[13].toInt(), Qt::DisplayRole);
             row.append(investorsIncomeItem); // investorsIncome
 
+            model->appendRow(row);
+        }
+
+    case Report::ChargesOfDrivers:
+        model->setHorizontalHeaderLabels({"ID", "Водитель", "KWH"});
+        for (const QVariant &driver : ReportOperations::getDriversReport(this->fromDate, this->toDate))
+        {
+            QVariantList drivers = driver.toList();
+
+            if (drivers[4].toInt() == 0) {
+                continue;
+            }
+
+            QList<QStandardItem *> row;
+
+            row.append(new QStandardItem(drivers[0].toString()));  // ID
+            row.append(new QStandardItem(drivers[1].toString()));  // Имя водителя
+
+            QStandardItem *kwhItem = new QStandardItem();
+            kwhItem->setData(drivers[4].toInt()/10, Qt::DisplayRole);
+            row.append(kwhItem); // kwh
             model->appendRow(row);
         }
 
@@ -242,7 +269,7 @@ void GeneralReport::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
         for (const QVariant &investor : ReportOperations::getInvestorsReport(this->fromDate, this->toDate))
         {
             QVariantList investors = investor.toList();
@@ -489,7 +516,7 @@ void GeneralReport::setBottomTable()
             QVariantList cars = car.toList();
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -563,7 +590,7 @@ void GeneralReport::setBottomTable()
             qDebug() << investors;
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",

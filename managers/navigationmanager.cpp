@@ -148,46 +148,53 @@ bool navigationManager::openReport(int index, int id, QDate from, QDate to)
         lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Charges, from, to); };
         changeWindow(3);
         break;
+
     case 7:
+        this->GReportPage->setReport(Report::ChargesOfDrivers, from, to);
+        lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::ChargesOfDrivers, from, to); };
+        changeWindow(3);
+        break;
+
+    case 8:
         this->ReportsPage->setReport(Report::Types, id, from, to);
         lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Types, id, from, to); };
         changeWindow(4);
         break;
-    case 8:
+    case 9:
         this->ReportsPage->setReport(Report::Investors, id, from, to);
         lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Investors, id, from, to); };
         changeWindow(4);
         break;
-    case 9:
+    case 10:
         this->ReportsPage->setReport(Report::Cars, id, from, to);
         lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Cars, id, from, to); };
         changeWindow(4);
         break;
-    case 10:
+    case 11:
         this->ReportsPage->setReport(Report::Drivers, id, from, to);
         lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Drivers, id, from, to); };
         changeWindow(4);
         break;
-    case 11:
+    case 12:
         this->ReportsPage->setReport(Report::Users, id, from, to);
         lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Users, id, from, to); };
         changeWindow(4);
         break;
-    case 12:
+    case 13:
         this->ReportsPage->setReport(Report::Locations, id, from, to);
         lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Locations, id, from, to); };
         changeWindow(4);
         break;
-    case 13:
+    case 14:
         this->ReportsPage->setReport(Report::Charges, id, from, to);
         lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Charges, id, from, to); };
         changeWindow(4);
         break;
-    case 14:
+    case 15:
         this->GReportPage->setReport(Report::Users, from, to);
         lastFunc = [this](QDate from=QDate(), QDate to=QDate()) {this->GReportPage->setReport(Report::Users, from, to);};
         break;
-    case 15:
+    case 16:
         this->GReportPage->setReport(Report::Debts, from, to);
         lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Debts, from, to); };
         changeWindow(3);

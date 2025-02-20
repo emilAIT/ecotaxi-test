@@ -112,6 +112,11 @@
           </item>
           <item>
            <property name="text">
+            <string>ПО KWH</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
             <string>ПО ТИПУ</string>
            </property>
           </item>
