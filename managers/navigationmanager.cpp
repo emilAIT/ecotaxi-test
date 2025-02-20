@@ -1,5 +1,6 @@
 #include "navigationmanager.h"
 #include "ui_navigationmanager.h"
+#include <QDebug>
 
 navigationManager &navigationManager::getInstance()
 {
@@ -111,6 +112,8 @@ bool navigationManager::openEvents(int id, QDate date)
 
 bool navigationManager::openReport(int index, int id, QDate from, QDate to)
 {
+
+    qDebug() << "Opening report with index: " << index;
     switch (index)
     {
     case 0:
@@ -158,11 +161,16 @@ bool navigationManager::openReport(int index, int id, QDate from, QDate to)
         lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Investors, id, from, to); };
         changeWindow(4);
         break;
+
     case 9:
-        this->ReportsPage->setReport(Report::Cars, id, from, to);
-        lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Cars, id, from, to); };
+        qDebug() << "Opening Driver Charging Report";
+        this->ReportsPage->setReport(Report::DriverCharging, id, from, to);
+        lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { 
+            this->ReportsPage->setReport(Report::DriverCharging, id, from, to); 
+        };
         changeWindow(4);
-        break;
+        return true;
+
     case 10:
         this->ReportsPage->setReport(Report::Drivers, id, from, to);
         lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Drivers, id, from, to); };
@@ -192,9 +200,16 @@ bool navigationManager::openReport(int index, int id, QDate from, QDate to)
         lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Debts, from, to); };
         changeWindow(3);
         break;
-    default:
-        return false;
+
+    case 16:
+        this->ReportsPage->setReport(Report::Cars, id, from, to);
+        lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::Cars, id, from, to); };
+        changeWindow(4);
         break;
+
+    default:
+        qDebug() << "Unknown report index: " << index;
+        return false;
     }
     return true;
 }
