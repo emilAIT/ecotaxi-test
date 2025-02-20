@@ -111,7 +111,15 @@ void GeneralReport::setHeader()
         ui->Header->setText("ПО ШТРАФАМ ПО ВОДИТЕЛЯМ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
         break;
+
+
+    case Report::DriverCharge:
+        ui->Header->setText("ПО ЗАРЯДКАМ ВОДИТЕЛЯ");
+        ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
+        break;
+
     }
+
 }
 
 void GeneralReport::setTable()
@@ -121,7 +129,7 @@ void GeneralReport::setTable()
     switch (this->mode)
     {
     case Report::Cars:
-        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
         for (const QVariant &car : ReportOperations::getCarsReport(this->fromDate, this->toDate))
         {
             QVariantList cars = car.toList();
@@ -242,7 +250,7 @@ void GeneralReport::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
         for (const QVariant &investor : ReportOperations::getInvestorsReport(this->fromDate, this->toDate))
         {
             QVariantList investors = investor.toList();
@@ -450,6 +458,25 @@ void GeneralReport::setTable()
         }
         break;
 
+    case Report::DriverCharge:
+        model->setHorizontalHeaderLabels({"id","Имя", "Зарядка"});
+        for (const QVariant &driver : ReportOperations::getDriverChargeReport(this->fromDate, this->toDate))
+        {
+            QVariantList drivers = driver.toList();
+
+            // Отладочная информация
+            qDebug() << "Driver name:" << drivers[0].toString();  // Проверяем значение имени водителя
+            qDebug() << "Charge count:" << drivers[1].toInt();  // Проверяем значение chargeCount
+
+            QList<QStandardItem *> row;
+
+            row.append(new QStandardItem(drivers[0].toString()));  // Добавляем имя водителя
+            row.append(new QStandardItem(drivers[1].toString()));  // Добавляем количество зарядок
+            row.append(new QStandardItem(drivers[2].toString()));
+            model->appendRow(row);
+        }
+        break;
+
     default:
         break;
     }
@@ -489,7 +516,7 @@ void GeneralReport::setBottomTable()
             QVariantList cars = car.toList();
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -563,7 +590,7 @@ void GeneralReport::setBottomTable()
             qDebug() << investors;
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -866,6 +893,10 @@ void GeneralReport::on_SettingsButton_clicked()
     case Report::FinesByCars:
         nav->openFines(0);
         break;
+
+    case Report::DriverCharge:
+        nav->openFines(7);
+        break;
     default:
         break;
     }
@@ -1060,6 +1091,10 @@ void GeneralReport::on_ToPDFButton_clicked()
     
     case Report::FinesByCars:
         title = "Отчет по штрафам по машинам";
+        break;
+
+    case Report::DriverCharge:
+        title = "Отчет по зарядкам водителя";
         break;
 
     default:
