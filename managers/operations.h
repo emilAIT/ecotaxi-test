@@ -97,6 +97,8 @@ public:
     bool static updateFine(int id, QDate date, int carId, int driverId, int amount, bool isPaid, QString description);
     bool static deleteFine(int id);
     QVariantList static getFine(int id);
+
+
 };
 
 #endif // OPERATIONS_H

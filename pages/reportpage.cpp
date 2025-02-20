@@ -175,7 +175,7 @@ void ReportPage::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -355,6 +355,21 @@ void ReportPage::setTable()
             row.append(new QStandardItem(fine[4].toBool() ? "Да" : "Нет")); // Оплачен
             row.append(new QStandardItem(fine[5].toString())); // Описание
 
+            model->appendRow(row);
+        }
+        break;
+
+    case Report::DriverCharge:
+        model->setHorizontalHeaderLabels({"Имя", "KWH"});
+        for (const QVariant &driver : ReportOperations::getDriverChargeReport(this->fromDate, this->toDate))
+        {
+            QVariantList drivers = driver.toList();
+            QList<QStandardItem *> row;
+
+            row.append(new QStandardItem(drivers[0].toString()));  // Добавляем имя водителя
+            QStandardItem *chargeCountItem = new QStandardItem();
+            chargeCountItem-> setData(drivers[1].toInt(),Qt::DisplayRole);
+            row.append(chargeCountItem);
             model->appendRow(row);
         }
         break;
@@ -635,6 +650,21 @@ void ReportPage::setSideTable()
             model->appendRow({new QStandardItem(QString::number(driver.getId())), new QStandardItem(driver.getName())});
         }
         break;
+
+    case Report::DriverCharge:
+
+        model->setHorizontalHeaderLabels({"Имя","KWH"});
+        for(const QVariant &driverData : ReportOperations::getDriverChargeReport(this->fromDate,this->toDate)){
+            QVariantList driver = driverData.toList();
+            QList<QStandardItem *> row;
+
+            row.append(new QStandardItem(driver[0].toString()));
+            QStandardItem *chargeCountItem = new QStandardItem();
+            chargeCountItem->setData(driver[1].toInt(), Qt::DisplayRole);
+            row.append(chargeCountItem);
+
+            model->appendRow(row);
+        }
 
     case Report::Investors:
         model->setHorizontalHeaderLabels({"id", "Инвесторы"});
@@ -929,6 +959,12 @@ void ReportPage::on_ToPDFButton_clicked()
         title = "Отчет по штрафам по водителю " + Operations::getDriver(this->id).getName();
         start = 0;
         break;
+
+    // case Report::DriverCharge:
+    //     title = "Отчет по зарядкам водителей " + Operations::getDriver(this->id).getName();
+    //     start = 0;
+    //     break;
+
 
     case Report::Debts:
         break;
