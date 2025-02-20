@@ -34,6 +34,8 @@ public:
     void setReport(Report mode, QDate from = QDate(), QDate to = QDate());
 
 private slots:
+    void onSecondReportButtonClicked(); // Для обработки клика на кнопку "PDF ПО ДНЯМ"
+
     void on_BackButton_clicked();
 
     void on_SettingsButton_clicked();
@@ -80,6 +82,10 @@ private:
 
     QDate fromDate;
     QDate toDate;
+
+    int id;
+
+    ReportOperations* reportOperations;
 };
 
 #endif // GENERALREPORT_H

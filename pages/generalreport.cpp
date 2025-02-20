@@ -1,6 +1,7 @@
 #include "generalreport.h"
 #include "pages/ui_generalreport.h"
 
+
 GeneralReport::GeneralReport(nm *nav, QWidget *parent)
     : QWidget(parent), ui(new Ui::GeneralReport)
 {
@@ -21,7 +22,59 @@ GeneralReport::GeneralReport(nm *nav, QWidget *parent)
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &GeneralReport::onSectionResized);
 
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &GeneralReport::onSortIndicatorChanged);
+
+
+    connect(ui->SecondReportButton, &QPushButton::clicked, this, &GeneralReport::onSecondReportButtonClicked);
+
 }
+
+void GeneralReport::onSecondReportButtonClicked() {
+    if (this->mode != Report::Cars)
+        return;
+
+    if (fromDate > toDate) {
+        qDebug() << "Ошибка: начальная дата позже конечной!";
+        QMessageBox::warning(this, "Ошибка", "Начальная дата не может быть позже конечной.");
+        return;
+    }
+
+    qDebug() << "Fetching report data from" << fromDate << "to" << toDate;
+
+    QVariantList rawData = ReportOperations::getCarsReportByDay(this->fromDate, this->toDate);
+    const int eventDayCol = 3;
+
+    QMap<QDate, QList<QVariantList>> eventsByDay;  // Структура для передачи в PDFmanager
+
+    for (const QVariant &row : rawData) {
+        QVariantList rowData = row.toList();
+        QDate eventDay = rowData[eventDayCol].toDate();
+
+        QVariantList eventRow;
+        for (int i = 0; i < rowData.size(); i++) {
+            if (i != eventDayCol)  // Пропускаем столбец с датой
+                eventRow.append(rowData[i]);
+        }
+
+        eventsByDay[eventDay].append(eventRow);
+    }
+
+    // Передача объекта reportOperations в конструктор PDFmanager
+    PDFmanager pdfManager(this->reportOperations);  // Используйте ваш объект reportOperations
+    pdfManager.setEventsByDay(eventsByDay);  // Передаем данные в PDFmanager
+    QString htmlContent = pdfManager.modelToHTMLByDay();
+
+
+    // Отладочный вывод
+    qDebug() << "HTML content generated: " << htmlContent;
+
+    // Генерация PDF
+    QString reportTitle = "Отчет по машине " + Operations::getCar(this->id).getSid();
+    pdfManager.createPDF(htmlContent, reportTitle);
+}
+
+
+
+
 
 GeneralReport::~GeneralReport()
 {
@@ -51,6 +104,68 @@ void GeneralReport::setReport(Report mode, QDate from, QDate to)
     setTableSizes();
 }
 
+// void GeneralReport::onSecondReportButtonClicked() {
+//     if (this->mode != Report::Cars)
+//         return;
+
+//     if (fromDate > toDate) {
+//         qDebug() << "Ошибка: начальная дата позже конечной!";
+//         QMessageBox::warning(this, "Ошибка", "Начальная дата не может быть позже конечной.");
+//         return;
+//     }
+
+//     qDebug() << "Fetching report data from" << fromDate << "to" << toDate;
+
+//     QVariantList rawData = ReportOperations::getCarsReportByDay(this->fromDate, this->toDate);
+//     const int eventDayCol = 3;
+
+//     QMap<QDate, QList<QVariantList>> eventsByDay;
+
+//     for (const QVariant &row : rawData) {
+//         QVariantList rowData = row.toList();
+//         QDate eventDay = rowData[eventDayCol].toDate();
+
+//         QVariantList eventRow;
+//         for (int i = 0; i < rowData.size(); i++) {
+//             if (i != eventDayCol)  // Пропускаем столбец с датой
+//                 eventRow.append(rowData[i]);
+//         }
+
+//         eventsByDay[eventDay].append(eventRow);
+//     }
+
+//     // Создаём модель данных для отчёта
+//     QStandardItemModel model;
+//     model.setColumnCount(rawData.isEmpty() ? 0 : rawData[0].toList().size() - 1); // -1, так как дата исключена
+
+//     // Установка заголовков (пример, можно заменить на реальные заголовки)
+//     model.setHorizontalHeaderLabels({"ID", "Машина", "Водитель", "Тип", "Сумма", "Описание"});
+
+//     // Заполняем модель данными
+//     for (const QDate &date : eventsByDay.keys()) {
+//         for (const QVariantList &event : eventsByDay[date]) {
+//             QList<QStandardItem *> rowItems;
+//             for (const QVariant &value : event) {
+//                 rowItems.append(new QStandardItem(value.toString()));
+//             }
+//             model.appendRow(rowItems);
+//         }
+//     }
+
+//     // Создание PDF через PDFmanager
+//     PDFmanager pdfManager(this->reportOperations);
+//     QString htmlContent = pdfManager.modelToHTMLByDay(&model);
+
+//     qDebug() << "HTML content generated: " << htmlContent;
+
+//     QString reportTitle = "Отчет по машине " + Operations::getCar(this->id).getSid();
+//     pdfManager.createPDF(htmlContent, reportTitle);
+// }
+
+
+
+
+
 void GeneralReport::setHeader()
 {
     switch (this->mode)
@@ -58,10 +173,17 @@ void GeneralReport::setHeader()
     case Report::Cars:
         ui->Header->setText("ПО МАШИНАМ");
         ui->ReportButton->setText("ОТЧЕТ ПО МАШИНЕ");
+        ui->SecondReportButton->setText("PDF ПО ДНЯМ");
+        ui->SecondReportButton->setDisabled(false);
         break;
 
     case Report::Drivers:
         ui->Header->setText("ПО ВОДИТЕЛЯМ");
+        ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
+        break;
+
+    case Report::DriversCharges:
+        ui->Header->setText("ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
         break;
 
@@ -121,64 +243,37 @@ void GeneralReport::setTable()
     switch (this->mode)
     {
     case Report::Cars:
-        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
-        for (const QVariant &car : ReportOperations::getCarsReport(this->fromDate, this->toDate))
+        ui->SecondReportButton->setDefault(false);
+        model->setHorizontalHeaderLabels({"ID", "Дата", "Car SID", "Инвестор", "Доход", "Налог",
+                                          "KWH", "Расход", "Прибыль", "Дней", ">0",
+                                          "Средняя", "%", "Комиссия", "Инвестору"});
+
+        for (const QVariant &driver : ReportOperations::getCarsReportByDay(this->fromDate, this->toDate))
         {
-            QVariantList cars = car.toList();
+            QVariantList drivers = driver.toList();
             QList<QStandardItem *> row;
+            row.append(new QStandardItem(QString::number(drivers[0].toInt())));  // Car ID
 
-            // Assume that the data in cars[] is in the correct order and types.
-            row.append(new QStandardItem(cars[0].toString()));  // carId
-            row.append(new QStandardItem(cars[1].toString()));  // carSid
-            row.append(new QStandardItem(cars[2].toString()));  // investorName
+            row.append(new QStandardItem(drivers[3].toDate().toString("yyyy-MM-dd")));  // Дата
+            row.append(new QStandardItem(drivers[1].toString()));  // Car SID
+            row.append(new QStandardItem(drivers[2].toString()));  // Investor Name
+            row.append(new QStandardItem(QString::number(drivers[4].toDouble())));  // Income
+            row.append(new QStandardItem(QString::number(drivers[5].toInt())));  // Tax
+            row.append(new QStandardItem(QString::number(drivers[6].toDouble())));  // KWh Consumed
+            row.append(new QStandardItem(QString::number(drivers[7].toDouble())));  // Outcome
+            row.append(new QStandardItem(QString::number(drivers[8].toDouble())));  // Profit
+            row.append(new QStandardItem(QString::number(drivers[9].toInt())));  // Days Worked
+            row.append(new QStandardItem(QString::number(drivers[10].toInt())));  // Non-Zero Days
+            row.append(new QStandardItem(QString::number(drivers[11].toInt())));  // Avg Profit/Day
+            row.append(new QStandardItem(QString::number(drivers[12].toInt())));  // Percentage
+            row.append(new QStandardItem(QString::number(drivers[13].toInt())));  // Our Income
+            row.append(new QStandardItem(QString::number(drivers[14].toInt())));  // Investor Income
 
-            // Ensure numerical data is set correctly for sorting
-            QStandardItem *incomeItem = new QStandardItem();
-            incomeItem->setData(cars[3].toInt(), Qt::DisplayRole);
-            row.append(incomeItem); // income
-
-            QStandardItem *taxItem = new QStandardItem();
-            taxItem->setData(cars[4].toInt(), Qt::DisplayRole);
-            row.append(taxItem); // tax
-
-            QStandardItem *kwhItem = new QStandardItem();
-            kwhItem->setData(cars[5].toInt(), Qt::DisplayRole);
-            row.append(kwhItem); // kwh * 10
-
-            QStandardItem *outcomeItem = new QStandardItem();
-            outcomeItem->setData(cars[6].toInt(), Qt::DisplayRole);
-            row.append(outcomeItem); // outcome
-
-            QStandardItem *profitItem = new QStandardItem();
-            profitItem->setData(cars[7].toInt(), Qt::DisplayRole);
-            row.append(profitItem); // profit
-
-            QStandardItem *daysItem = new QStandardItem();
-            daysItem->setData(cars[8].toInt(), Qt::DisplayRole);
-            row.append(daysItem); // daysWorked
-
-            QStandardItem *daysItem2 = new QStandardItem();
-            daysItem2->setData(cars[9].toInt(), Qt::DisplayRole);
-            row.append(daysItem2); // nonZeroDays
-
-            QStandardItem *averageItem = new QStandardItem();
-            averageItem->setData(cars[10].toInt(), Qt::DisplayRole);
-            row.append(averageItem); // averageProfitPerDay
-
-            QStandardItem *percentageItem = new QStandardItem();
-            percentageItem->setData(cars[11].toInt(), Qt::DisplayRole);
-            row.append(percentageItem); // percentage
-
-            QStandardItem *ourIncomeItem = new QStandardItem();
-            ourIncomeItem->setData(cars[12].toInt(), Qt::DisplayRole);
-            row.append(ourIncomeItem); // ourIncome
-
-            QStandardItem *investorsIncomeItem = new QStandardItem();
-            investorsIncomeItem->setData(cars[13].toInt(), Qt::DisplayRole);
-            row.append(investorsIncomeItem); // investorsIncome
-
-            model->appendRow(row);
+            model->appendRow(row);  // Добавляем строку в модель
         }
+
+
+        break;
 
         break;
     case Report::Types:
@@ -242,7 +337,7 @@ void GeneralReport::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
         for (const QVariant &investor : ReportOperations::getInvestorsReport(this->fromDate, this->toDate))
         {
             QVariantList investors = investor.toList();
@@ -325,7 +420,6 @@ void GeneralReport::setTable()
             model->appendRow(row);
         }
         break;
-
     case Report::Users:
         model->setHorizontalHeaderLabels({"id", "Дата", "Машина", "Водитель", "Тип", "Сумма", "Пользователь"});
         for (const QVariant &user : ReportOperations::getUsersReport(this->fromDate, this->toDate))
@@ -450,6 +544,45 @@ void GeneralReport::setTable()
         }
         break;
 
+    case Report::DriversCharges:{
+        model->setHorizontalHeaderLabels({"ID", "Водитель", "KWH"});
+
+        // Создаем объект класса ReportOperations
+        ReportOperations reportOperations;
+
+        // Вызов метода через объект
+        for (const QVariant &charge : reportOperations.getDriversChargesReport(this->fromDate, this->toDate))
+        {
+            QVariantList charges = charge.toList();  // Получаем данные по каждой зарядке водителя
+            QList<QStandardItem *> row;
+
+            // ID водителя
+            row.append(new QStandardItem(charges[0].toString()));  // ID Водителя
+
+            // Имя водителя
+            row.append(new QStandardItem(charges[1].toString()));  // Водитель
+
+            // ID машины
+            // row.append(new QStandardItem(charges[2].toString()));  // Машина
+
+            // // ID зарядки
+            // row.append(new QStandardItem(charges[3].toString()));  // Зарядка ID
+
+            // Количество потребленной энергии (KWH)
+            QStandardItem *kwhItem = new QStandardItem();
+            kwhItem->setData(charges[2].toDouble(), Qt::DisplayRole);  // KWH
+            row.append(kwhItem);
+
+            // // Время зарядки
+            // QStandardItem *timeItem = new QStandardItem();
+            // timeItem->setData(charges[5].toDateTime().toString("yyyy-MM-dd hh:mm:ss"), Qt::DisplayRole);  // Время
+            // row.append(timeItem);
+
+            // Добавляем строку в модель
+            model->appendRow(row);
+        }
+        break;}
+
     default:
         break;
     }
@@ -458,7 +591,7 @@ void GeneralReport::setTable()
 
     ui->tableView->setColumnHidden(0, true);
 
-    if (this->mode == Report::Users || this->mode == Report::Users2)
+    if (this->mode == Report::Users || this->mode == Report::Users2 || this->mode==Report::Cars)
     {
         ui->SecondReportButton->setDisabled(false);
     }
@@ -489,7 +622,7 @@ void GeneralReport::setBottomTable()
             QVariantList cars = car.toList();
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -556,6 +689,25 @@ void GeneralReport::setBottomTable()
         }
         break;
 
+    case Report::DriversCharges: {
+        // Инициализация и обработка данных для "DriversCharges"
+        ReportOperations reportOperations; // Создаем объект класса
+
+        for (const QVariant &charge : reportOperations.getAllChargesReportOnDriver(this->fromDate, this->toDate)) {
+            QVariantList charges = charge.toList();
+            model->setHorizontalHeaderLabels({"Водитель", "KWH"});
+
+            QList<QStandardItem *> row;
+
+            // Вставляем данные в строку таблицы
+            row << new QStandardItem("Итого");
+            row << new QStandardItem(charges[0].toString());  // KWH * 10
+
+            model->appendRow(row);
+        }
+        break;
+    }
+
     case Report::Investors:
         for (const QVariant &investor : ReportOperations::getAllInvestorsReport(this->fromDate, this->toDate))
         {
@@ -563,7 +715,7 @@ void GeneralReport::setBottomTable()
             qDebug() << investors;
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -917,6 +1069,9 @@ void GeneralReport::on_ReportButton_clicked()
         case Report::FinesByDrivers:
             nav->openFines(4, id, fromDate, toDate);
             break;
+        case Report::DriversCharges:
+            nav->openReport(10, id, fromDate, toDate);
+            break;
         default:
             break;
         }
@@ -953,6 +1108,9 @@ void GeneralReport::on_ReportButton_clicked()
             break;
         case Report::FinesByDrivers:
             nav->openFines(4, 0, fromDate, toDate);
+            break;
+        case Report::DriversCharges:
+            nav->openReport(10, 0, fromDate, toDate);
             break;
         default:
             break;
@@ -1124,3 +1282,5 @@ void GeneralReport::onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order
     this->selectedColumn = logicalIndex;
     this->sortOrder = order;
 }
+
+

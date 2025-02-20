@@ -1,6 +1,10 @@
 #ifndef REPORTOPERATIONS_H
 #define REPORTOPERATIONS_H
+#include <QFileDialog>
 
+
+#include <QPdfWriter>
+#include <QPainter>
 #include <QDate>
 #include <QVariantList>
 #include "QString"
@@ -11,6 +15,20 @@ class ReportOperations
 
 public:
     ReportOperations();
+    void exportToPDF(QDate from, QDate to);
+
+    static QVariantList getCarsReportByDay(QDate fromDate, QDate toDate);
+
+    QVariantList getAllChargesReportOnDriver(QDate fromDate, QDate toDate);
+
+
+
+    QVariantList getDriversChargesReport(QDate fromDate, QDate toDate);
+
+    QString generateHTMLForPDF(const QVariantMap &data);
+    QString modelToHTML(QVariantList reportData);
+
+
 
     // general reports
     QVariantList static getCarsReport(QDate fromDate, QDate toDate);
