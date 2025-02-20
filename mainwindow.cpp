@@ -16,19 +16,39 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
 
     ui->timeEdit->setDisabled(true);
 
-    // hide settings and reports button if user is not admin
     if (!u.checkIsAdmin())
     {
-        // ui->SettingsButton->setDisabled(true);
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+        ui->ReportsButton->setDisabled(false);
+
+
+        QString locationButton = ui->ReportsButton->itemText(4);
+        ui->ReportsButton->clear();
+        ui->ReportsButton->addItem(locationButton, QVariant(4));
+
+        connect(ui->ReportsButton, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, [=](int index){
+                    int originalPage = ui->ReportsButton->itemData(index).toInt();
+                    nav->openReport(originalPage);
+                });
     }
     else if (u.getId() != -1)
     {
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
+
+        QString locationButton = ui->ReportsButton->itemText(4);
+        ui->ReportsButton->clear();
+
+        ui->ReportsButton->addItem(locationButton, QVariant(4));
+
+        connect(ui->ReportsButton, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, [=](int index){
+                    int originalPage = ui->ReportsButton->itemData(index).toInt();
+                    nav->openReport(originalPage);
+                });
     }
 
     // date & time
