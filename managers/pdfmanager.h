@@ -31,6 +31,8 @@ public:
 
     QString static modelToHTML(QAbstractItemModel *model, int start);
 
+    void static createPDF(QString html, QString title);
+
 private:
     QString static getAppDir();
     QString static getDesktopDir();
@@ -40,7 +42,7 @@ private:
     QString static getHeader(QDateTime time);
     QString static getFooter(QDateTime time);
 
-    void static createPDF(QString html, QString title);
+
 };
 
 #endif // PDFMANAGER_H

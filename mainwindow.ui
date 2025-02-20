@@ -120,9 +120,14 @@
             <string>ДОЛГИ</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>KWH ПО ВОДИТЕЛЯМ</string>
+           </property>
+          </item>
          </widget>
         </item>
-        <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+        <item alignment="Qt::AlignVCenter">
          <widget class="QLabel" name="EcoTaxi">
           <property name="minimumSize">
            <size>
@@ -205,7 +210,7 @@
         <property name="rightMargin">
          <number>45</number>
         </property>
-        <item alignment="Qt::AlignmentFlag::AlignRight">
+        <item>
          <widget class="QPushButton" name="dateButton">
           <property name="minimumSize">
            <size>
@@ -224,7 +229,7 @@
           </property>
          </widget>
         </item>
-        <item alignment="Qt::AlignmentFlag::AlignHCenter">
+        <item>
          <widget class="QTimeEdit" name="timeEdit">
           <property name="minimumSize">
            <size>
@@ -259,7 +264,7 @@
           </property>
          </widget>
         </item>
-        <item alignment="Qt::AlignmentFlag::AlignLeft">
+        <item>
          <widget class="QCheckBox" name="systemTimeCheck">
           <property name="minimumSize">
            <size>
@@ -294,7 +299,7 @@
         <property name="rightMargin">
          <number>50</number>
         </property>
-        <item alignment="Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTop">
+        <item alignment="Qt::AlignTop">
          <widget class="QFrame" name="frame_2">
           <property name="minimumSize">
            <size>
@@ -309,7 +314,7 @@
            <enum>QFrame::Shadow::Raised</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,15">
-           <item alignment="Qt::AlignmentFlag::AlignHCenter">
+           <item>
             <widget class="QLabel" name="label">
              <property name="minimumSize">
               <size>
@@ -322,7 +327,7 @@
              </property>
             </widget>
            </item>
-           <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+           <item alignment="Qt::AlignVCenter">
             <widget class="QFrame" name="eventFrame">
              <property name="minimumSize">
               <size>
@@ -465,7 +470,7 @@
                   </property>
                  </widget>
                 </item>
-                <item alignment="Qt::AlignmentFlag::AlignVCenter">
+                <item alignment="Qt::AlignVCenter">
                  <widget class="QLineEdit" name="SumEdit">
                   <property name="enabled">
                    <bool>true</bool>
@@ -523,7 +528,7 @@
           </layout>
          </widget>
         </item>
-        <item alignment="Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop">
+        <item alignment="Qt::AlignTop">
          <widget class="QFrame" name="frame">
           <property name="minimumSize">
            <size>
@@ -544,7 +549,7 @@
            <enum>QFrame::Shadow::Raised</enum>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,15,0">
-           <item alignment="Qt::AlignmentFlag::AlignHCenter">
+           <item>
             <widget class="QLabel" name="label_2">
              <property name="minimumSize">
               <size>
@@ -677,7 +682,7 @@
                   </property>
                  </widget>
                 </item>
-                <item alignment="Qt::AlignmentFlag::AlignVCenter">
+                <item alignment="Qt::AlignVCenter">
                  <widget class="QLineEdit" name="KWTEdit">
                   <property name="enabled">
                    <bool>true</bool>
@@ -710,7 +715,7 @@
                   </property>
                  </widget>
                 </item>
-                <item alignment="Qt::AlignmentFlag::AlignVCenter">
+                <item alignment="Qt::AlignVCenter">
                  <widget class="QLineEdit" name="TimeEdit">
                   <property name="enabled">
                    <bool>true</bool>
@@ -722,7 +727,7 @@
                 </item>
                </layout>
               </item>
-              <item alignment="Qt::AlignmentFlag::AlignHCenter">
+              <item>
                <widget class="QPushButton" name="addChargeButton">
                 <property name="minimumSize">
                  <size>

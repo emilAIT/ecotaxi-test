@@ -23,7 +23,11 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+        //ui->ReportsButton->setDisabled(true);
+        for(int i=ui->ReportsButton->count()-1;i>=0;--i){
+            if(i!=4)
+                ui->ReportsButton->removeItem(i);
+        }
     }
     else if (u.getId() != -1)
     {
@@ -174,10 +178,17 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
 }
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
+    userSession &u = userSession::getInstance();
+    if(!u.checkIsAdmin()){
+        setReportIndex();
+        if(index==0){
+            nav->openReport(4);
+        }
+    }else{
     setReportIndex();
     if (index > 7)
         index += 7;
-    nav->openReport(index);
+    nav->openReport(index);}
 }
 
 void MainWindow::on_FinesButton_currentIndexChanged(int index)
@@ -400,3 +411,4 @@ void MainWindow::on_addImagesButton_clicked()
     QStringList filesToUpload = QFileDialog::getOpenFileNames(this, tr("Выберите изображения"), "", tr("Изображения (*.png *.jpg *.jpeg *.ico)"));
     // std::vector<QString> uploadedUrls = uploader.uploadFiles("ecotaxi-bucket", filesToUpload);
 }
+

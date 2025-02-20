@@ -55,6 +55,8 @@ private slots:
 
     void onSortIndicatorChanged(int logicalIndex, Qt::SortOrder order);
 
+    void pdfbyday();
+
 private:
     Ui::GeneralReport *ui;
 
