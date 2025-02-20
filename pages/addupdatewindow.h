@@ -23,7 +23,7 @@
 
 namespace Ui
 {
-    class addUpdateWindow;
+class addUpdateWindow;
 }
 
 class addUpdateWindow : public QWidget

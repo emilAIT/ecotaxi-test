@@ -230,16 +230,16 @@ void EditableReport::on_ToPDFButton_clicked()
     QString type;
     switch (this->mode)
     {
-        case eSetting::Repairs:
-            title = "Ремонты";
-            type = ui->checkBox->isChecked() ? "Не завершенные" : "Все";
-            break;
-        case eSetting::Fines:
-            title = "Штрафы";
-            type = ui->checkBox->isChecked() ? "Не оплаченные" : "Все";
-            break;
-        default:
-            break;
+    case eSetting::Repairs:
+        title = "Ремонты";
+        type = ui->checkBox->isChecked() ? "Не завершенные" : "Все";
+        break;
+    case eSetting::Fines:
+        title = "Штрафы";
+        type = ui->checkBox->isChecked() ? "Не оплаченные" : "Все";
+        break;
+    default:
+        break;
     }
     PDFmanager::exportToPDF(title, type, { ui->tableView->model() });
 }

@@ -3,12 +3,12 @@
 styleManager::styleManager(QApplication *app)
 {
     QVariantMap vars;
-    vars["mainColor"] = "#007700";
-    vars["mainHoverColor"] = "#005500";
-    vars["backgroundColor"] = "#eeeeee";
-    vars["backgroundHoverColor"] = "#aaaaaa";
-    vars["textColor"] = "#222222";
-    vars["grayColor"] = "#b9b9b9";
+    vars["mainColor"] = "#6B8E23";  // Оливково-зеленый, естественный и мягкий
+    vars["mainHoverColor"] = "#556B2F";  // Темнее, но все еще спокойный
+    vars["backgroundColor"] = "#F5F5DC";  // Бежевый, теплый и ненавязчивый
+    vars["backgroundHoverColor"] = "#E0E0D1";  // Чуть темнее, но не резкий
+    vars["textColor"] = "#4F4F4F";  // Спокойный серый, не контрастный
+    vars["grayColor"] = "#A9A9A9";  // Мягкий серый
 
     vars["btnFontSize"] = "27px";
     vars["textFontSize"] = "20px";
@@ -320,20 +320,20 @@ QTableView {
                      vars["backgroundColor"].toString() + R"A(;
     gridline-color: #b9b9b9;
     color: )A" +
-            vars["textColor"].toString() + R"A(;
+                     vars["textColor"].toString() + R"A(;
     border: 1px solid #b9b9b9;
 }
 
 QHeaderView::section {
     font-family: Inter;
     color: )A" +
-            vars["textColor"].toString() + R"A(;
+                     vars["textColor"].toString() + R"A(;
     background-color: #b9b9b9;
     font-size: 20px;
     padding: 4px;
     text-align: center;
     border: 1px solid )A" +
-                      vars["backgroundColor"].toString() + R"A(;
+                     vars["backgroundColor"].toString() + R"A(;
     font-weight: bold;
 }
 
@@ -374,14 +374,14 @@ QScrollBar::handle:vertical {
 
 QToolButton {
     background-color: )A" +
-            vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
 }
 
 QCalendarWidget QToolButton {
     height: 60px;
     width: 180px;
     color: )A" +
-            vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
     font-size: 24px;
     icon-size: 64px;
     background-color: white;
@@ -395,15 +395,15 @@ QCalendarWidget QMenu {
     width: 150px;
     left: 20px;
     color: )A" +
-            vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
     font-size: )A" +
-                vars["textFontSize"].toString() + R"A(;
+                     vars["textFontSize"].toString() + R"A(;
 }
 QCalendarWidget QSpinBox {
     width: 150px;
     font-size: 24px;
     color: )A" +
-            vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
     selection-background-color: )A" +
                      vars["mainColor"].toString() + R"A(;
     selection-color: )A" +
@@ -432,9 +432,9 @@ QCalendarWidget QSpinBox::down-arrow {
 /* header row */
 QCalendarWidget QWidget {
     color: )A" +
-            vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
     alternate-background-color: )A" +
-                                vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
 }
 
 /* normal days */
@@ -442,11 +442,11 @@ QCalendarWidget QAbstractItemView:enabled
 {
     font-size:24px;
     color: )A" +
-            vars["textColor"].toString() + R"A(;
+                     vars["textColor"].toString() + R"A(;
     background-color: )A" +
                      vars["backgroundColor"].toString() + R"A(;
     selection-background-color: )A" +
-                                vars["backgroundColor"].toString() + R"A(;
+                     vars["backgroundColor"].toString() + R"A(;
     selection-color: )A" +
                      vars["mainColor"].toString() + R"A(;
     selection-border-radius: )A" +
@@ -458,7 +458,7 @@ QCalendarWidget QAbstractItemView:enabled
 QCalendarWidget QWidget#qt_calendar_navigationbar
 {
     color: )A" +
-            vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
     background-color: )A" +
                      vars["backgroundColor"].toString() + R"A(;
 }
@@ -466,7 +466,7 @@ QCalendarWidget QWidget#qt_calendar_navigationbar
 QCalendarWidget QAbstractItemView:disabled
 {
     color: )A" +
-            vars["grayColor"].toString() + R"A(;
+                     vars["grayColor"].toString() + R"A(;
 }
 
 /* #################################################### CONTEXT MENU STYLES #################################################### */
@@ -474,7 +474,7 @@ QCalendarWidget QAbstractItemView:disabled
 QMenu::item
 {
     color: )A" +
-            vars["textColor"].toString() + R"A(;
+                     vars["textColor"].toString() + R"A(;
 }
 
 QMenu
@@ -488,12 +488,12 @@ QMenu
 QTimeEdit
 {
     background-color: )A" +
-                      vars["grayColor"].toString() + R"A(;
+                     vars["grayColor"].toString() + R"A(;
     border: none;
     color: )A" +
-            vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
     font-size: )A" +
-               vars["btnFontSize"].toString() + R"A(;
+                     vars["btnFontSize"].toString() + R"A(;
     border-radius: )A" +
                      vars["editBorderRadius"].toString() + R"A(;
     border-width: 4px;
@@ -503,7 +503,7 @@ QTimeEdit
 QTimeEdit:disabled
 {
     color: )A" +
-            vars["backgroundColor"].toString() + R"A(;
+                     vars["backgroundColor"].toString() + R"A(;
 }
 
 QTimeEdit::up-button {
@@ -589,15 +589,15 @@ QCheckBox
 {
     background-color: transparent;
     font-size: )A" +
-                vars["editFontSize"].toString() + R"A(;
+                     vars["editFontSize"].toString() + R"A(;
     color: )A" +
-            vars["textColor"].toString() + R"A(;
+                     vars["textColor"].toString() + R"A(;
 }
 
 QCheckBox:checked
 {
     color: )A" +
-            vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
 }
 
 QCheckBox::indicator
@@ -605,29 +605,29 @@ QCheckBox::indicator
     width: 20px;
     height: 20px;
     background-color: )A" +
-                    vars["backgroundColor"].toString() + R"A(;
+                     vars["backgroundColor"].toString() + R"A(;
     border-style: solid;
     border-width: 2px;
     border-color: )A" +
-                    vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
 }
 
 QCheckBox::indicator:checked
 {
     background-color: )A" +
-                    vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
 }
 
 QCheckBox[color="white"]
 {
     color: )A" +
-            vars["backgroundColor"].toString() + R"A(;
+                     vars["backgroundColor"].toString() + R"A(;
 }
 
 QCheckBox:checked[color="white"]
 {
     color: )A" +
-            vars["backgroundColor"].toString() + R"A(;
+                     vars["backgroundColor"].toString() + R"A(;
 }
 
 QCheckBox::indicator[color="white"]
@@ -635,17 +635,17 @@ QCheckBox::indicator[color="white"]
     width: 20px;
     height: 20px;
     background-color: )A" +
-                    vars["mainColor"].toString() + R"A(;
+                     vars["mainColor"].toString() + R"A(;
     border-style: solid;
     border-width: 2px;
     border-color: )A" +
-                    vars["backgroundColor"].toString() + R"A(;
+                     vars["backgroundColor"].toString() + R"A(;
 }
 
 QCheckBox::indicator:checked[color="white"]
 {
     background-color: )A" +
-                    vars["backgroundColor"].toString() + R"A(;
+                     vars["backgroundColor"].toString() + R"A(;
 }
 
 )A";

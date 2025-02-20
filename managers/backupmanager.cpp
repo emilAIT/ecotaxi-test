@@ -221,6 +221,6 @@ void backupManager::createUserBackup(int id) {
     else {
         stream << "ИТОГО,0";
     }
-    
+
     file.close();
 }

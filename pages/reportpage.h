@@ -23,7 +23,7 @@
 
 namespace Ui
 {
-    class ReportPage;
+class ReportPage;
 }
 
 class ReportPage : public QWidget

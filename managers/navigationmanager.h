@@ -21,7 +21,7 @@
 
 namespace Ui
 {
-    class navigationManager;
+class navigationManager;
 }
 
 class navigationManager : public QWidget, public nm

@@ -21,7 +21,7 @@
 
 namespace Ui
 {
-    class eventPage;
+class eventPage;
 }
 
 class eventPage : public QWidget

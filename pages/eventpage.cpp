@@ -94,7 +94,7 @@ bool eventPage::setTable()
             QStandardItem *amountItem = new QStandardItem();
             amountItem->setData(data[5].toInt(), Qt::DisplayRole); // Сумма
             row.append(amountItem);
-            
+
             row.append(new QStandardItem(data[6].toString()));
             model->appendRow(row);
         }
@@ -120,7 +120,7 @@ bool eventPage::setTable()
             QStandardItem *kwhItem = new QStandardItem();
             kwhItem->setData(data[5].toInt(), Qt::DisplayRole);
             row.append(kwhItem);
-            
+
             QStandardItem *timeItem = new QStandardItem();
             timeItem->setData(data[6].toInt(), Qt::DisplayRole);
             row.append(timeItem);

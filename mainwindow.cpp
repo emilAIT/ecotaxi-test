@@ -23,7 +23,19 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+        ui->ReportsButton->setDisabled(false);
+
+
+        QString locationButton = ui->ReportsButton->itemText(4);
+        ui->ReportsButton->clear();
+        ui->ReportsButton->addItem(locationButton, QVariant(4));
+
+        connect(ui->ReportsButton, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, [=](int index){
+                    // Retrieve the original page identifier from the item's userData
+                    int originalPage = ui->ReportsButton->itemData(index).toInt();
+                    nav->openReport(originalPage);
+                });
     }
     else if (u.getId() != -1)
     {

@@ -34,9 +34,9 @@ QVariantList Operations::selectAllCarsQuick()
 {
     dbManager &db = dbManager::getInstance();
     QVariantList data = db.executeGet("SELECT cars.id, cars.sid, cars.brand, cars.model, cars.licensePlate, cars.year, investors.name AS investorName, cars.mileage, cars.percentage, cars.description "
-                                     "FROM cars "
-                                     "INNER JOIN investors ON cars.investorId = investors.id "
-                                     "ORDER BY cars.sid");
+                                      "FROM cars "
+                                      "INNER JOIN investors ON cars.investorId = investors.id "
+                                      "ORDER BY cars.sid");
     QVariantList cars;
     foreach (QVariant row, data)
     {
@@ -77,18 +77,18 @@ QVariantList Operations::selectEventsByDate(QDate date)
     QDate toDate = date.addDays(1);
     dbManager &db = dbManager::getInstance();
     QString query = "SELECT "
-            "events.id, "
-            "events.date as time, "
-            "CASE WHEN types.id IS NULL OR events.typeId = 0 THEN '-' ELSE CASE WHEN types.id IS NULL THEN 'удален' ELSE types.name END END as typeName, "
-            "CASE WHEN drivers.id IS NULL OR events.driverId = 0 THEN '-' ELSE CASE WHEN drivers.id IS NULL THEN 'удален' ELSE drivers.name END END as driverId, "
-            "CASE WHEN cars.id IS NULL OR events.carId = 0 THEN '-' ELSE CASE WHEN cars.id IS NULL THEN 'удалена' ELSE cars.sid END END as carId, "
-            "events.amount, "
-            "events.description "
-            "FROM events "
-            "LEFT JOIN cars ON cars.id = events.carId "
-            "LEFT JOIN drivers ON drivers.id = events.driverId "
-            "LEFT JOIN types ON types.id = events.typeId "
-            "WHERE events.date BETWEEN '" + date.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'";
+                    "events.id, "
+                    "events.date as time, "
+                    "CASE WHEN types.id IS NULL OR events.typeId = 0 THEN '-' ELSE CASE WHEN types.id IS NULL THEN 'удален' ELSE types.name END END as typeName, "
+                    "CASE WHEN drivers.id IS NULL OR events.driverId = 0 THEN '-' ELSE CASE WHEN drivers.id IS NULL THEN 'удален' ELSE drivers.name END END as driverId, "
+                    "CASE WHEN cars.id IS NULL OR events.carId = 0 THEN '-' ELSE CASE WHEN cars.id IS NULL THEN 'удалена' ELSE cars.sid END END as carId, "
+                    "events.amount, "
+                    "events.description "
+                    "FROM events "
+                    "LEFT JOIN cars ON cars.id = events.carId "
+                    "LEFT JOIN drivers ON drivers.id = events.driverId "
+                    "LEFT JOIN types ON types.id = events.typeId "
+                    "WHERE events.date BETWEEN '" + date.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'";
     userSession &us = userSession::getInstance();
     if (!us.checkIsAdmin())
         query += " AND (types.id IS NULL OR types.forAdmin IS FALSE)";
@@ -119,18 +119,18 @@ QVariantList Operations::selectChargesByDate(QDate date)
     QDate toDate = date.addDays(1);
     dbManager &db = dbManager::getInstance();
     QVariantList data = db.executeGet("SELECT "
-                                     "charges.id, "
-                                     "charges.date AS 'Время', "
-                                     "CASE WHEN cars.id IS NULL OR charges.carId = 0 THEN '-' ELSE CASE WHEN cars.id IS NULL THEN 'удалена' ELSE cars.sid END END as 'ID Машины', "
-                                     "CASE WHEN drivers.id IS NULL OR charges.driverId = 0 THEN '-' ELSE CASE WHEN drivers.id IS NULL THEN 'удален' ELSE drivers.name END END as 'ID Водителя', "
-                                     "CASE WHEN locations.id IS NULL OR charges.locationId = 0 THEN '-' ELSE CASE WHEN locations.id IS NULL THEN 'удален' ELSE locations.name END END as 'Локация', "
-                                     "charges.kwh AS 'КВТ', "
-                                     "charges.duration AS 'Время' "
-                                     "FROM charges "
-                                     "LEFT JOIN cars ON cars.id = charges.carId "
-                                     "LEFT JOIN drivers ON drivers.id = charges.driverId "
-                                     "LEFT JOIN locations ON locations.id = charges.locationId "
-                                     "WHERE charges.date BETWEEN '" + date.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'");
+                                      "charges.id, "
+                                      "charges.date AS 'Время', "
+                                      "CASE WHEN cars.id IS NULL OR charges.carId = 0 THEN '-' ELSE CASE WHEN cars.id IS NULL THEN 'удалена' ELSE cars.sid END END as 'ID Машины', "
+                                      "CASE WHEN drivers.id IS NULL OR charges.driverId = 0 THEN '-' ELSE CASE WHEN drivers.id IS NULL THEN 'удален' ELSE drivers.name END END as 'ID Водителя', "
+                                      "CASE WHEN locations.id IS NULL OR charges.locationId = 0 THEN '-' ELSE CASE WHEN locations.id IS NULL THEN 'удален' ELSE locations.name END END as 'Локация', "
+                                      "charges.kwh AS 'КВТ', "
+                                      "charges.duration AS 'Время' "
+                                      "FROM charges "
+                                      "LEFT JOIN cars ON cars.id = charges.carId "
+                                      "LEFT JOIN drivers ON drivers.id = charges.driverId "
+                                      "LEFT JOIN locations ON locations.id = charges.locationId "
+                                      "WHERE charges.date BETWEEN '" + date.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'");
     QVariantList charges;
     foreach (QVariant row, data)
     {
@@ -465,7 +465,7 @@ QList<int> Operations::checkLoginUser(QString password)
     if (data.size() != 0)
     {
         data = data.toList()[0].toList();
-        db.executeSet("INSERT INTO logins (userId) VALUES (" + QString::number(data[0].toInt()) + ")");
+        db.executeSet("INSERT INTO logins (userId)   VALUES (" + QString::number(data[0].toInt()) + ")");
         return *new QList<int>({data[0].toInt(), data[1].toInt()});
     }
     return *new QList<int>({-9, 0});
@@ -511,25 +511,25 @@ bool Operations::addRepair(int carId, QDate fromDate, QDate toDate, QString desc
     dbManager &db = dbManager::getInstance();
     if (toDate.isNull())
         return db.executeSet("INSERT INTO repairs (carId, fromDate, description) VALUES (" +
-                         QString::number(carId) + ",'" +
-                         fromDate.toString("yyyy-MM-dd") + "','" +
-                         description + "')");
+                             QString::number(carId) + ",'" +
+                             fromDate.toString("yyyy-MM-dd") + "','" +
+                             description + "')");
     else
         return db.executeSet("INSERT INTO repairs (carId, fromDate, toDate, description) VALUES (" +
-                         QString::number(carId) + ",'" +
-                         fromDate.toString("yyyy-MM-dd") + "','" +
-                         toDate.toString("yyyy-MM-dd") + "','" +
-                         description + "')");
+                             QString::number(carId) + ",'" +
+                             fromDate.toString("yyyy-MM-dd") + "','" +
+                             toDate.toString("yyyy-MM-dd") + "','" +
+                             description + "')");
 }
 
 bool Operations::updateRepair(int id, int carId, QDate fromDate, QDate toDate, QString description) {
     dbManager &db = dbManager::getInstance();
     if (toDate.isNull())
         return db.executeSet("UPDATE repairs SET carId = " + QString::number(carId) +
-                         ", fromDate = '" + fromDate.toString("yyyy-MM-dd") +
-                         "', toDate = " + "NULL" +
-                         ",description = '" + description +
-                         "' WHERE id = " + QString::number(id));
+                             ", fromDate = '" + fromDate.toString("yyyy-MM-dd") +
+                             "', toDate = " + "NULL" +
+                             ",description = '" + description +
+                             "' WHERE id = " + QString::number(id));
     else
         return db.executeSet("UPDATE repairs SET carId = " + QString::number(carId) +
                              ", fromDate = '" + fromDate.toString("yyyy-MM-dd") +

@@ -27,4 +27,3 @@ void CustomDialog::on_NoButton_clicked() {
 }
 
 
-
