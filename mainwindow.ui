@@ -120,6 +120,21 @@
             <string>ДОЛГИ</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string/>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string/>
+           </property>
+          </item>
          </widget>
         </item>
         <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
