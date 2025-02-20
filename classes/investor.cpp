@@ -21,7 +21,6 @@ Investor::Investor(QVariantList investor)
         this->password = investor[3].toString();
     }
 }
-
 int Investor::getId()
 {
     return id;

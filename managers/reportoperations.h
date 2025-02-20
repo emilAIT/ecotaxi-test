@@ -16,6 +16,9 @@ public:
     QVariantList static getCarsReport(QDate fromDate, QDate toDate);
     QVariantList static getAllCarsReport(QDate fromDate, QDate toDate);
 
+    QVariantList static getCarsReportByDays(QDate fromDate, QDate toDate);
+
+
     QVariantList static getTypesReport(QDate fromDate, QDate toDate);
     QVariantList static getAllTypesReport(QDate fromDate, QDate toDate);
 
@@ -30,6 +33,9 @@ public:
 
     QVariantList static getChargesReport(QDate fromDate, QDate toDate);
     QVariantList static getAllChargesReport(QDate fromDate, QDate toDate);
+
+    QVariantList static getChargesReportOnDriver(QDate fromDate, QDate toDate);
+    QVariantList static getAllChargesReportOnDriver(QDate fromDate, QDate toDate);
 
     QVariantList static getUsersReport(QDate fromDate, QDate toDate);
     QVariantList static getAllUsersReport(QDate fromDate, QDate toDate);

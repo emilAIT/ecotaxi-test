@@ -6,8 +6,12 @@
 #include "QFontDatabase"
 #include <QApplication>
 
+#include <QSqlDatabase>
+#include <QSqlError>
+
 int main(int argc, char *argv[])
 {
+
     QApplication a(argc, argv);
 
     QFontDatabase::addApplicationFont("qrc:///Inter.ttf");
@@ -22,6 +26,9 @@ int main(int argc, char *argv[])
 
     login w;
 
+    QCoreApplication::addLibraryPath(QCoreApplication::applicationDirPath() + "\plugins\sqldrivers");
+
+
     dbManager &db = dbManager::getInstance();
 
     db.connectDB();
@@ -29,3 +36,4 @@ int main(int argc, char *argv[])
     w.show();
     return a.exec();
 }
+

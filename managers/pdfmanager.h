@@ -27,20 +27,25 @@ public:
     // general
     void static exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
+
     void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
+
+
     QString static modelToHTML(QAbstractItemModel *model, int start);
+
+    void static createPDF(QString html, QString title);
 
 private:
     QString static getAppDir();
     QString static getDesktopDir();
+    QMap<QString, QList<QAbstractItemModel *>> static splitReportsByDate(QList<QAbstractItemModel *> models);
 
     QString static getStyleSheet();
 
     QString static getHeader(QDateTime time);
     QString static getFooter(QDateTime time);
 
-    void static createPDF(QString html, QString title);
 };
 
 #endif // PDFMANAGER_H

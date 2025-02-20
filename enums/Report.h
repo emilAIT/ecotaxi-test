@@ -10,6 +10,7 @@ enum class Report
     Drivers,
     Locations,
     Charges,
+    OnDriverCharges,
     Users,
     Users2,
     FinesByCars,
