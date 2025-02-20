@@ -138,6 +138,19 @@ QVariantList Operations::selectChargesByDate(QDate date)
     }
     return charges;
 }
+// мои изменения
+// QVariantList Operations::getChargesByDrivers(QDate fromDate, QDate toDate)
+// {
+//     dbManager &db = dbManager::getInstance();
+//     QString query = "SELECT drivers.name, SUM(charges.kwh) AS total_kwh, COUNT(charges.id) AS total_charges "
+//                     "FROM charges "
+//                     "LEFT JOIN drivers ON drivers.id = charges.driverId "
+//                     "WHERE charges.date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "' "
+//                                                                                                     "GROUP BY drivers.name ORDER BY drivers.name";
+//     QVariantList data = db.executeGet(query);
+//     return data;
+// }
+
 
 
 QList<Type> Operations::selectAllTypes()

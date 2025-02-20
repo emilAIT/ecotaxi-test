@@ -73,14 +73,14 @@
        <property name="spacing">
         <number>0</number>
        </property>
-       <item alignment="Qt::AlignHCenter">
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QLabel" name="EcoTaxi">
          <property name="text">
           <string>ОТЧЁТ</string>
          </property>
         </widget>
        </item>
-       <item alignment="Qt::AlignHCenter">
+       <item alignment="Qt::AlignmentFlag::AlignHCenter">
         <widget class="QLabel" name="Header">
          <property name="text">
           <string>TextLabel</string>
@@ -121,14 +121,14 @@
      <property name="rightMargin">
       <number>410</number>
      </property>
-     <item alignment="Qt::AlignRight">
+     <item alignment="Qt::AlignmentFlag::AlignRight">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>от </string>
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignRight">
+     <item alignment="Qt::AlignmentFlag::AlignRight">
       <widget class="QPushButton" name="FromDateButton">
        <property name="minimumSize">
         <size>
@@ -141,14 +141,14 @@
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignRight">
+     <item alignment="Qt::AlignmentFlag::AlignRight">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>до </string>
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignHCenter">
+     <item alignment="Qt::AlignmentFlag::AlignHCenter">
       <widget class="QPushButton" name="ToDateButton">
        <property name="minimumSize">
         <size>
@@ -161,7 +161,7 @@
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignLeft">
+     <item alignment="Qt::AlignmentFlag::AlignLeft">
       <widget class="QPushButton" name="FilterButton">
        <property name="minimumSize">
         <size>
@@ -196,16 +196,16 @@
         </size>
        </property>
        <property name="sizeAdjustPolicy">
-        <enum>QAbstractScrollArea::AdjustToContents</enum>
+        <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
        </property>
        <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
+        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
        </property>
        <property name="selectionMode">
-        <enum>QAbstractItemView::SingleSelection</enum>
+        <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
        </property>
        <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectRows</enum>
+        <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
        </property>
        <property name="sortingEnabled">
         <bool>true</bool>
@@ -233,7 +233,7 @@
         </size>
        </property>
        <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
+        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
        </property>
        <attribute name="verticalHeaderVisible">
         <bool>false</bool>
@@ -243,12 +243,12 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0,0">
      <property name="spacing">
       <number>40</number>
      </property>
      <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
+      <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
      </property>
      <property name="leftMargin">
       <number>45</number>
@@ -285,6 +285,13 @@
        </property>
        <property name="text">
         <string>ОТЧЕТ ПО КОЛИЧЕСТВУ</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="ToPDFButtonSecond">
+       <property name="text">
+        <string>PDF ПО ДНЯМ</string>
        </property>
       </widget>
      </item>

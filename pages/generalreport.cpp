@@ -30,6 +30,20 @@ GeneralReport::~GeneralReport()
 
 void GeneralReport::setReport(Report mode, QDate from, QDate to)
 {
+    //this->mode = mode;
+    // this->fromDate = from;
+    // this->toDate = to;
+
+    // Показываем или скрываем кнопку в зависимости от типа отчёта
+    if (mode == Report::Cars)
+    {
+        ui->ToPDFButtonSecond->setVisible(true);  // Показать кнопку
+    }
+    else
+    {
+        ui->ToPDFButtonSecond->setVisible(false); // Скрыть кнопку
+    }
+
     this->selectedColumn = -1;
 
     this->mode = mode;
@@ -111,6 +125,12 @@ void GeneralReport::setHeader()
         ui->Header->setText("ПО ШТРАФАМ ПО ВОДИТЕЛЯМ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ");
         break;
+
+    // мои изменения
+    case Report::ChargesByDrivers:
+        ui->Header->setText("ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ");
+        ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЮ(необязательно)");
+        break;
     }
 }
 
@@ -121,7 +141,7 @@ void GeneralReport::setTable()
     switch (this->mode)
     {
     case Report::Cars:
-        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
         for (const QVariant &car : ReportOperations::getCarsReport(this->fromDate, this->toDate))
         {
             QVariantList cars = car.toList();
@@ -242,7 +262,7 @@ void GeneralReport::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 5%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"ID", "Имя", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Комиссия", "Инвестору"});
         for (const QVariant &investor : ReportOperations::getInvestorsReport(this->fromDate, this->toDate))
         {
             QVariantList investors = investor.toList();
@@ -302,6 +322,29 @@ void GeneralReport::setTable()
             model->appendRow(row);
         }
         break;
+
+
+    // Мои изменения2
+        case Report::ChargesByDrivers:
+            model->setHorizontalHeaderLabels({"ID", "Водитель", "KWH"});
+            for (const QVariant &driver : ReportOperations::getChargesByDriversReport(this->fromDate, this->toDate))
+            {
+                QVariantList drivers = driver.toList();
+                QList<QStandardItem *> row;
+
+                row.append(new QStandardItem(drivers[0].toString()));  // ID
+                row.append(new QStandardItem(drivers[1].toString()));  // Имя
+
+                QStandardItem *kwhItem = new QStandardItem();
+                kwhItem->setData(drivers[2].toInt(), Qt::DisplayRole);  // Change to .toDouble() for float or double values
+                row.append(kwhItem); // KWH
+
+                model->appendRow(row);
+            }
+            break;
+
+
+
     case Report::Charges:
         model->setHorizontalHeaderLabels({"id", "ID Машины", "KWH", "Время"});
         for (const QVariant &charge : ReportOperations::getChargesReport(this->fromDate, this->toDate))
@@ -450,6 +493,38 @@ void GeneralReport::setTable()
         }
         break;
 
+    //мои изменения
+    // case Report::ChargesByDrivers:
+    //     model->setHorizontalHeaderLabels({"Дата", "Водитель", "Машина", "KWH", "Время"});
+    //     for (const QVariant &chargeData : ReportOperations::getChargesByDriverReport(0, this->fromDate, this->toDate))
+    //     {
+    //         QVariantList charge = chargeData.toList();
+    //         QList<QStandardItem *> row;
+
+    //         QStandardItem *dateItem = new QStandardItem();
+    //         dateItem->setData(charge[0].toDateTime(), Qt::DisplayRole);
+    //         row.append(dateItem);
+
+    //         row.append(new QStandardItem(charge[1].toString())); // Водитель
+    //         row.append(new QStandardItem(charge[2].toString())); // Машина
+
+    //         QStandardItem *kwhItem = new QStandardItem();
+    //         kwhItem->setData(charge[3].toInt(), Qt::DisplayRole); // KWH
+    //         row.append(kwhItem);
+
+    //         QStandardItem *timeItem = new QStandardItem();
+    //         timeItem->setData(charge[4].toInt(), Qt::DisplayRole); // Время
+    //         row.append(timeItem);
+
+    //         model->appendRow(row);
+    //     }
+    //     break;
+
+
+
+
+
+
     default:
         break;
     }
@@ -489,7 +564,7 @@ void GeneralReport::setBottomTable()
             QVariantList cars = car.toList();
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -563,7 +638,7 @@ void GeneralReport::setBottomTable()
             qDebug() << investors;
             model->setHorizontalHeaderLabels({"Итого",
                                               "Доход",
-                                              "Налог 5%",
+                                              "Налог 10%",
                                               "KWH * 10",
                                               "Расход",
                                               "Общая",
@@ -601,6 +676,34 @@ void GeneralReport::setBottomTable()
             model->appendRow(row);
         }
         break;
+    //мои изменения2
+    case Report::ChargesByDrivers:
+        for (const QVariant &driver : ReportOperations::getAllChargesByDriversReport(this->fromDate, this->toDate))
+        {
+            QVariantList drivers = driver.toList();
+            model->setHorizontalHeaderLabels({"Итого",
+                                              "KWH",
+                                              });
+
+            QList<QStandardItem *> row;
+
+            row << new QStandardItem("Итого");
+            row << new QStandardItem(drivers[0].toString());
+            model->appendRow(row);
+        }
+        break;
+
+        //     if (true)
+        //     {
+        //         QVariantList report = ReportOperations::getAllChargesByDriverReport(0, this->fromDate, this->toDate);
+        //         model->setHorizontalHeaderLabels({"Итого", "KWH"});
+
+        //         QList<QStandardItem *> row;
+        //         row.append(new QStandardItem("Итого"));
+        //         row.append(new QStandardItem(report[0].toString()));
+        //         model->appendRow(row);
+        //     }
+        //     break;
 
     case Report::Charges:
         for (const QVariant &charge : ReportOperations::getAllChargesReport(this->fromDate, this->toDate))
@@ -735,6 +838,21 @@ void GeneralReport::setBottomTable()
             model->appendRow(row);
         }
         break;
+    //мои изменения
+    // case Report::ChargesByDrivers:
+    //     if (true)
+    //     {
+    //         QVariantList report = ReportOperations::getAllChargesByDriverReport(0, this->fromDate, this->toDate);
+    //         model->setHorizontalHeaderLabels({"Итого", "KWH"});
+
+    //         QList<QStandardItem *> row;
+    //         row.append(new QStandardItem("Итого"));
+    //         row.append(new QStandardItem(report[0].toString()));
+    //         model->appendRow(row);
+    //     }
+    //     break;
+
+
 
     default:
         break;
@@ -796,6 +914,12 @@ void GeneralReport::setTableSizes()
         ui->tableView->setColumnWidth(2, 377);
         break;
 
+        //мои изменения2
+    case Report::ChargesByDrivers:
+        ui->tableView->setColumnWidth(1, 377);
+        ui->tableView->setColumnWidth(2, 377);
+        break;
+
     case Report::Charges:
         ui->tableView->setColumnWidth(1, 377);
         ui->tableView->setColumnWidth(2, 377);
@@ -829,6 +953,16 @@ void GeneralReport::setTableSizes()
         ui->tableView->setColumnWidth(5, 190);
         ui->tableView->setColumnWidth(6, 190);
         ui->tableView->setColumnWidth(7, 190);
+
+    // мои изменения
+    // case Report::ChargesByDrivers:
+    //     ui->tableView->setColumnWidth(0, 172);
+    //     ui->tableView->setColumnWidth(1, 172);
+    //     ui->tableView->setColumnWidth(2, 172);
+    //     ui->tableView->setColumnWidth(3, 172);
+    //     ui->tableView->setColumnWidth(4, 172);
+    //     break;
+
 
     default:
         break;
@@ -866,6 +1000,11 @@ void GeneralReport::on_SettingsButton_clicked()
     case Report::FinesByCars:
         nav->openFines(0);
         break;
+    // мои изменения
+    case Report::ChargesByDrivers:
+        nav->openSettings(0);
+        break;
+
     default:
         break;
     }
@@ -917,6 +1056,11 @@ void GeneralReport::on_ReportButton_clicked()
         case Report::FinesByDrivers:
             nav->openFines(4, id, fromDate, toDate);
             break;
+        // мои изменения
+        case Report::ChargesByDrivers:
+            nav->openReport(17, id, fromDate, toDate);
+            break;
+
         default:
             break;
         }
@@ -953,6 +1097,9 @@ void GeneralReport::on_ReportButton_clicked()
             break;
         case Report::FinesByDrivers:
             nav->openFines(4, 0, fromDate, toDate);
+            break;
+        case Report::ChargesByDrivers:
+            nav->openReport(17, 0, fromDate, toDate);
             break;
         default:
             break;
@@ -1013,6 +1160,583 @@ void GeneralReport::on_FilterButton_clicked()
     setTableSizes();
 }
 
+// void GeneralReport::on_ToPDFButtonSecond_clicked()
+// {
+//     // Получаем даты из виджетов
+//     QDate fromDate = this->fromDate;
+//     QDate toDate = this->toDate;
+
+//     // Проверка корректности дат
+//     if (!fromDate.isValid() || !toDate.isValid() || fromDate > toDate)
+//     {
+//         QMessageBox::warning(this, "Ошибка", "Некорректный диапазон дат.");
+//         return;
+//     }
+
+//     QList<QStandardItemModel*> models;
+
+//     // Проходим по каждой дате в указанном диапазоне
+//     for (QDate date = fromDate; date <= toDate; date = date.addDays(1))
+//     {
+//         QStandardItemModel *model = new QStandardItemModel();
+//         model->setHorizontalHeaderLabels({"Итого", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общая", "Комиссия", "Инвесторам"});
+
+//         switch (this->mode)
+//         {
+//         case Report::Cars:
+//             for (const QVariant &car : ReportOperations::getAllCarsReport(date, date))
+//             {
+//                 QVariantList cars = car.toList();
+//                 QList<QStandardItem *> row;
+
+//                 row << new QStandardItem("Итого");
+//                 row << new QStandardItem(cars[0].toString());
+//                 row << new QStandardItem(cars[1].toString());
+//                 row << new QStandardItem(cars[2].toString());
+//                 row << new QStandardItem(cars[3].toString());
+//                 row << new QStandardItem(cars[4].toString());
+//                 row << new QStandardItem(cars[5].toString());
+//                 row << new QStandardItem(cars[6].toString());
+
+//                 model->appendRow(row);
+//             }
+//             break;
+
+//             // Добавьте другие типы отчётов, если требуется
+
+//         default:
+//             break;
+//         }
+
+//         // Добавляем модель в список моделей
+//         if (model->rowCount() > 0)
+//             models.append(model);
+//     }
+
+//     if (models.isEmpty())
+//     {
+//         QMessageBox::information(this, "Информация", "Нет данных для выбранного диапазона дат.");
+//         return;
+//     }
+
+//     // Генерируем PDF-файл с использованием нового класса PDFmanagerSecond
+//     PDFmanagerSecond::exportToPDFByDays("Отчет по дням", fromDate, toDate, models);
+
+//     // Освобождаем память
+//     qDeleteAll(models);
+// }
+
+// void GeneralReport::on_ToPDFButtonSecond_clicked()
+// {
+//     // Получаем даты из виджетов
+//     QDate fromDate = this->fromDate;
+//     QDate toDate = this->toDate;
+
+//     // Проверка корректности дат
+//     if (!fromDate.isValid() || !toDate.isValid() || fromDate > toDate)
+//     {
+//         QMessageBox::warning(this, "Ошибка", "Некорректный диапазон дат.");
+//         return;
+//     }
+
+//     QList<QStandardItemModel*> models;
+
+//     // Проходим по каждой дате в указанном диапазоне
+//     for (QDate date = fromDate; date <= toDate; date = date.addDays(1))
+//     {
+//         QStandardItemModel *model = new QStandardItemModel();
+//         model->setHorizontalHeaderLabels({"Итого", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общая", "Комиссия", "Инвесторам"});
+
+//         switch (this->mode)
+//         {
+//         case Report::Cars:
+//             // Теперь данные берутся ТОЛЬКО за текущую дату
+//             for (const QVariant &car : ReportOperations::getAllCarsReport(date, date))
+//             {
+//                 QVariantList cars = car.toList();
+//                 QList<QStandardItem *> row;
+
+//                 row << new QStandardItem("Итого");
+//                 row << new QStandardItem(cars[0].toString());
+//                 row << new QStandardItem(cars[1].toString());
+//                 row << new QStandardItem(cars[2].toString());
+//                 row << new QStandardItem(cars[3].toString());
+//                 row << new QStandardItem(cars[4].toString());
+//                 row << new QStandardItem(cars[5].toString());
+//                 row << new QStandardItem(cars[6].toString());
+
+//                 model->appendRow(row);
+//             }
+//             break;
+
+//         default:
+//             break;
+//         }
+
+//         // Добавляем модель в список моделей ТОЛЬКО если есть данные за конкретную дату
+//         if (model->rowCount() > 0)
+//             models.append(model);
+//         else
+//             delete model;  // Освобождаем память для пустых моделей
+//     }
+
+//     if (models.isEmpty())
+//     {
+//         QMessageBox::information(this, "Информация", "Нет данных для выбранного диапазона дат.");
+//         return;
+//     }
+
+//     // Генерируем PDF-файл с использованием нового класса PDFmanagerSecond
+//     PDFmanagerSecond::exportToPDFByDays("Отчет по дням", fromDate, toDate, models);
+
+//     // Освобождаем память
+//     qDeleteAll(models);
+// }
+
+
+// void GeneralReport::on_ToPDFButtonSecond_clicked()
+// {
+//     QDate fromDate = this->fromDate;
+//     QDate toDate = this->toDate;
+
+//     if (!fromDate.isValid() || !toDate.isValid() || fromDate > toDate)
+//     {
+//         QMessageBox::warning(this, "Ошибка", "Некорректный диапазон дат.");
+//         return;
+//     }
+
+//     QMap<QDate, QList<QStandardItemModel*>> dateModels;
+
+//     // Проходим по каждой дате и собираем все модели в список
+//     for (QDate date = fromDate; date <= toDate; date = date.addDays(1))
+//     {
+//         QList<QStandardItemModel*> models;
+
+//         switch (this->mode)
+//         {
+//         case Report::Cars:
+//             for (const QVariant &car : ReportOperations::getAllCarsReport(date, date))
+//             {
+//                 QVariantList cars = car.toList();
+//                 QStandardItemModel* model = new QStandardItemModel();
+//                 model->setHorizontalHeaderLabels({"Итого", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общая", "Комиссия", "Инвесторам"});
+
+//                 QList<QStandardItem *> row;
+//                 row << new QStandardItem("Итого");
+//                 row << new QStandardItem(cars[0].toString());
+//                 row << new QStandardItem(cars[1].toString());
+//                 row << new QStandardItem(cars[2].toString());
+//                 row << new QStandardItem(cars[3].toString());
+//                 row << new QStandardItem(cars[4].toString());
+//                 row << new QStandardItem(cars[5].toString());
+//                 row << new QStandardItem(cars[6].toString());
+
+//                 model->appendRow(row);
+//                 models.append(model);
+//             }
+//             break;
+
+//         default:
+//             break;
+//         }
+
+//         if (!models.isEmpty())
+//         {
+//             dateModels.insert(date, models);  // Добавляем список моделей для этой даты
+//         }
+//     }
+
+//     if (dateModels.isEmpty())
+//     {
+//         QMessageBox::information(this, "Информация", "Нет данных для выбранного диапазона дат.");
+//         return;
+//     }
+
+//     PDFmanagerSecond::exportToPDFByDays("Отчет по дням", dateModels, 1);
+
+//     // Освобождаем память
+//     // for (auto models : dateModels)
+//     // {
+//     //     qDeleteAll(models);
+//     // }
+// }
+
+//pdf по дням, создает нужное количество страниц, но показывает только один столбик
+// void GeneralReport::on_ToPDFButtonSecond_clicked()
+// {
+//     QDate fromDate = this->fromDate;
+//     QDate toDate = this->toDate;
+
+//     if (!fromDate.isValid() || !toDate.isValid() || fromDate > toDate)
+//     {
+//         QMessageBox::warning(this, "Ошибка", "Некорректный диапазон дат.");
+//         return;
+//     }
+
+//     QMap<QDate, QList<QStandardItemModel *>> dateModels;
+
+//     for (QDate date = fromDate; date <= toDate; date = date.addDays(1))
+//     {
+//         QList<QStandardItemModel *> modelsForDate;
+
+//         QStandardItemModel *model = new QStandardItemModel();
+//         model->setHorizontalHeaderLabels({"Итого", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общая", "Комиссия", "Инвесторам"});
+
+//         for (const QVariant &car : ReportOperations::getAllCarsReport(date, date))
+//         {
+//             QVariantList cars = car.toList();
+//             QList<QStandardItem *> row;
+
+//             row << new QStandardItem("Итого");
+//             row << new QStandardItem(cars[0].toString());
+//             row << new QStandardItem(cars[1].toString());
+//             row << new QStandardItem(cars[2].toString());
+//             row << new QStandardItem(cars[3].toString());
+//             row << new QStandardItem(cars[4].toString());
+//             row << new QStandardItem(cars[5].toString());
+//             row << new QStandardItem(cars[6].toString());
+
+//             model->appendRow(row);
+//         }
+
+//         if (model->rowCount() > 0)
+//             modelsForDate.append(model);
+
+//         if (!modelsForDate.isEmpty())
+//             dateModels.insert(date, modelsForDate);
+//     }
+
+//     if (dateModels.isEmpty())
+//     {
+//         QMessageBox::information(this, "Информация", "Нет данных для выбранного диапазона дат.");
+//         return;
+//     }
+
+//     PDFmanagerSecond::exportToPDFByDays("Отчет по дням", fromDate, toDate, dateModels);
+
+//     for (auto models : dateModels)
+//         qDeleteAll(models);
+// }
+
+
+
+// void GeneralReport::on_ToPDFButtonSecond_clicked()
+// {
+//     // Получаем даты из виджетов
+//     QDate fromDate = this->fromDate;
+//     QDate toDate = this->toDate;
+
+//     // Проверка корректности дат
+//     if (!fromDate.isValid() || !toDate.isValid() || fromDate > toDate)
+//     {
+//         QMessageBox::warning(this, "Ошибка", "Некорректный диапазон дат.");
+//         return;
+//     }
+
+//     QMap<QDate, QStandardItemModel*> dateModels;
+
+//     // ✅ Цикл для добавления всех строк в модель
+//     for (QDate date = fromDate; date <= toDate; date = date.addDays(1))
+//     {
+//         QStandardItemModel *model = new QStandardItemModel();
+//         model->setHorizontalHeaderLabels({"#", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общая", "Комиссия", "Инвесторам"});
+
+//         int rowCount = 1;
+
+//         switch (this->mode)
+//         {
+//         case Report::Cars:
+//             for (const QVariant &car : ReportOperations::getAllCarsReport(date, date))
+//             {
+//                 QVariantList cars = car.toList();
+//                 QList<QStandardItem *> row;
+
+//                 // Добавляем номер строки
+//                 row << new QStandardItem(QString::number(rowCount++));
+//                 row << new QStandardItem(cars[0].toString());
+//                 row << new QStandardItem(cars[1].toString());
+//                 row << new QStandardItem(cars[2].toString());
+//                 row << new QStandardItem(cars[3].toString());
+//                 row << new QStandardItem(cars[4].toString());
+//                 row << new QStandardItem(cars[5].toString());
+//                 row << new QStandardItem(cars[6].toString());
+
+//                 model->appendRow(row);
+//             }
+//             break;
+
+//         default:
+//             break;
+//         }
+
+//         if (model->rowCount() > 0)
+//             dateModels.insert(date, model);
+//         else
+//             delete model;
+//     }
+
+//     if (dateModels.isEmpty())
+//     {
+//         QMessageBox::information(this, "Информация", "Нет данных для выбранного диапазона дат.");
+//         return;
+//     }
+
+//     // ✅ Вызов второго фрагмента кода для генерации PDF
+//     PDFmanagerSecond::exportToPDFByDays("Отчет по дням", dateModels, 1);
+
+//     qDeleteAll(dateModels);
+// }
+
+
+
+// void GeneralReport::on_ToPDFButtonSecond_clicked()
+// {
+//     // Получаем даты из виджетов
+//     QDate fromDate = this->fromDate;
+//     QDate toDate = this->toDate;
+
+//     if (!fromDate.isValid() || !toDate.isValid() || fromDate > toDate)
+//     {
+//         QMessageBox::warning(this, "Ошибка", "Некорректный диапазон дат.");
+//         return;
+//     }
+
+//     QMap<QDate, QStandardItemModel*> dateModels;
+
+//     // Проходим по каждой дате в указанном диапазоне
+//     for (QDate date = fromDate; date <= toDate; date = date.addDays(1))
+//     {
+//         QStandardItemModel *model = new QStandardItemModel();
+//         model->setHorizontalHeaderLabels({"ID", "Инвестор", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+
+
+
+
+//         switch (this->mode)
+//         {
+//         case Report::Cars:
+//             for (const QVariant &car : ReportOperations::getCarsReport(date, date))
+//             {
+//                 QVariantList cars = car.toList();
+
+//                 //комментировано
+//                 QList<QStandardItem *> row;
+
+//                 row.append(new QStandardItem(cars[1].toString()));  // ID
+//                 row.append(new QStandardItem(cars[2].toString()));  // Инвестор
+
+//                 for (int i = 3; i <= 13; ++i) // Добавляем остальные числовые значения
+//                 {
+//                     QStandardItem *item = new QStandardItem();
+//                     item->setData(cars[i].toInt(), Qt::DisplayRole);
+//                     row.append(item);
+//                 }
+
+//                 model->appendRow(row);
+//             }
+//             break;
+
+//         default:
+//             break;
+//         }
+
+//         if (model->rowCount() > 0)
+//             dateModels.insert(date, model);
+//     }
+
+//     if (dateModels.isEmpty())
+//     {
+//         QMessageBox::information(this, "Информация", "Нет данных для выбранного диапазона дат.");
+//         return;
+//     }
+
+//     // Генерируем PDF-файл с использованием PDFmanagerSecond
+//     PDFmanagerSecond::exportToPDFByDays("Отчет по дням", dateModels, 1);
+
+//     // Освобождаем память
+//     qDeleteAll(dateModels);
+// }
+
+
+void GeneralReport::on_ToPDFButtonSecond_clicked()
+{
+    // Получаем даты из виджетов
+    QDate fromDate = this->fromDate;
+    QDate toDate = this->toDate;
+
+    // Проверка корректности дат
+    if (!fromDate.isValid() || !toDate.isValid() || fromDate > toDate)
+    {
+        QMessageBox::warning(this, "Ошибка", "Некорректный диапазон дат.");
+        return;
+    }
+
+    QMap<QDate, QStandardItemModel*> dateModels;
+
+    // Проходим по каждой дате в указанном диапазоне
+    for (QDate date = fromDate; date <= toDate; date = date.addDays(1))
+    {
+        QStandardItemModel *model = new QStandardItemModel();
+        model->setHorizontalHeaderLabels({"#", "Инвестор", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+
+        int rowNumber = 1; // Для нумерации строк
+
+        switch (this->mode)
+        {
+        case Report::Cars:
+            for (const QVariant &car : ReportOperations::getCarsReport(date, date))
+            {
+                QVariantList cars = car.toList();
+
+                // Проверка на наличие значений в ключевых колонках
+                int income = cars[3].toInt();
+                int tax = cars[4].toInt();
+                int kwh = cars[5].toInt();
+                int outcome = cars[6].toInt();
+                int profit = cars[7].toInt();
+
+                if (income != 0 || tax != 0 || kwh != 0 || outcome != 0 || profit != 0)  // ✅ Добавили проверку
+                {
+                    QList<QStandardItem *> row;
+
+                    row.append(new QStandardItem(QString::number(rowNumber++))); // #
+                    row.append(new QStandardItem(cars[2].toString())); // Инвестор
+                    row.append(new QStandardItem(QString::number(income))); // Доход
+                    row.append(new QStandardItem(QString::number(tax))); // Налог 10%
+                    row.append(new QStandardItem(QString::number(kwh))); // KWH x 10
+                    row.append(new QStandardItem(QString::number(outcome))); // Расход
+                    row.append(new QStandardItem(QString::number(profit))); // Общий
+                    row.append(new QStandardItem(QString::number(cars[8].toInt()))); // Дней
+                    row.append(new QStandardItem(QString::number(cars[9].toInt()))); // >0
+                    row.append(new QStandardItem(QString::number(cars[10].toInt()))); // Средняя
+                    row.append(new QStandardItem(QString::number(cars[11].toInt()))); // %
+                    row.append(new QStandardItem(QString::number(cars[12].toInt()))); // Комиссия
+                    row.append(new QStandardItem(QString::number(cars[13].toInt()))); // Инвестору
+
+                    model->appendRow(row);
+                }
+            }
+            break;
+
+        default:
+            break;
+        }
+
+        // Добавляем модель в список моделей, если есть хотя бы одна строка
+        if (model->rowCount() > 0)
+            dateModels.insert(date, model);
+        else
+            delete model; // Удаляем пустую модель
+    }
+
+    if (dateModels.isEmpty())
+    {
+        QMessageBox::information(this, "Информация", "Нет данных для выбранного диапазона дат.");
+        return;
+    }
+
+    // Генерируем PDF-файл с использованием нового класса PDFmanagerSecond
+    PDFmanagerSecond::exportToPDFByDays("Отчет по дням", dateModels);
+
+    // Освобождаем память
+    qDeleteAll(dateModels);
+}
+
+
+
+// void GeneralReport::on_ToPDFButtonSecond_clicked()
+// {
+//     // Получаем даты из виджетов
+//     QDate fromDate = this->fromDate;
+//     QDate toDate = this->toDate;
+
+//     // Проверка корректности дат
+//     if (!fromDate.isValid() || !toDate.isValid() || fromDate > toDate)
+//     {
+//         QMessageBox::warning(this, "Ошибка", "Некорректный диапазон дат.");
+//         return;
+//     }
+
+//     QMap<QDate, QList<QStandardItemModel *>> dateModels;
+
+//     // Проходим по каждой дате в указанном диапазоне
+//     for (QDate date = fromDate; date <= toDate; date = date.addDays(1))
+//     {
+//         QList<QStandardItemModel *> models;
+
+//         switch (this->mode)
+//         {
+//         case Report::Cars:
+//         {
+//             int rowNumber = 1; // Нумерация строк в таблице для каждой даты
+//             for (const QVariant &car : ReportOperations::getCarsReport(date, date))
+//             {
+//                 QVariantList cars = car.toList();
+
+//                 // Проверка на наличие значений в ключевых колонках
+//                 int income = cars[3].toInt();
+//                 int tax = cars[4].toInt();
+//                 int kwh = cars[5].toInt();
+//                 int outcome = cars[6].toInt();
+//                 int profit = cars[7].toInt();
+
+//                 if (income != 0 || tax != 0 || kwh != 0 || outcome != 0 || profit != 0)
+//                 {
+//                     QStandardItemModel *model = new QStandardItemModel();
+//                     model->setHorizontalHeaderLabels({"#", "Инвестор", "Доход", "Налог 10%", "KWH x 10",
+//                                                       "Расход", "Общий", "Дней", ">0", "Средняя", "%",
+//                                                       "Комиссия", "Инвестору"});
+
+//                     QList<QStandardItem *> row;
+//                     row.append(new QStandardItem(QString::number(rowNumber++)));  // #
+//                     row.append(new QStandardItem(cars[2].toString()));            // Инвестор
+//                     row.append(new QStandardItem(QString::number(income)));      // Доход
+//                     row.append(new QStandardItem(QString::number(tax)));         // Налог 10%
+//                     row.append(new QStandardItem(QString::number(kwh)));         // KWH x 10
+//                     row.append(new QStandardItem(QString::number(outcome)));     // Расход
+//                     row.append(new QStandardItem(QString::number(profit)));      // Общий
+//                     row.append(new QStandardItem(QString::number(cars[8].toInt())));  // Дней
+//                     row.append(new QStandardItem(QString::number(cars[9].toInt())));  // >0
+//                     row.append(new QStandardItem(QString::number(cars[10].toInt()))); // Средняя
+//                     row.append(new QStandardItem(QString::number(cars[11].toInt()))); // %
+//                     row.append(new QStandardItem(QString::number(cars[12].toInt()))); // Комиссия
+//                     row.append(new QStandardItem(QString::number(cars[13].toInt()))); // Инвестору
+
+//                     model->appendRow(row);
+//                     models.append(model); // Добавляем модель в список моделей для этой даты
+//                 }
+//             }
+//         }
+//         break;
+
+//         default:
+//             break;
+//         }
+
+//         if (!models.isEmpty())
+//             dateModels.insert(date, models); // Добавляем список моделей для даты в map
+//     }
+
+//     if (dateModels.isEmpty())
+//     {
+//         QMessageBox::information(this, "Информация", "Нет данных для выбранного диапазона дат.");
+//         return;
+//     }
+
+//     // Генерируем PDF-файл с использованием нового класса PDFmanagerSecond
+//     PDFmanagerSecond::exportToPDFByDays("Отчет по дням", dateModels, fromDate, toDate, 1);
+
+//     // Освобождаем память
+//     for (auto &models : dateModels)
+//         qDeleteAll(models);
+// }
+
+
+
+
+
+
+
 void GeneralReport::on_ToPDFButton_clicked()
 {
     QString title;
@@ -1061,6 +1785,11 @@ void GeneralReport::on_ToPDFButton_clicked()
     case Report::FinesByCars:
         title = "Отчет по штрафам по машинам";
         break;
+    // мои изменения
+    case Report::ChargesByDrivers:
+        title = "Отчет по зарядкам водителей";
+        break;
+
 
     default:
         break;
