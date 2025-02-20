@@ -23,6 +23,8 @@ class PDFmanager
 {
 public:
     PDFmanager();
+    void static exportDailyReport(QAbstractItemModel* model);
+    QString static generateTableHtml(const QList<QList<QVariant>>& data, QAbstractItemModel* model);
 
     // general
     void static exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
