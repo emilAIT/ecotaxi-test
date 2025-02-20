@@ -175,7 +175,7 @@ void ReportPage::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -398,7 +398,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -448,7 +448,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",

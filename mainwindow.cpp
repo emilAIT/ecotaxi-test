@@ -23,7 +23,12 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+        /*ui->ReportsButton->setDisabled(false)*/;
+        for (int i = 9; i >= 0; i--) {
+            if (i != 4) {
+                ui->ReportsButton->removeItem(i);
+            }
+        }
     }
     else if (u.getId() != -1)
     {
@@ -174,10 +179,18 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
 }
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
+    if (userSession::getInstance().checkIsAdmin()) {
+        if (index > 8) {
+            index += 7;
+        }
+        nav->openReport(index);
+    }
+    else {
+        if (index == 0) {
+            nav->openReport(4);
+        }
+    }
     setReportIndex();
-    if (index > 7)
-        index += 7;
-    nav->openReport(index);
 }
 
 void MainWindow::on_FinesButton_currentIndexChanged(int index)
