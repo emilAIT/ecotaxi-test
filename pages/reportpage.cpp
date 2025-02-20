@@ -112,6 +112,11 @@ void ReportPage::setHeader()
         ui->Header->setText("ПО ШТРАФАМ ПО ВОДИТЕЛЮ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ");
         break;
+
+    case Report::DriverCharges:
+        ui->Header->setText("ПО ЗАРЯДКАМ ВОДИТЕЛЯ");
+        ui->ReportButton->setText("ОТЧЕТ ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ");
+        break;
     
     default:
         break;
@@ -175,7 +180,7 @@ void ReportPage::setTable()
         }
         break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -358,6 +363,36 @@ void ReportPage::setTable()
             model->appendRow(row);
         }
         break;
+
+    case Report::DriverCharges:
+        model->setHorizontalHeaderLabels({"Дата", "Машина", "Водитель", "KWH", "Время"});
+        for (const QVariant &locationData : ReportOperations::getLocationReport(this->id, this->fromDate, this->toDate))
+        {
+            QVariantList location = locationData.toList();
+            QList<QStandardItem *> row;
+
+            QStandardItem *dateItem = new QStandardItem();
+            dateItem->setData(location[0].toDateTime(), Qt::DisplayRole);
+            row.append(dateItem);
+
+            // Create QStandardItem for Машина and Водитель as strings
+            row.append(new QStandardItem(location[1].toString())); // Машина
+            row.append(new QStandardItem(location[2].toString())); // Водитель
+
+            // Ensure numerical data (KWH and Время) is set correctly for sorting as integers
+            QStandardItem *kwhItem = new QStandardItem();
+            kwhItem->setData(location[3].toInt(), Qt::DisplayRole); // KWH
+            row.append(kwhItem);
+
+            QStandardItem *timeItem = new QStandardItem();
+            timeItem->setData(location[4].toInt(), Qt::DisplayRole); // Время
+            row.append(timeItem);
+
+            model->appendRow(row);
+        }
+        break;
+
+
     
     default:
         break;
@@ -398,7 +433,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -448,7 +483,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -592,6 +627,23 @@ void ReportPage::setBottomTable()
         }
         break;
 
+    case Report::DriverCharges:
+        if (true)
+        {
+            QVariantList report = ReportOperations::getAllLocationReport(this->id, this->fromDate, this->toDate);
+            model->setHorizontalHeaderLabels({
+                "Итого",
+                "KWH",
+            });
+
+            QList<QStandardItem *> row;
+            row.append(new QStandardItem("Итого"));
+            row.append(new QStandardItem(report[0].toString()));
+            model->appendRow(row);
+        }
+        break;
+
+
     default:
         break;
     }
@@ -657,6 +709,16 @@ void ReportPage::setSideTable()
         break;
 
     case Report::Locations:
+        model->setHorizontalHeaderLabels({"id", "Локации"});
+        for (Location location : Operations::selectAllLocations())
+        {
+            if (this->id != 0 && location.getId() == this->id)
+                row = model->rowCount();
+            model->appendRow({new QStandardItem(QString::number(location.getId())), new QStandardItem(location.getName())});
+        }
+        break;
+
+    case Report::DriverCharges:
         model->setHorizontalHeaderLabels({"id", "Локации"});
         for (Location location : Operations::selectAllLocations())
         {
@@ -778,6 +840,13 @@ void ReportPage::setTableSizes()
         ui->tableView->setColumnWidth(3, 160);
         ui->tableView->setColumnWidth(4, 160);
         ui->tableView->setColumnWidth(5, 160);
+
+    case Report::DriverCharges:
+        ui->tableView->setColumnWidth(0, 172);
+        ui->tableView->setColumnWidth(1, 172);
+        ui->tableView->setColumnWidth(2, 172);
+        ui->tableView->setColumnWidth(3, 172);
+        ui->tableView->setColumnWidth(4, 172);
         break;
 
     default:
@@ -815,6 +884,8 @@ void ReportPage::on_SettingsButton_clicked()
     case Report::FinesByDrivers:
         nav->openFines(0);
         break;
+    case Report::DriverCharges:
+        nav->openSettings(4);
     default:
         break;
     }
@@ -856,6 +927,9 @@ void ReportPage::on_ReportButton_clicked()
         break;
     case Report::FinesByDrivers:
         nav->openFines(2, 0, fromDate, toDate);
+        break;
+    case Report::DriverCharges:
+        nav->openReport(4, 0, fromDate, toDate);
         break;
     default:
         break;
@@ -931,6 +1005,11 @@ void ReportPage::on_ToPDFButton_clicked()
         break;
 
     case Report::Debts:
+        break;
+
+    case Report::DriverCharges:
+        title = "Отчет по зарядке водителя " + Operations::getLocation(this->id).getName();
+        start = 0;
         break;
     }
 

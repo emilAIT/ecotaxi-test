@@ -72,6 +72,15 @@
             <height>16777215</height>
            </size>
           </property>
+          <property name="editable">
+           <bool>false</bool>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>16</width>
+            <height>16</height>
+           </size>
+          </property>
           <property name="placeholderText">
            <string>ОТЧЕТЫ</string>
           </property>
@@ -118,6 +127,11 @@
           <item>
            <property name="text">
             <string>ДОЛГИ</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ</string>
            </property>
           </item>
          </widget>

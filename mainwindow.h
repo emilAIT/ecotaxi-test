@@ -63,6 +63,8 @@ private slots:
     void onChangeDate(QDate date);
 
 
+    void on_ReportsButton_editTextChanged(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
 

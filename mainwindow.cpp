@@ -23,7 +23,16 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+        // ui->ReportsButton->setDisabled(true);
+        ui->ReportsButton->removeItem(9);
+        ui->ReportsButton->removeItem(8);
+        ui->ReportsButton->removeItem(7);
+        ui->ReportsButton->removeItem(6);
+        ui->ReportsButton->removeItem(5);
+        ui->ReportsButton->removeItem(3);
+        ui->ReportsButton->removeItem(2);
+        ui->ReportsButton->removeItem(1);
+        ui->ReportsButton->removeItem(0);
     }
     else if (u.getId() != -1)
     {
@@ -400,3 +409,9 @@ void MainWindow::on_addImagesButton_clicked()
     QStringList filesToUpload = QFileDialog::getOpenFileNames(this, tr("Выберите изображения"), "", tr("Изображения (*.png *.jpg *.jpeg *.ico)"));
     // std::vector<QString> uploadedUrls = uploader.uploadFiles("ecotaxi-bucket", filesToUpload);
 }
+
+void MainWindow::on_ReportsButton_editTextChanged(const QString &arg1)
+{
+
+}
+
