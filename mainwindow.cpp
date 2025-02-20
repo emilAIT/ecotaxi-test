@@ -17,19 +17,27 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
     ui->timeEdit->setDisabled(true);
 
     // hide settings and reports button if user is not admin
+
     if (!u.checkIsAdmin())
     {
-        // ui->SettingsButton->setDisabled(true);
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+
+        for (int i = ui->ReportsButton->count() - 1; i >= 0; --i)
+        {
+            if (ui->ReportsButton->itemText(i) != "ПО ЛОКАЦИЯМ")
+            {
+                ui->ReportsButton->removeItem(i);
+            }
+        }
     }
     else if (u.getId() != -1)
     {
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
     }
+
 
     // date & time
     date = QDate::currentDate();
@@ -174,10 +182,17 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
 }
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
+
     setReportIndex();
-    if (index > 7)
+    userSession &user = userSession::getInstance();
+    if (index == 0 && !user.checkIsAdmin()){
+        nav->openReport(4);
+    }
+    else{
+        if(index > 7)
         index += 7;
-    nav->openReport(index);
+        nav->openReport(index);
+    }
 }
 
 void MainWindow::on_FinesButton_currentIndexChanged(int index)

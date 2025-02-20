@@ -12,6 +12,9 @@ class ReportOperations
 public:
     ReportOperations();
 
+    //
+    //QVariantList ReportOperations::getCarsReportByDays(QDate fromDate, QDate toDate);
+
     // general reports
     QVariantList static getCarsReport(QDate fromDate, QDate toDate);
     QVariantList static getAllCarsReport(QDate fromDate, QDate toDate);
@@ -30,6 +33,8 @@ public:
 
     QVariantList static getChargesReport(QDate fromDate, QDate toDate);
     QVariantList static getAllChargesReport(QDate fromDate, QDate toDate);
+    //fixed
+    QVariantList static getCharges2Report(QDate fromDate, QDate toDate);
 
     QVariantList static getUsersReport(QDate fromDate, QDate toDate);
     QVariantList static getAllUsersReport(QDate fromDate, QDate toDate);

@@ -13,7 +13,9 @@ enum class Report
     Users,
     Users2,
     FinesByCars,
-    FinesByDrivers
+    FinesByDrivers,
+    Charges2
+
 };
 
 #endif // REPORT_H
