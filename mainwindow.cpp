@@ -16,17 +16,51 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
 
     ui->timeEdit->setDisabled(true);
 
-    // hide settings and reports button if user is not admin
-    if (!u.checkIsAdmin())
-    {
-        // ui->SettingsButton->setDisabled(true);
+
+    // // hide settings and reports button if user is not admin
+    // if (!u.checkIsAdmin())
+    // {
+    //     // ui->SettingsButton->setDisabled(true);
+    //     ui->SettingsButton->removeItem(6);
+    //     ui->SettingsButton->removeItem(5);
+    //     ui->SettingsButton->removeItem(2);
+
+    //     //  ----------1----------
+    //     // ui->ReportsButton->setDisabled(true);
+    //     // ui->ReportsButton->removeItem(8);
+    //     // ui->ReportsButton->removeItem(7);
+    //     // ui->ReportsButton->removeItem(6);
+    //     // ui->ReportsButton->removeItem(5);
+    //     // ui->ReportsButton->removeItem(3);
+    //     // ui->ReportsButton->removeItem(2);
+    //     // ui->ReportsButton->removeItem(1);
+    //     // ui->ReportsButton->removeItem(0);
+
+    //     // ----------2-----------
+
+    //     ui->ReportsButton->clear();
+    //     ui->ReportsButton->addItem("ПО ЛОКАЦИЯМ");
+
+
+
+    // }
+    // else if (u.getId() != -1)
+    // {
+    //     ui->SettingsButton->removeItem(6);
+    //     ui->SettingsButton->removeItem(5);
+    // }
+    // Ensure correct menu for admin and non-admin users
+
+
+    setupReportsMenu();
+
+    // hide settings button if user is not admin
+    if (!u.checkIsAdmin()) {
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
     }
-    else if (u.getId() != -1)
-    {
+    else if (u.getId() != -1) {
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
     }
@@ -87,6 +121,30 @@ bool MainWindow::checkEventFill()
     }
     return result;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void MainWindow::setupReportsMenu()
+{
+    userSession &u = userSession::getInstance();
+
+    ui->ReportsButton->clear(); // Clear previous entries
+
+    if (!u.checkIsAdmin()) {
+        ui->ReportsButton->addItem("ПО ЛОКАЦИЯМ");  // Non-admins only see this
+    } else {
+        ui->ReportsButton->addItem("ПО ИНВЕСТОРАМ");
+        ui->ReportsButton->addItem("ОБЩИЙ");
+        ui->ReportsButton->addItem("ПО МАШИНАМ");
+        ui->ReportsButton->addItem("ПО ВОДИТЕЛЯМ");
+        ui->ReportsButton->addItem("ПО ЛОКАЦИЯМ");
+        ui->ReportsButton->addItem("ПО ПОЛЬЗОВАТЕЛЯМ");
+        ui->ReportsButton->addItem("ПО ЗАРЯДКАМ");
+        ui->ReportsButton->addItem("ПО ТИПУ");
+        ui->ReportsButton->addItem("ДОЛГИ");
+        ui->ReportsButton->addItem("ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ");
+    }
+}
+
 
 bool MainWindow::checkChargeFill()
 {
@@ -172,12 +230,25 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
     }
     setSettingIndex();
 }
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
-    setReportIndex();
-    if (index > 7)
-        index += 7;
-    nav->openReport(index);
+    // setReportIndex();
+    // if (index > 7)
+    //     index += 7;
+    // nav->openReport(index);
+
+    QString selectedReport = ui->ReportsButton->currentText();  // Get selected text
+
+    if (selectedReport == "ПО ЛОКАЦИЯМ") {
+        nav->openReport(4);  // Correct function for location report
+    }
+    else if (selectedReport == "ПО ЗАРЯДКАМ ВОДИТЕЛЕЙ") {
+        nav->openReport(16); // Use appropriate index
+    }
+    else {
+        nav->openReport(index);  // Keep default behavior for admins
+    }
 }
 
 void MainWindow::on_FinesButton_currentIndexChanged(int index)
@@ -188,6 +259,7 @@ void MainWindow::on_FinesButton_currentIndexChanged(int index)
 
 void MainWindow::openWidnow()
 {
+    setupReportsMenu(); /////////////////////////////////////////////////////////////////////
     setComboBoxesData();
 }
 
