@@ -23,13 +23,28 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
+
+        ui->ReportsButton->removeItem(9);
+        ui->ReportsButton->removeItem(8);
+        ui->ReportsButton->removeItem(7);
+        ui->ReportsButton->removeItem(6);
+        ui->ReportsButton->removeItem(5);
+        ui->ReportsButton->removeItem(3);
+        ui->ReportsButton->removeItem(2);
+        ui->ReportsButton->removeItem(1);
+        ui->ReportsButton->removeItem(0);
     }
     else if (u.getId() != -1)
     {
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
     }
+    for (int i = 0; i < ui->ReportsButton->count(); ++i) {
+        qDebug() << i << ":" << ui->ReportsButton->itemText(i);
+    }
+    connect(ui->ReportsButton, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [=](int index){
+        qDebug() << "Выбранный индекс в ReportsButton:" << index;
+    });
 
     // date & time
     date = QDate::currentDate();
