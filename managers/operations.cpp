@@ -183,6 +183,19 @@ QList<User> Operations::selectAllUsers()
     }
     return users;
 }
+QList<Driver> Operations::selectAllDriversCharges()
+{
+    dbManager &db = dbManager::getInstance();
+    QVariantList data = db.executeGet("SELECT * FROM drivers ORDER BY name");
+    QList<Driver> drivers;
+    foreach (QVariant row, data)
+    {
+        Driver driver(row.toList());
+        drivers.append(driver);
+    }
+    return drivers;
+}
+
 
 // Investor
 bool Operations::addInvestor(Investor investor)

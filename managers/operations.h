@@ -31,6 +31,7 @@ public:
     QVariantList static selectAllCarsQuick();
 
     QList<Driver> static selectAllDrivers();
+    QList<Driver> static selectAllDriversCharges(); ////////////////////
 
     QList<Event> static selectAllEvents();
     QVariantList static selectEventsByDate(QDate date);

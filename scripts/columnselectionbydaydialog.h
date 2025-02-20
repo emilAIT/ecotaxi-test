@@ -1,5 +1,5 @@
-#ifndef COLUMNSELECTIONDIALOG_H
-#define COLUMNSELECTIONDIALOG_H
+#ifndef COLUMNSELECTIONBYDAYDIALOG_H
+#define COLUMNSELECTIONBYDAYDIALOG_H
 
 #include <QDialog>
 #include <QCheckBox>
@@ -11,12 +11,12 @@
 
 #include "../managers/pdfmanager.h"
 
-class ColumnSelectionDialog : public QDialog
+class ColumnSelectionByDayDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    ColumnSelectionDialog(const QList<QAbstractItemModel*> &models, QString title, QString dates, int start, QWidget *parent = nullptr);
+    ColumnSelectionByDayDialog(const QList<QAbstractItemModel*> &models, QString title, QString dates, int start, QWidget *parent = nullptr);
 
     QList<QList<int>> getSelectedColumns() const;
 
@@ -31,4 +31,4 @@ private:
     int start;
 };
 
-#endif // COLUMNSELECTIONDIALOG_H
+#endif // COLUMNSELECTIONBYDAYDIALOG_H

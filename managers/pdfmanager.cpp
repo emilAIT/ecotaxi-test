@@ -1,4 +1,6 @@
 #include "pdfmanager.h"
+#include "dbmanager.h"
+
 
 PDFmanager::PDFmanager() {}
 
@@ -238,64 +240,53 @@ void PDFmanager::ToPDF(QString title, QString dates, QList<QAbstractItemModel *>
 QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 {
     QString html;
-
-    // Start with a div container for better PDF rendering
-    html += "<div style='width: 100%; margin: 20px 0;'>";
-
-    // Add table with explicit styling for PDF rendering
-    html += "<table style='width: 100%; border-collapse: collapse; margin: 0 auto;'>";
-
-    // Add header row
-    html += "<thead><tr>";
-
+    
+    // Remove margin, and set table width to 100%
+    html += "<table style='margin: 0;' margin=0 width=100%><tr>";
+    
     // Add row number column if start == 1
     if (start == 1)
     {
-        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>#</th>";
+        html += "<th>#</th>";
     }
-
+    
     // Add headers
     for (int i = start; i < model->columnCount(); i++)
     {
-        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>"
-                + model->headerData(i, Qt::Horizontal).toString()
-                + "</th>";
+        html += "<th>" + model->headerData(i, Qt::Horizontal).toString() + "</th>";
     }
-    html += "</tr></thead><tbody>";
-
+    html += "</tr>";
+    
     // Add rows
     for (int i = 0; i < model->rowCount(); i++)
     {
         html += "<tr>";
         if (start == 1)
         {
-            html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>"
-                    + QString::number(i + 1)
-                    + "</td>";
+            html += "<td>" + QString::number(i + 1) + "</td>";
         }
-
+        
         for (int j = start; j < model->columnCount(); j++)
         {
             QString cellData = model->index(i, j).data(Qt::DisplayRole).toString();
             QString header = model->headerData(j, Qt::Horizontal).toString();
-
+            
             // Check if the header is "Инвестору" to apply green color
-            QString cellStyle = "border: 1px solid black; padding: 5px; text-align: center;";
             if (header == "Инвестору" && start != 1)
             {
-                cellStyle += " color: #007700;";
+                html += "<td style='border: 1px solid black; color:#007700;'>" + cellData + "</td>";
             }
-
-            html += "<td style='" + cellStyle + "'>" + cellData + "</td>";
+            else
+            {
+                html += "<td>" + cellData + "</td>";
+            }
         }
         html += "</tr>";
     }
-
-    html += "</tbody></table></div>";
+    
+    html += "</table>";
     return html;
 }
-
-
 
 void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
@@ -303,3 +294,197 @@ void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemMo
     
     dialog.exec();
 }
+
+
+
+
+
+
+void PDFmanager::createPDFByDay(QString html, QString title)
+{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
+    QDateTime time = QDateTime::currentDateTime();
+    QString appDir = getDesktopDir();
+    QDir folder(appDir + "/отчеты по дням");
+    if (!folder.exists())
+    {
+        folder.mkdir(appDir + "/отчеты по дням");
+    }
+
+    QString fileName = title + " " + time.toString("dd.MM.yyyy HH-mm-ss") + ".pdf";
+    fileName.replace(" ", "_");
+
+    QString filePath = appDir + "/отчеты по дням/" + fileName; // исправлен путь
+
+    QPrinter printer(QPrinter::PrinterResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setPageSize(QPageSize::A4);
+    printer.setOutputFileName(filePath);
+
+    qDebug() << printer.outputFileName();
+
+    QTextDocument doc;
+
+    doc.setDefaultStyleSheet(getStyleSheet());
+    doc.setHtml(getHeader(time) + html + getFooter(time)); // Используем заголовок и подвал по дням
+    doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
+
+    doc.print(&printer);
+
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setUrls({QUrl::fromLocalFile(filePath)});
+
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setMimeData(mimeData);
+
+    QApplication::restoreOverrideCursor();
+
+    QMessageBox popup;
+
+    popup.setTextFormat(Qt::MarkdownText);
+    popup.setText("Отчет сохранен в папке \"отчеты по дням\" на рабочем столе и скопирован в буфер обмена");
+
+    popup.exec();
+}
+
+void PDFmanager::exportToPDFByDay(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
+{
+    ColumnSelectionByDayDialog dialog(models, title, dates, start);
+
+    dialog.exec();
+}
+
+void PDFmanager::ToPDFByDay(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
+{
+    QDate fromDate = QDate::fromString(dates.left(10), "dd.MM.yyyy");
+    QDate toDate = QDate::fromString(dates.right(10), "dd.MM.yyyy");
+
+    fetchDataByDay(fromDate, toDate); // Загружаем события и зарядки за день
+
+    QString html = "<h2>" + title + "</h2>";
+    html += "<p>" + dates + "</p><br>";
+
+    html += modelToHTMLByDay();
+
+    createPDFByDay(html, title + " " + dates);
+}
+
+void PDFmanager::fetchDataByDay(QDate fromDate, QDate toDate)
+{
+    eventsByDay.clear();
+    chargesByDay.clear();
+
+    QSqlQuery query;
+
+    // Запрос событий
+    query.prepare(R"(
+        SELECT DATE(e.date) as event_date, e.id,
+               c.sid as car_name, d.name as driver_name,
+               t.name as event_type, e.amount, e.description
+        FROM events e
+        JOIN cars c ON e.carId = c.id
+        JOIN drivers d ON e.driverId = d.id
+        JOIN types t ON e.typeId = t.id
+        WHERE DATE(e.date) BETWEEN :fromDate AND :toDate
+        ORDER BY event_date;
+    )");
+    query.bindValue(":fromDate", fromDate.toString("yyyy-MM-dd"));
+    query.bindValue(":toDate", toDate.toString("yyyy-MM-dd"));
+
+    if (!query.exec()) {
+        qDebug() << "Ошибка запроса событий:" << query.lastError().text();
+        return;
+    }
+
+    while (query.next()) {
+        QVariantList eventData;
+        eventData.append(query.value("id"));
+        eventData.append(query.value("car_name"));
+        eventData.append(query.value("driver_name"));
+        eventData.append(query.value("event_type"));
+        eventData.append(query.value("amount"));
+        eventData.append(query.value("description"));
+
+        QDate eventDate = query.value("event_date").toDate();
+        eventsByDay[eventDate].append(eventData);
+    }
+
+    // Запрос зарядок
+    query.prepare(R"(
+        SELECT DATE(c.date) as charge_date, c.id,
+               cars.sid as car_name, drivers.name as driver_name,
+               locations.name as location_name, c.kwh, c.duration
+        FROM charges c
+        JOIN cars ON c.carId = cars.id
+        JOIN drivers ON c.driverId = drivers.id
+        JOIN locations ON c.locationId = locations.id
+        WHERE DATE(c.date) BETWEEN :fromDate AND :toDate
+        ORDER BY charge_date;
+    )");
+    query.bindValue(":fromDate", fromDate.toString("yyyy-MM-dd"));
+    query.bindValue(":toDate", toDate.toString("yyyy-MM-dd"));
+
+    if (!query.exec()) {
+        qDebug() << "Ошибка запроса зарядок:" << query.lastError().text();
+        return;
+    }
+
+    while (query.next()) {
+        QVariantList chargeData;
+        chargeData.append(query.value("id"));
+        chargeData.append(query.value("car_name"));
+        chargeData.append(query.value("driver_name"));
+        chargeData.append(query.value("location_name"));
+        chargeData.append(query.value("kwh"));
+        chargeData.append(query.value("duration"));
+
+        QDate chargeDate = query.value("charge_date").toDate();
+        chargesByDay[chargeDate].append(chargeData);
+    }
+}
+
+QString PDFmanager::modelToHTMLByDay()
+{
+    QString html;
+    bool firstPage = true;
+
+    for (const QDate &date : eventsByDay.keys()) {
+        if (!firstPage) {
+            html += "<div style='page-break-before: always;'></div>"; // Разрыв страницы
+        }
+        firstPage = false;
+
+        html += "<h2>" + date.toString("dd.MM.yyyy") + "</h2>";
+
+        // События
+        html += "<h3>События</h3>";
+        html += "<table border='1' width='100%'><tr><th>ID</th><th>Машина</th><th>Водитель</th><th>Тип</th><th>Сумма</th><th>Описание</th></tr>";
+        for (const QVariantList &event : eventsByDay[date]) {
+            html += "<tr>";
+            for (const QVariant &value : event) {
+                html += "<td>" + value.toString() + "</td>";
+            }
+            html += "</tr>";
+        }
+        html += "</table><br>";
+
+        // Зарядки
+        if (chargesByDay.contains(date)) {
+            html += "<h3>Зарядки</h3>";
+            html += "<table border='1' width='100%'><tr><th>ID</th><th>Машина</th><th>Водитель</th><th>Локация</th><th>КВт</th><th>Время</th></tr>";
+            for (const QVariantList &charge : chargesByDay[date]) {
+                html += "<tr>";
+                for (const QVariant &value : charge) {
+                    html += "<td>" + value.toString() + "</td>";
+                }
+                html += "</tr>";
+            }
+            html += "</table><br>";
+        }
+    }
+    return html;
+}
+
+QMap<QDate, QList<QVariantList>> PDFmanager::eventsByDay;
+QMap<QDate, QList<QVariantList>> PDFmanager::chargesByDay;

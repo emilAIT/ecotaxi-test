@@ -120,6 +120,11 @@
             <string>ДОЛГИ</string>
            </property>
           </item>
+          <item>
+           <property name="text">
+            <string>ОТЧЕТ ПО ЗАРЯДКЕ ПО ВОДИТЕЛЯМ</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
