@@ -34,6 +34,8 @@ public:
     void setReport(Report mode, QDate from = QDate(), QDate to = QDate());
 
 private slots:
+    void on_ExportDateButton_clicked();
+
     void on_BackButton_clicked();
 
     void on_SettingsButton_clicked();
