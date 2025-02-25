@@ -82,6 +82,9 @@ bool navigationManager::openSettings(int id)
     case 5:
         lastFunc = [this]() { this->SettingPage->setSettings(Setting::Users); };
         break;
+    case 6:
+        lastFunc = [this]() { this->SettingPage->setSettings(Setting::Locations); };
+        break;
     default:
         return false;
     }
@@ -190,6 +193,16 @@ bool navigationManager::openReport(int index, int id, QDate from, QDate to)
     case 15:
         this->GReportPage->setReport(Report::Debts, from, to);
         lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::Debts, from, to); };
+        changeWindow(3);
+        break;
+    case 17:
+        this->ReportsPage->setReport(Report::ChargesByDrivers, id, from, to);
+        lastFunc = [this](int id=-2, QDate from=QDate(), QDate to=QDate()) { this->ReportsPage->setReport(Report::ChargesByDrivers, id, from, to); };
+        changeWindow(4);
+        break;
+    case 16:
+        this->GReportPage->setReport(Report::ChargesByDrivers, from, to);
+        lastFunc = [this](QDate from=QDate(), QDate to=QDate()) { this->GReportPage->setReport(Report::ChargesByDrivers, from, to); };
         changeWindow(3);
         break;
     default:

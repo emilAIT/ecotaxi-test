@@ -21,6 +21,8 @@ public:
 
     QVariantList static getDriversReport(QDate fromDate, QDate todate);
     QVariantList static getAllDriversReport(QDate fromDate, QDate toDate);
+    QVariantList static getChargesDriversReport(QDate fromDate, QDate toDate);
+
 
     QVariantList static getInvestorsReport(QDate fromDate, QDate toDate);
     QVariantList static getAllInvestorsReport(QDate fromDate, QDate toDate);

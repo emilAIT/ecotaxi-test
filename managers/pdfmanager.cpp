@@ -4,8 +4,8 @@ PDFmanager::PDFmanager() {}
 
 QString PDFmanager::getStyleSheet()
 {
-  return
-      R"S(
+    return
+        R"S(
 /*
 reset css
 */
@@ -156,7 +156,7 @@ h1 {
 
 QString PDFmanager::getAppDir()
 {
-  return QCoreApplication::applicationDirPath();
+    return QCoreApplication::applicationDirPath();
 }
 
 QString PDFmanager::getDesktopDir()
@@ -166,102 +166,94 @@ QString PDFmanager::getDesktopDir()
 
 void PDFmanager::createPDF(QString html, QString title)
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
+    QApplication::setOverrideCursor(Qt::WaitCursor);
 
-  QDateTime time = QDateTime::currentDateTime();
-  QString appDir = getDesktopDir();
-  QDir folder(appDir + "/отчеты");
-  if (!folder.exists())
-  {
-    folder.mkdir(appDir + "/отчеты");
-  }
+    QDateTime time = QDateTime::currentDateTime();
+    QString appDir = getDesktopDir();
+    QDir folder(appDir + "/отчеты");
+    if (!folder.exists())
+    {
+        folder.mkdir(appDir + "/отчеты");
+    }
 
-  QString fileName = title + " " + time.toString("dd.MM.yyyy HH-mm-ss") + ".pdf";
-  fileName.replace(" ", "_");
+    QString fileName = title + " " + time.toString("dd.MM.yyyy HH-mm-ss") + ".pdf";
+    fileName.replace(" ", "_");
 
-  QString filePath = appDir + "/отчеты/" + fileName;
+    QString filePath = appDir + "/отчеты/" + fileName;
 
-  QPrinter printer(QPrinter::PrinterResolution);
-  printer.setOutputFormat(QPrinter::PdfFormat);
-  printer.setPageSize(QPageSize::A4);
-  printer.setOutputFileName(filePath);
+    QPrinter printer(QPrinter::PrinterResolution);
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setPageSize(QPageSize::A4);
+    printer.setOutputFileName(filePath);
 
-  qDebug() << printer.outputFileName();
+    qDebug() << printer.outputFileName();
 
-  QTextDocument doc;
+    QTextDocument doc;
 
-  doc.setDefaultStyleSheet(getStyleSheet());
-  doc.setHtml(getHeader(time) + html + getFooter(time));
-  doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
+    doc.setDefaultStyleSheet(getStyleSheet());
+    doc.setHtml(getHeader(time) + html + getFooter(time));
+    doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
 
-  doc.print(&printer);
+    doc.print(&printer);
 
-  QMimeData *mimeData = new QMimeData();
-  mimeData->setUrls({QUrl::fromLocalFile(filePath)});
+    QMimeData *mimeData = new QMimeData();
+    mimeData->setUrls({QUrl::fromLocalFile(filePath)});
 
-  QClipboard *clipboard = QApplication::clipboard();
-  clipboard->setMimeData(mimeData);
-  
-  QApplication::restoreOverrideCursor();
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setMimeData(mimeData);
 
-  QMessageBox popup;
+    QApplication::restoreOverrideCursor();
 
-  popup.setTextFormat(Qt::MarkdownText);
-  popup.setText("Отчет сохранен в папке отчеты на рабочем столе и скопирован в буфер обмена");
+    QMessageBox popup;
 
-  popup.exec();
+    popup.setTextFormat(Qt::MarkdownText);
+    popup.setText("Отчет сохранен в папке отчеты на рабочем столе и скопирован в буфер обмена");
+
+    popup.exec();
 }
 
 QString PDFmanager::getHeader(QDateTime time)
 {
-  return "<p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p><h1 width=100% color='#007700'>ECO TAXI</h1>";
+    return "<p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p><h1 width=100% color='#007700'>ECO TAXI</h1>";
 }
 
 QString PDFmanager::getFooter(QDateTime time)
 {
-  return "<br><p>ECO TAXI</p><p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p>";
+    return "<br><p>ECO TAXI</p><p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p>";
 }
 
 void PDFmanager::ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
-  QString html = "<h2>" + title + "</h2>";
-  html += "<p>" + dates + "</p><br>";
+    QString html = "<h2>" + title + "</h2>";
+    html += "<p>" + dates + "</p><br>";
 
-  for (int i = 0; i < models.size(); i++)
-  {
-    html += modelToHTML(models[i], start != 0 && i == 0 ? 1 : 0);
-  }
+    for (int i = 0; i < models.size(); i++)
+    {
+        html += modelToHTML(models[i], start != 0 && i == 0 ? 1 : 0);
+    }
 
-  createPDF(html, title + " " + dates);
+    createPDF(html, title + " " + dates);
 }
 
 QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 {
     QString html;
 
-    // Start with a div container for better PDF rendering
-    html += "<div style='width: 100%; margin: 20px 0;'>";
-
-    // Add table with explicit styling for PDF rendering
-    html += "<table style='width: 100%; border-collapse: collapse; margin: 0 auto;'>";
-
-    // Add header row
-    html += "<thead><tr>";
+    // Remove margin, and set table width to 100%
+    html += "<table style='margin: 0;' margin=0 width=100%><tr>";
 
     // Add row number column if start == 1
     if (start == 1)
     {
-        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>#</th>";
+        html += "<th>#</th>";
     }
 
-    // Add headers
+    // Add headers for report
     for (int i = start; i < model->columnCount(); i++)
     {
-        html += "<th style='border: 1px solid black; padding: 5px; background-color: #f2f2f2;'>"
-                + model->headerData(i, Qt::Horizontal).toString()
-                + "</th>";
+        html += "<th>" + model->headerData(i, Qt::Horizontal).toString() + "</th>";
     }
-    html += "</tr></thead><tbody>";
+    html += "</tr>";
 
     // Add rows
     for (int i = 0; i < model->rowCount(); i++)
@@ -269,9 +261,7 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
         html += "<tr>";
         if (start == 1)
         {
-            html += "<td style='border: 1px solid black; padding: 5px; text-align: center;'>"
-                    + QString::number(i + 1)
-                    + "</td>";
+            html += "<td>" + QString::number(i + 1) + "</td>";
         }
 
         for (int j = start; j < model->columnCount(); j++)
@@ -279,27 +269,121 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
             QString cellData = model->index(i, j).data(Qt::DisplayRole).toString();
             QString header = model->headerData(j, Qt::Horizontal).toString();
 
-            // Check if the header is "Инвестору" to apply green color
-            QString cellStyle = "border: 1px solid black; padding: 5px; text-align: center;";
             if (header == "Инвестору" && start != 1)
             {
-                cellStyle += " color: #007700;";
+                html += "<td style='border: 1px solid black; color:#007700;'>" + cellData + "</td>";
             }
-
-            html += "<td style='" + cellStyle + "'>" + cellData + "</td>";
+            else
+            {
+                html += "<td>" + cellData + "</td>";
+            }
         }
         html += "</tr>";
     }
 
-    html += "</tbody></table></div>";
+    html += "</table>";
     return html;
 }
 
+void PDFmanager::createCarReport(const QString& startDate, const QString& endDate, QList<QAbstractItemModel*> dailyModels)
+{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
 
+    QDateTime currentDate = QDateTime::fromString(startDate, "dd.MM.yyyy");
+    QDateTime endDateTime = QDateTime::fromString(endDate, "dd.MM.yyyy");
+
+    QString html = "<h1>Отчет по машинам</h1>";
+    html += "<p>Период: " + startDate + " - " + endDate + "</p>";
+
+    int pageIndex = 0;
+    while (currentDate <= endDateTime) {
+        if (pageIndex > 0) {
+            html += "<div style='page-break-before: always;'></div>";
+        }
+
+        int modelIndex = pageIndex < dailyModels.size() ? pageIndex : -1;
+        if (modelIndex >= 0) {
+            html += createDailyReportPage(currentDate, dailyModels[modelIndex]);
+        } else {
+            html += createDailyReportPage(currentDate, nullptr);
+        }
+
+        currentDate = currentDate.addDays(1);
+        pageIndex++;
+    }
+
+    QString title = "Отчет_по_машинам_" + startDate + "_" + endDate;
+    createPDF(html, title);
+}
+
+QString PDFmanager::createDailyReportPage(const QDateTime& date, QAbstractItemModel* model)
+{
+    QString html;
+
+    html += formatDateHeader(date);
+
+    if (model && model->rowCount() > 0) {
+        html += modelToHTML(model, 0);
+    } else {
+        html += "<p style='margin-top: 20px;'>Нет данных за этот день</p>";
+    }
+
+    return html;
+}
+
+QString PDFmanager::formatDateHeader(const QDateTime& date)
+{
+    QString dayOfWeek;
+    switch (date.date().dayOfWeek()) {
+    case 1: dayOfWeek = "Понедельник"; break;
+    case 2: dayOfWeek = "Вторник"; break;
+    case 3: dayOfWeek = "Среда"; break;
+    case 4: dayOfWeek = "Четверг"; break;
+    case 5: dayOfWeek = "Пятница"; break;
+    case 6: dayOfWeek = "Суббота"; break;
+    case 7: dayOfWeek = "Воскресенье"; break;
+    }
+
+    return QString("<h2 style='margin-top: 20px;'>%1</h2>"
+                   "<h3 style='margin-top: 10px;'>%2</h3>")
+        .arg(date.toString("dd.MM.yyyy"))
+        .arg(dayOfWeek);
+}
 
 void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
     ColumnSelectionDialog dialog(models, title, dates, start);
-    
+
     dialog.exec();
+}
+
+void PDFmanager::dailyPDF(QString title, QString dates, QList<QAbstractItemModel *> models)
+{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
+    QDateTime startDate = QDateTime::fromString(dates.split(" - ")[0], "dd.MM.yyyy");
+    QDateTime endDate = QDateTime::fromString(dates.split(" - ")[1], "dd.MM.yyyy");
+
+    QString html = "<h1>" + title + "</h1>";
+    html += "<p>Период: " + dates + "</p>";
+
+    int pageIndex = 0;
+    while (startDate <= endDate) {
+        if (pageIndex > 0) {
+            html += "<div style='page-break-before: always;'></div>";
+        }
+
+        int modelIndex = pageIndex < models.size() ? pageIndex : -1;
+        if (modelIndex >= 0) {
+            html += createDailyReportPage(startDate, models[modelIndex]);
+        } else {
+            html += createDailyReportPage(startDate, nullptr);
+        }
+
+        startDate = startDate.addDays(1);
+        pageIndex++;
+    }
+
+    QString finalTitle = "Отчет_по_дням_" + dates;
+    createPDF(html, finalTitle);
 }

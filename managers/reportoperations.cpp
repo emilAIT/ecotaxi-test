@@ -10,7 +10,7 @@ QVariantList ReportOperations::getCarsReport(QDate fromDate, QDate toDate)
     QString query =
         "WITH grouped_events AS (\n"
         "    SELECT carId, SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) AS income,\n"
-        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.05 AS tax,\n"
+        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.10 AS tax,\n"
         "           SUM(CASE WHEN amount < 0 THEN COALESCE(amount, 0) ELSE 0 END) AS outcome,\n"
         "           SUM(COALESCE(amount, 0)) AS totalAmount,\n"
         "           COUNT(DISTINCT DATE(date)) AS daysWorked,\n"
@@ -69,7 +69,7 @@ QVariantList ReportOperations::getAllCarsReport(QDate fromDate, QDate toDate)
         "WITH grouped_events AS (\n"
         "    SELECT carId, \n"
         "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) AS income,\n"
-        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.05 AS incomeTax,\n"
+        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.10 AS incomeTax,\n"
         "           SUM(CASE WHEN amount < 0 THEN COALESCE(amount, 0) ELSE 0 END) AS outcome,\n"
         "           SUM(COALESCE(amount, 0)) AS totalAmount\n"
         "    FROM events\n"
@@ -178,6 +178,62 @@ QVariantList ReportOperations::getDriversReport(QDate fromDate, QDate toDate)
     toDate = toDate.addDays(1);
     QVariantList result;
     dbManager &db = dbManager::getInstance();
+        QString query =
+            "WITH EventsGrouped AS (\n"
+            "    SELECT \n"
+            "        driverId,\n"
+            "        COUNT(id) AS events_count,\n"
+            "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS income_from_events,\n"
+            "        SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) AS outcome_from_events,\n"
+            "        SUM(amount) AS total_event_amount\n"
+            "    FROM \n"
+            "        events\n"
+            "    WHERE \n"
+            "        date BETWEEN '" +
+            fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
+            "'\n"
+            "    GROUP BY \n"
+            "        driverId\n"
+            "),\n"
+            "ChargesGrouped AS (\n"
+            "    SELECT \n"
+            "        driverId,\n"
+            "        SUM(kwh * 10) AS total_kwh\n"
+            "    FROM \n"
+            "        charges\n"
+            "    WHERE \n"
+            "        date BETWEEN '" +
+            fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
+            "'\n"
+            "    GROUP BY \n"
+            "        driverId\n"
+            ")\n"
+            "SELECT \n"
+            "    d.id AS driver_id,\n"
+            "    d.name AS driver_name,\n"
+            "    COALESCE(eg.events_count, 0) AS events_count,\n"
+            "    COALESCE(eg.income_from_events, 0) AS income_from_events,\n"
+            "    COALESCE(cg.total_kwh, 0) AS total_kwh,\n"
+            "    COALESCE(eg.outcome_from_events, 0) AS outcome_from_events,\n"
+            "    COALESCE(eg.total_event_amount, 0) AS total_profit\n"
+            "FROM \n"
+            "    drivers d\n"
+            "LEFT JOIN \n"
+            "    EventsGrouped eg ON d.id = eg.driverId\n"
+            "LEFT JOIN \n"
+            "    ChargesGrouped cg ON d.id = cg.driverId\n"
+            "WHERE \n"
+            "    eg.driverId IS NOT NULL OR cg.driverId IS NOT NULL";
+
+    result = db.executeGet(query);
+    return result;
+}
+
+QVariantList ReportOperations::getChargesDriversReport(QDate fromDate, QDate toDate)
+{
+    toDate = toDate.addDays(1);
+    QVariantList result;
+    dbManager &db = dbManager::getInstance();
     QString query =
         "WITH EventsGrouped AS (\n"
         "    SELECT \n"
@@ -189,9 +245,7 @@ QVariantList ReportOperations::getDriversReport(QDate fromDate, QDate toDate)
         "    FROM \n"
         "        events\n"
         "    WHERE \n"
-        "        date BETWEEN '" +
-        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
-        "'\n"
+        "        date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
         "    GROUP BY \n"
         "        driverId\n"
         "),\n"
@@ -202,12 +256,29 @@ QVariantList ReportOperations::getDriversReport(QDate fromDate, QDate toDate)
         "    FROM \n"
         "        charges\n"
         "    WHERE \n"
-        "        date BETWEEN '" +
-        fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") +
-        "'\n"
+        "        date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"
         "    GROUP BY \n"
         "        driverId\n"
         ")\n"
+        "SELECT \n"
+        "    NULL AS driver_id,\n"
+        "    'Total' AS driver_name,\n"
+        "    SUM(COALESCE(eg.events_count, 0)) AS events_count,\n"
+        "    SUM(COALESCE(eg.income_from_events, 0)) AS income_from_events,\n"
+        "    SUM(COALESCE(cg.total_kwh, 0)) AS total_kwh,\n"
+        "    SUM(COALESCE(eg.outcome_from_events, 0)) AS outcome_from_events,\n"
+        "    SUM(COALESCE(eg.total_event_amount, 0)) AS total_profit\n"
+        "FROM \n"
+        "    drivers d\n"
+        "LEFT JOIN \n"
+        "    EventsGrouped eg ON d.id = eg.driverId\n"
+        "LEFT JOIN \n"
+        "    ChargesGrouped cg ON d.id = cg.driverId\n"
+        "WHERE \n"
+        "    eg.driverId IS NOT NULL OR cg.driverId IS NOT NULL\n"
+        "\n"
+        "UNION ALL\n"
+        "\n"
         "SELECT \n"
         "    d.id AS driver_id,\n"
         "    d.name AS driver_name,\n"
@@ -223,7 +294,9 @@ QVariantList ReportOperations::getDriversReport(QDate fromDate, QDate toDate)
         "LEFT JOIN \n"
         "    ChargesGrouped cg ON d.id = cg.driverId\n"
         "WHERE \n"
-        "    eg.driverId IS NOT NULL OR cg.driverId IS NOT NULL";
+        "    eg.driverId IS NOT NULL OR cg.driverId IS NOT NULL\n"
+        "ORDER BY \n"
+        "    driver_id NULLS FIRST";
 
     result = db.executeGet(query);
     return result;
@@ -300,7 +373,7 @@ QVariantList ReportOperations::getInvestorsReport(QDate fromDate, QDate toDate)
         "    SELECT\n"
         "        cars.id AS carId,\n"
         "        SUM(CASE WHEN events.amount > 0 THEN events.amount ELSE 0 END) AS income,\n"
-        "        SUM(CASE WHEN events.amount > 0 THEN events.amount ELSE 0 END) * 0.05 AS incomeTax,\n"
+        "        SUM(CASE WHEN events.amount > 0 THEN events.amount ELSE 0 END) * 0.10 AS incomeTax,\n"
         "        SUM(CASE WHEN events.amount < 0 THEN events.amount ELSE 0 END) AS outcome\n"
         "    FROM events\n"
         "    LEFT JOIN cars ON cars.id = events.carId\n"
@@ -367,7 +440,7 @@ QVariantList ReportOperations::getAllInvestorsReport(QDate fromDate, QDate toDat
         "WITH grouped_events AS (\n"
         "    SELECT carId,\n"
         "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) AS income,\n"
-        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.05 AS incomeTax,\n"
+        "           SUM(CASE WHEN amount > 0 THEN COALESCE(amount, 0) ELSE 0 END) * 0.10 AS incomeTax,\n"
         "           SUM(CASE WHEN amount < 0 THEN COALESCE(amount, 0) ELSE 0 END) AS outcome,\n"
         "           SUM(COALESCE(amount, 0)) AS totalAmount\n"
         "    FROM events\n"
@@ -834,7 +907,7 @@ QVariantList ReportOperations::getAllCarReport(int carId, QDate fromDate, QDate 
         "    SELECT \n"
         "        carId,\n"
         "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) AS totalIncome,\n"
-        "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05, 0) AS totalIncomeTax,\n"
+        "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.10, 0) AS totalIncomeTax,\n"
         "        COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) AS totalOutcome,\n"
         "        COALESCE(SUM(CASE WHEN amount > 0 THEN amount * 0.95 ELSE 0 END), 0) AS totalEventProfit\n"
         "    FROM events\n"
@@ -1022,7 +1095,7 @@ QVariantList ReportOperations::getInvestorReport(int investorId, QDate fromDate,
         "    SELECT\n"
         "        carId,\n"
         "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) as income,\n"
-        "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05 as incomeTax,\n"
+        "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.10 as incomeTax,\n"
         "        SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) as outcome\n"
         "    FROM events\n"
         "    WHERE date BETWEEN '" +
@@ -1094,7 +1167,7 @@ QVariantList ReportOperations::getAllInvestorReport(int investorId, QDate fromDa
         "    SELECT\n"
         "        carId,\n"
         "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) AS income,\n"
-        "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.05 AS incomeTax,\n"
+        "        SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END) * 0.10 AS incomeTax,\n"
         "        SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END) AS outcome\n"
         "    FROM events\n"
         "    WHERE date BETWEEN '" +
