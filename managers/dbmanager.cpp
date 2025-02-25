@@ -41,7 +41,7 @@ bool dbManager::connectDB()
 
     QString hostData = "localhost";
     QString portData = "3306";
-    QString dbName = "ecotaxidb";
+    QString dbName = "ecotaxi";
     QString username = "root";
     QString password = "";
 
