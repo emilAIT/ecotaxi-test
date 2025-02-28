@@ -3,12 +3,12 @@
 styleManager::styleManager(QApplication *app)
 {
     QVariantMap vars;
-    vars["mainColor"] = "#007700";
-    vars["mainHoverColor"] = "#005500";
-    vars["backgroundColor"] = "#eeeeee";
+    vars["mainColor"] = "#ff6100";
+    vars["mainHoverColor"] = "#fed501";
+    vars["backgroundColor"] = "#ffffff";
     vars["backgroundHoverColor"] = "#aaaaaa";
     vars["textColor"] = "#222222";
-    vars["grayColor"] = "#b9b9b9";
+    vars["grayColor"] = "#000000";
 
     vars["btnFontSize"] = "27px";
     vars["textFontSize"] = "20px";
@@ -17,6 +17,8 @@ styleManager::styleManager(QApplication *app)
     vars["bgBorderRadius"] = "30px";
     vars["btnBorderRadius"] = "26px";
     vars["editBorderRadius"] = "18px";
+
+
 
     QString styles = R"A(
 * {
@@ -45,6 +47,7 @@ QLabel[color="white"] {
 
 .QFrame {
     background-color: transparent;
+    border: none;
 }
 
 .QFrame#greenBack, QFrame[color="green"] {
@@ -57,6 +60,9 @@ QLabel[color="white"] {
 /* #################################################### BUTTONS STYLES #################################################### */
 
 QPushButton {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 rgba(34, 193, 195, 255),
+                                stop:1 rgba(253, 187, 45, 255));
     background-color: )A" +
                      vars["mainColor"].toString() + R"A(;
     color: white;

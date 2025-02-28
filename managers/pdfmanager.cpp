@@ -1,4 +1,5 @@
 #include "pdfmanager.h"
+#include "reportoperations.h"
 
 PDFmanager::PDFmanager() {}
 
@@ -192,6 +193,7 @@ void PDFmanager::createPDF(QString html, QString title)
 
   doc.setDefaultStyleSheet(getStyleSheet());
   doc.setHtml(getHeader(time) + html + getFooter(time));
+
   doc.setPageSize(printer.pageRect(QPrinter::DevicePixel).size());
 
   doc.print(&printer);
@@ -222,6 +224,37 @@ QString PDFmanager::getFooter(QDateTime time)
   return "<br><p>ECO TAXI</p><p>" + time.toString("dd.MM.yyyy HH:mm:ss") + "</p>";
 }
 
+QList<QDate> PDFmanager::generateDateRange(const QString &dateRange)
+{
+    QList<QDate> dates;
+
+    // Разделяем строку на начальную и конечную даты
+    QStringList dateParts = dateRange.split(" - ");
+    if (dateParts.size() != 2) {
+        qWarning() << "Неверный формат даты";
+        return dates;
+    }
+
+    // Преобразуем строки в объекты QDate
+    QDate startDate = QDate::fromString(dateParts[0], "dd.MM.yyyy");
+    QDate endDate = QDate::fromString(dateParts[1], "dd.MM.yyyy");
+
+    // Проверяем корректность дат
+    if (!startDate.isValid() || !endDate.isValid()) {
+        qWarning() << "Неверные даты";
+        return dates;
+    }
+
+    // Генерируем список всех дат между startDate и endDate
+    QDate currentDate = startDate;
+    while (currentDate <= endDate) {
+        dates.append(currentDate);
+        currentDate = currentDate.addDays(1); // Переходим к следующему дню
+    }
+
+    return dates;
+}
+
 void PDFmanager::ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
   QString html = "<h2>" + title + "</h2>";
@@ -233,6 +266,91 @@ void PDFmanager::ToPDF(QString title, QString dates, QList<QAbstractItemModel *>
   }
 
   createPDF(html, title + " " + dates);
+}
+void PDFmanager::ToPDF2(QString title, QString dates, int start)
+{
+    QString html = "<h2>" + title + "</h2>";
+    html += "<p>" + dates + "</p><br>";
+
+    QList<QDate> date = generateDateRange(dates);
+
+    for(int i = 0; i < date.size(); i++) {
+        QStandardItemModel *model = new QStandardItemModel();
+        QDate d = date[i];
+
+        model->setHorizontalHeaderLabels({"carId", "ID", "Инвестор", "Доход", "Налог 10%", "KWH x 10", "Расход", "Общий", "Дней", ">0", "Средняя", "%", "Комиссия", "Инвестору"});
+        for (const QVariant &car : ReportOperations::getCarsReport(d,d))
+        {
+            QVariantList cars = car.toList();
+            QList<QStandardItem *> row;
+
+            // Assume that the data in cars[] is in the correct order and types.
+            row.append(new QStandardItem(cars[0].toString()));  // carId
+            row.append(new QStandardItem(cars[1].toString()));  // carSid
+            row.append(new QStandardItem(cars[2].toString()));  // investorName
+
+            // Ensure numerical data is set correctly for sorting
+            QStandardItem *incomeItem = new QStandardItem();
+            incomeItem->setData(cars[3].toInt(), Qt::DisplayRole);
+            row.append(incomeItem); // income
+
+            QStandardItem *taxItem = new QStandardItem();
+            taxItem->setData(cars[4].toInt(), Qt::DisplayRole);
+            row.append(taxItem); // tax
+
+            QStandardItem *kwhItem = new QStandardItem();
+            kwhItem->setData(cars[5].toInt(), Qt::DisplayRole);
+            row.append(kwhItem); // kwh * 10
+
+            QStandardItem *outcomeItem = new QStandardItem();
+            outcomeItem->setData(cars[6].toInt(), Qt::DisplayRole);
+            row.append(outcomeItem); // outcome
+
+            QStandardItem *profitItem = new QStandardItem();
+            profitItem->setData(cars[7].toInt(), Qt::DisplayRole);
+            row.append(profitItem); // profit
+
+            QStandardItem *daysItem = new QStandardItem();
+            daysItem->setData(cars[8].toInt(), Qt::DisplayRole);
+            row.append(daysItem); // daysWorked
+
+            QStandardItem *daysItem2 = new QStandardItem();
+            daysItem2->setData(cars[9].toInt(), Qt::DisplayRole);
+            row.append(daysItem2); // nonZeroDays
+
+            QStandardItem *averageItem = new QStandardItem();
+            averageItem->setData(cars[10].toInt(), Qt::DisplayRole);
+            row.append(averageItem); // averageProfitPerDay
+
+            QStandardItem *percentageItem = new QStandardItem();
+            percentageItem->setData(cars[11].toInt(), Qt::DisplayRole);
+            row.append(percentageItem); // percentage
+
+            QStandardItem *ourIncomeItem = new QStandardItem();
+            ourIncomeItem->setData(cars[12].toInt(), Qt::DisplayRole);
+            row.append(ourIncomeItem); // ourIncome
+
+            QStandardItem *investorsIncomeItem = new QStandardItem();
+            investorsIncomeItem->setData(cars[13].toInt(), Qt::DisplayRole);
+            row.append(investorsIncomeItem); // investorsIncome
+
+            model->appendRow(row);
+        }
+
+
+        html += modelToHTML2(model, d);
+        if(i < date.size() - 1) {
+            html += "<div style='page-break-after: always;'></div>";
+        }
+
+
+
+
+    }
+
+
+
+    createPDF(html, title + " " + dates);
 }
 
 QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
@@ -294,6 +412,62 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
     html += "</tbody></table></div>";
     return html;
 }
+
+QString PDFmanager::modelToHTML2(QStandardItemModel *model, QDate date,int start)
+{
+    QString html;
+
+    // Remove margin, and set table width to 100%
+
+    html += "<table style='margin: 0;' margin=0 width=100%><caption style='color:green; font-size:30px; text-align:center;'>" + date.toString("dd.MM.yyyy") + "</caption><tr>";
+
+
+    // Add row number column if start == 1
+    if (start == 1)
+    {
+        html += "<th>#</th>";
+    }
+
+    // Add headers
+    for (int i = start; i < model->columnCount(); i++)
+    {
+        html += "<th>" + model->headerData(i, Qt::Horizontal).toString() + "</th>";
+    }
+    html += "</tr>";
+
+    // Add rows
+    for (int i = 0; i < model->rowCount(); i++)
+    {
+        html += "<tr>";
+        if (start == 1)
+        {
+            html += "<td>" + QString::number(i + 1) + "</td>";
+        }
+
+        for (int j = start; j < model->columnCount(); j++)
+        {
+            // Get the item at the position (i, j)
+            QStandardItem *item = model->item(i, j);
+            QString cellData = item ? item->text() : "";  // Get the text of the item, or an empty string if null
+            QString header = model->headerData(j, Qt::Horizontal).toString();
+
+            // Check if the header is "Инвестору" to apply green color
+            if (header == "Инвестору" && start != 1)
+            {
+                html += "<td style='border: 1px solid black; color:#007700;'>" + cellData + "</td>";
+            }
+            else
+            {
+                html += "<td>" + cellData + "</td>";
+            }
+        }
+        html += "</tr>";
+    }
+
+    html += "</table>";
+    return html;
+}
+
 
 
 
