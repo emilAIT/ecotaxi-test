@@ -56,7 +56,7 @@
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
+     <item alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
       <widget class="QLabel" name="EcoTaxi">
        <property name="text">
         <string>meow</string>
@@ -182,7 +182,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="11,1">
+    <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
      <property name="spacing">
       <number>0</number>
      </property>
@@ -201,16 +201,16 @@
         </size>
        </property>
        <property name="sizeAdjustPolicy">
-        <enum>QAbstractScrollArea::AdjustToContents</enum>
+        <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
        </property>
        <property name="editTriggers">
-        <set>QAbstractItemView::NoEditTriggers</set>
+        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
        </property>
        <property name="selectionMode">
-        <enum>QAbstractItemView::SingleSelection</enum>
+        <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
        </property>
        <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectRows</enum>
+        <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
        </property>
        <property name="sortingEnabled">
         <bool>true</bool>

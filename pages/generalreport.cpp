@@ -10,10 +10,10 @@ GeneralReport::GeneralReport(nm *nav, QWidget *parent)
     this->fromDate = QDate::currentDate().addDays(-1);
     this->toDate = QDate::currentDate();
 
-    ui->FromDateButton->setProperty("color", "gray");
+    ui->FilterButton_2->setProperty("color", "gray");
     ui->ToDateButton->setProperty("color", "gray");
 
-    ui->FromDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
+    ui->FilterButton_2->setText(this->fromDate.toString("dd.MM.yyyy"));
     ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
 
     connect(ui->tableView, &QTableView::doubleClicked, this, &GeneralReport::handleDoubleClick);
@@ -39,7 +39,7 @@ void GeneralReport::setReport(Report mode, QDate from, QDate to)
         this->fromDate = from;
         this->toDate = to;
 
-        ui->FromDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
+        ui->FilterButton_2->setText(this->fromDate.toString("dd.MM.yyyy"));
         ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
     }
 
@@ -1054,7 +1054,7 @@ void GeneralReport::on_ToDateButton_clicked()
 void GeneralReport::setFromDate(QDate date)
 {
     this->fromDate = date;
-    ui->FromDateButton->setText(date.toString("dd.MM.yyyy"));
+    ui->FilterButton_2->setText(date.toString("dd.MM.yyyy"));
 }
 
 void GeneralReport::setToDate(QDate date)
