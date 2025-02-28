@@ -1020,6 +1020,7 @@ void GeneralReport::on_FromDateButton_clicked()
     connect(c, &CalendarPage::changeDate, this, &GeneralReport::setFromDate);
 
     c->show();
+
 }
 
 void GeneralReport::on_ToDateButton_clicked()
@@ -1029,27 +1030,36 @@ void GeneralReport::on_ToDateButton_clicked()
     connect(c, &CalendarPage::changeDate, this, &GeneralReport::setToDate);
 
     c->show();
+
 }
 
 void GeneralReport::setFromDate(QDate date)
 {
     this->fromDate = date;
     ui->FromDateButton->setText(date.toString("dd.MM.yyyy"));
+    setTable();
+    setBottomTable();
+
+    setTableSizes();
 }
 
 void GeneralReport::setToDate(QDate date)
 {
     this->toDate = date;
     ui->ToDateButton->setText(date.toString("dd.MM.yyyy"));
-}
-
-void GeneralReport::on_FilterButton_clicked()
-{
     setTable();
     setBottomTable();
 
     setTableSizes();
 }
+
+// void GeneralReport::on_FilterButton_clicked()
+// {
+//     setTable();
+//     setBottomTable();
+
+//     setTableSizes();
+// }
 
 void GeneralReport::on_ToPDFDailyButton_clicked()
 {
