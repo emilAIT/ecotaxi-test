@@ -161,19 +161,6 @@
        </property>
       </widget>
      </item>
-     <item alignment="Qt::AlignLeft">
-      <widget class="QPushButton" name="FilterButton">
-       <property name="minimumSize">
-        <size>
-         <width>250</width>
-         <height>52</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Фильтр</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>
@@ -288,6 +275,19 @@
        </property>
       </widget>
      </item>
+    <item>
+    <widget class="QPushButton" name="ExportDateButton">
+        <property name="minimumSize">
+        <size>
+            <width>200</width>
+            <height>52</height>
+        </size>
+        </property>
+        <property name="text">
+        <string>ЭКСПОРТ ПО ДАТАМ</string>
+        </property>
+    </widget>
+    </item>
      <item>
       <widget class="QPushButton" name="ToPDFButton">
        <property name="minimumSize">

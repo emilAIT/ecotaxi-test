@@ -80,6 +80,9 @@ public:
 
     QVariantList static getFinesReport();
     QVariantList static getNotPaidFinesReport();
+
+    QVariantList static getDriverChargingReport(QDate fromDate, QDate toDate);
+    QVariantList static getAllDriverChargingReport(QDate fromDate, QDate toDate);
 };
 
 #endif // REPORTOPERATIONS_H
