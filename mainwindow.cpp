@@ -19,11 +19,15 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
     // hide settings and reports button if user is not admin
     if (!u.checkIsAdmin())
     {
+        // Очищаем текущие элементы списка
+        ui->ReportsButton->clear();
+
+        // Добавляем только "По локациям"
+        ui->ReportsButton->addItem("По локациям", QVariant(4)); // Указываем его реальный
         // ui->SettingsButton->setDisabled(true);
         ui->SettingsButton->removeItem(6);
         ui->SettingsButton->removeItem(5);
         ui->SettingsButton->removeItem(2);
-        ui->ReportsButton->setDisabled(true);
     }
     else if (u.getId() != -1)
     {
@@ -172,12 +176,28 @@ void MainWindow::on_SettingsButton_currentIndexChanged(int index)
     }
     setSettingIndex();
 }
+
 void MainWindow::on_ReportsButton_currentIndexChanged(int index)
 {
     setReportIndex();
-    if (index > 7)
-        index += 7;
-    nav->openReport(index);
+    userSession& u = userSession::getInstance();
+
+    if (!u.checkIsAdmin())
+    {
+        // Берём реальный индекс из QVariant, а не просто index
+        int reportIndex = ui->ReportsButton->itemData(index).toInt();
+
+        if (reportIndex != 4) // Должен быть 4
+        {
+            return;
+        }
+
+        nav->openReport(reportIndex); // Передаём 4, а не 0
+    }
+    else
+    {
+        nav->openReport(index);
+    }
 }
 
 void MainWindow::on_FinesButton_currentIndexChanged(int index)

@@ -37,6 +37,7 @@ public:
     void setReport(Report mode, int id, QDate from = QDate(), QDate to = QDate());
 
 private slots:
+    
     void on_BackButton_clicked();
 
     void on_SettingsButton_clicked();
