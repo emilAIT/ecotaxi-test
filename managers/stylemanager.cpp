@@ -3,7 +3,7 @@
 styleManager::styleManager(QApplication *app)
 {
     QVariantMap vars;
-    vars["mainColor"] = "#007700";
+    vars["mainColor"] = "#000000";
     vars["mainHoverColor"] = "#005500";
     vars["backgroundColor"] = "#eeeeee";
     vars["backgroundHoverColor"] = "#aaaaaa";

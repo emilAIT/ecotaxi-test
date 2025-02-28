@@ -68,7 +68,7 @@ QVariantList ReportOperations::getCarsReportByDays(QDate fromDate, QDate toDate)
 
 QVariantList ReportOperations::getDriverChargeReport(QDate fromDate, QDate toDate)
 {
-    toDate = toDate.addDays(1);  // Увеличиваем конечную дату на 1 день
+    toDate = toDate.addDays(1);
     QVariantList result;
     dbManager &db = dbManager::getInstance();
 
@@ -76,7 +76,7 @@ QVariantList ReportOperations::getDriverChargeReport(QDate fromDate, QDate toDat
         "WITH DriverCharges AS (\n"
         "    SELECT\n"
         "        drivers.name as driverName,\n"
-        "        SUM(charges.kwh) as totalKWH\n"  // Суммируем количество KWH
+        "        SUM(charges.kwh) as totalKWH\n"
         "    FROM drivers\n"
         "    JOIN charges ON charges.driverId = drivers.id\n"
         "    WHERE charges.date BETWEEN '" + fromDate.toString("yyyy-MM-dd") + "' AND '" + toDate.toString("yyyy-MM-dd") + "'\n"

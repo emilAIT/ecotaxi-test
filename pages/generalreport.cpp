@@ -1089,7 +1089,7 @@ void GeneralReport::setToDate(QDate date)
     ui->ToDateButton->setText(date.toString("dd.MM.yyyy"));
 }
 
-void GeneralReport::on_FilterButton_clicked()
+static void GeneralReport::on_FilterButton_clicked()
 {
     setTable();
     setBottomTable();

@@ -1,4 +1,5 @@
 #include "calendarpage.h"
+#include "generalreport.h"
 #include "ui_calendarpage.h"
 
 CalendarPage::CalendarPage(QDate date, QWidget *parent)
@@ -22,6 +23,7 @@ CalendarPage::~CalendarPage()
 void CalendarPage::on_confirmButton_clicked()
 {
     emit changeDate(ui->calendarWidget->selectedDate());
+    GeneralReport::on_FilterButton_clicked();
     this->close();
 }
 

@@ -1403,8 +1403,6 @@ QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 
 
 
-
-
 void PDFmanager::exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
     ColumnSelectionDialog dialog(models, title, dates, start);
