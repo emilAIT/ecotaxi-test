@@ -23,13 +23,19 @@ class PDFmanager
 {
 public:
     PDFmanager();
+public:
+    void static exportDailyReport(QAbstractItemModel* model);
 
     // general
     void static exportToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
     void static ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start = 1);
 
+    // QString static modelToHT(QAbstractItemModel *model);
     QString static modelToHTML(QAbstractItemModel *model, int start);
+    QString static modelToHT(QAbstractItemModel *model);
+    QString static generateTableHtml(const QList<QList<QVariant>>& data, QAbstractItemModel* model);
+
 
 private:
     QString static getAppDir();
@@ -41,6 +47,7 @@ private:
     QString static getFooter(QDateTime time);
 
     void static createPDF(QString html, QString title);
+
 };
 
 #endif // PDFMANAGER_H
