@@ -17,11 +17,15 @@ GeneralReport::GeneralReport(nm *nav, QWidget *parent)
     ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
 
     connect(ui->tableView, &QTableView::doubleClicked, this, &GeneralReport::handleDoubleClick);
-
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &GeneralReport::onSectionResized);
-
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &GeneralReport::onSortIndicatorChanged);
+
+    // Добавляем автоматический вызов методов вместо нажатия кнопки
+    setTable();
+    setBottomTable();
+    setTableSizes();
 }
+
 
 GeneralReport::~GeneralReport()
 {
@@ -47,7 +51,6 @@ void GeneralReport::setReport(Report mode, QDate from, QDate to)
 
     setTable();
     setBottomTable();
-
     setTableSizes();
 }
 
@@ -1036,13 +1039,6 @@ void GeneralReport::setToDate(QDate date)
     ui->ToDateButton->setText(date.toString("dd.MM.yyyy"));
 }
 
-void GeneralReport::on_FilterButton_clicked()
-{
-    setTable();
-    setBottomTable();
-
-    setTableSizes();
-}
 
 void GeneralReport::on_ToPDFButton_clicked()
 {
