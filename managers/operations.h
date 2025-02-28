@@ -39,6 +39,7 @@ public:
     QList<Charge> static selectAllCharges();
     QVariantList static selectChargesByDate(QDate date);
     QVariantList static getAllChargesReport(QDate fromDate);
+    QVariantList static getDriverChargeReport(QDate fromDate, QDate toDate);
 
     QList<Type> static selectAllTypes();
 

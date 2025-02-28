@@ -1,11 +1,11 @@
-#include "reportpage.h"
-#include "ui_reportpage.h"
+#include "GeneralReport.h"
+#include "ui_GeneralReport.h"
+#include <QDateDialog>
 
-ReportPage::ReportPage(nm *nav, QWidget *parent)
-    : QWidget(parent), ui(new Ui::ReportPage)
+GeneralReport::GeneralReport(nm *nav, QWidget *parent)
+    : QWidget(parent), ui(new Ui::GeneralReport)
 {
     ui->setupUi(this);
-
     this->nav = nav;
 
     this->fromDate = QDate::currentDate().addDays(-1);
@@ -17,20 +17,22 @@ ReportPage::ReportPage(nm *nav, QWidget *parent)
     ui->FromDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
     ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
 
-    connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &ReportPage::onSectionResized);
+    connect(ui->tableView, &QTableView::doubleClicked, this, &GeneralReport::handleDoubleClick);
+    connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &GeneralReport::onSectionResized);
+    connect(ui->tableView->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &GeneralReport::onSortIndicatorChanged);
 
-    connect(ui->tableView->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &ReportPage::onSortIndicatorChanged);
+    connect(ui->FromDateButton, &QPushButton::clicked, this, &GeneralReport::updateFromDate);
+    connect(ui->ToDateButton, &QPushButton::clicked, this, &GeneralReport::updateToDate);
 }
 
-ReportPage::~ReportPage()
+GeneralReport::~GeneralReport()
 {
     delete ui;
 }
 
-void ReportPage::setReport(Report mode, int id, QDate from, QDate to)
+void GeneralReport::setReport(Report mode, int id, QDate from, QDate to)
 {
     this->selectedColumn = -1;
-
     this->mode = mode;
 
     if (!from.isNull())
@@ -63,6 +65,27 @@ void ReportPage::setReport(Report mode, int id, QDate from, QDate to)
     }
 }
 
+void GeneralReport::updateFromDate()
+{
+    QDate newFromDate = QDateDialog::getDate(this, "Выберите начальную дату", this->fromDate);
+    if (newFromDate.isValid() && newFromDate != this->fromDate)
+    {
+        this->fromDate = newFromDate;
+        ui->FromDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
+        setReport(this->mode, this->id, this->fromDate, this->toDate);
+    }
+}
+
+void GeneralReport::updateToDate()
+{
+    QDate newToDate = QDateDialog::getDate(this, "Выберите конечную дату", this->toDate);
+    if (newToDate.isValid() && newToDate != this->toDate)
+    {
+        this->toDate = newToDate;
+        ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
+        setReport(this->mode, this->id, this->fromDate, this->toDate);
+    }
+}
 void ReportPage::setHeader()
 {
     switch (this->mode)
@@ -112,7 +135,11 @@ void ReportPage::setHeader()
         ui->Header->setText("ПО ШТРАФАМ ПО ВОДИТЕЛЮ");
         ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ");
         break;
-    
+    case Report::DriverCharge:
+        ui->Header->setText("ПО ВОДИТЕЛЯМ (ЗАРЯДКА)");
+        ui->ReportButton->setText("ОТЧЕТ ПО ВОДИТЕЛЯМ");
+        break;
+
     default:
         break;
     }
@@ -174,8 +201,23 @@ void ReportPage::setTable()
             model->appendRow(row);
         }
         break;
+    case Report::DriverCharge:
+        model->setHorizontalHeaderLabels({"Имя", "KWH"});
+        for (const QVariant &driverData : ReportOperations::getDriverChargeReport(this->fromDate, this->toDate))
+        {
+            QVariantList driver = driverData.toList();
+            QList<QStandardItem *> row;
+
+            row.append(new QStandardItem(driver[0].toString()));
+            QStandardItem *chargeCountItem = new QStandardItem();
+            chargeCountItem->setData(driver[1].toInt(), Qt::DisplayRole);
+            row.append(chargeCountItem);
+
+            model->appendRow(row);
+        }
+        break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -398,7 +440,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -448,7 +490,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -887,7 +929,7 @@ void ReportPage::on_ToPDFButton_clicked()
     switch (this->mode)
     {
     case Report::Cars:
-        title = "Отчет по машине " + Operations::getCar(this->id).getSid();
+        title = "Отчет по машинам " + Operations::getCar(this->id).getSid();
         start = 0;
         break;
 
@@ -951,9 +993,9 @@ void ReportPage::setToDate(QDate date)
 
 void ReportPage::on_FilterButton_clicked()
 {
+    setHeader();
     setTable();
     setBottomTable();
-
     setTableSizes();
 }
 
