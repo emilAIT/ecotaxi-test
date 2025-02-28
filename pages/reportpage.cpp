@@ -92,6 +92,11 @@ void ReportPage::setHeader()
         ui->ReportButton->setText("ОТЧЕТ ПО ЛОКАЦИЯМ");
         break;
 
+    case Report::KWHbyDrivers:
+        ui->Header->setText("ПО ВОДИТЕЛЯМ(KWH)");
+        ui->ReportButton->setText("ПОДРОБНЫЙ ОТЧЕТ ПО ВОДИТЕЛЯМ");
+        break;
+
     case Report::Charges:
         ui->Header->setText("ПО ЗАРЯДКЕ");
         ui->ReportButton->setText("ОТЧЕТ ПО ЗАРЯДКАМ");
@@ -174,8 +179,34 @@ void ReportPage::setTable()
             model->appendRow(row);
         }
         break;
+    case Report::KWHbyDrivers:
+        model->setHorizontalHeaderLabels({"Дата", "Тип", "Машина", "Сумма", "Описание"});
+        for (const QVariant &driverData : ReportOperations::getDriverReport(this->id, this->fromDate, this->toDate))
+        {
+            QVariantList driver = driverData.toList();
+            QList<QStandardItem *> row;
+
+            QStandardItem *dateItem = new QStandardItem();
+            dateItem->setData(driver[0].toDateTime(), Qt::DisplayRole);
+            row.append(dateItem);
+
+            // Create QStandardItem for Тип and Машина as strings
+            row.append(new QStandardItem(driver[1].toString())); // Тип
+            row.append(new QStandardItem(driver[2].toString())); // Машина
+
+            // Ensure numerical data (Сумма) is set correctly for sorting as integers
+            QStandardItem *amountItem = new QStandardItem();
+            amountItem->setData(driver[3].toInt(), Qt::DisplayRole); // Сумма
+            row.append(amountItem);
+
+            // Create QStandardItem for Описание as string
+            row.append(new QStandardItem(driver[4].toString())); // Описание
+
+            model->appendRow(row);
+        }
+        break;
     case Report::Investors:
-        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 5%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
+        model->setHorizontalHeaderLabels({"id", "ID", "Доход", "Налог 10%", "KWH * 10", "Расход", "Общий", "%", "Комиссия", "Инвестору"});
         for (const QVariant &investorData : ReportOperations::getInvestorReport(this->id, this->fromDate, this->toDate))
         {
             QVariantList investor = investorData.toList();
@@ -398,7 +429,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -448,7 +479,7 @@ void ReportPage::setBottomTable()
             model->setHorizontalHeaderLabels({
                 "Итого",
                 "Доход",
-                "Налог 5%",
+                "Налог 10%",
                 "KWH * 10",
                 "Расход",
                 "Общая",
@@ -504,6 +535,23 @@ void ReportPage::setBottomTable()
             model->appendRow(row);
         }
         break;
+
+    case Report::KWHbyDrivers:
+        if (true)
+        {
+            QVariantList report = ReportOperations::getAllLocationReport(this->id, this->fromDate, this->toDate);
+            model->setHorizontalHeaderLabels({
+                "Итого",
+                "KWH",
+            });
+
+            QList<QStandardItem *> row;
+            row.append(new QStandardItem("Итого"));
+            row.append(new QStandardItem(report[0].toString()));
+            model->appendRow(row);
+        }
+        break;
+
     case Report::Charges:
         if (true)
         {
@@ -844,6 +892,10 @@ void ReportPage::on_ReportButton_clicked()
     case Report::Locations:
         nav->openReport(4, 0, fromDate, toDate);
         break;
+    case Report::KWHbyDrivers:
+        nav->openReport(3, 0, fromDate, toDate);
+        break;
+
     case Report::Charges:
         nav->openReport(6, 0, fromDate, toDate);
         break;
@@ -907,6 +959,11 @@ void ReportPage::on_ToPDFButton_clicked()
 
     case Report::Locations:
         title = "Отчет по локации " + Operations::getLocation(this->id).getName();
+        start = 0;
+        break;
+
+    case Report::KWHbyDrivers:
+        title = "Отчет KWH по водителям " + Operations::getLocation(this->id).getName();
         start = 0;
         break;
 
