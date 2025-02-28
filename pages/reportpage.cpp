@@ -941,12 +941,20 @@ void ReportPage::setFromDate(QDate date)
 {
     this->fromDate = date;
     ui->FromDateButton->setText(date.toString("dd.MM.yyyy"));
+    setTable();
+    setBottomTable();
+
+    setTableSizes();
 }
 
 void ReportPage::setToDate(QDate date)
 {
     this->toDate = date;
     ui->ToDateButton->setText(date.toString("dd.MM.yyyy"));
+    setTable();
+    setBottomTable();
+
+    setTableSizes();
 }
 
 void ReportPage::on_FilterButton_clicked()
