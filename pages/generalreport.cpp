@@ -982,6 +982,11 @@ void GeneralReport::on_FromDateButton_clicked()
     connect(c, &CalendarPage::changeDate, this, &GeneralReport::setFromDate);
 
     c->show();
+    setTable();
+    setBottomTable();
+
+    setTableSizes();
+
 }
 
 void GeneralReport::on_ToDateButton_clicked()
@@ -991,6 +996,10 @@ void GeneralReport::on_ToDateButton_clicked()
     connect(c, &CalendarPage::changeDate, this, &GeneralReport::setToDate);
 
     c->show();
+    setTable();
+    setBottomTable();
+
+    setTableSizes();
 }
 
 void GeneralReport::setFromDate(QDate date)
@@ -1005,13 +1014,6 @@ void GeneralReport::setToDate(QDate date)
     ui->ToDateButton->setText(date.toString("dd.MM.yyyy"));
 }
 
-void GeneralReport::on_FilterButton_clicked()
-{
-    setTable();
-    setBottomTable();
-
-    setTableSizes();
-}
 
 void GeneralReport::on_ToPDFButton_clicked()
 {
