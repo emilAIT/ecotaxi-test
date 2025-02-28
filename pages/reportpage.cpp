@@ -1,11 +1,11 @@
-#include "reportpage.h"
-#include "ui_reportpage.h"
+#include "GeneralReport.h"
+#include "ui_GeneralReport.h"
+#include <QDateDialog>
 
-ReportPage::ReportPage(nm *nav, QWidget *parent)
-    : QWidget(parent), ui(new Ui::ReportPage)
+GeneralReport::GeneralReport(nm *nav, QWidget *parent)
+    : QWidget(parent), ui(new Ui::GeneralReport)
 {
     ui->setupUi(this);
-
     this->nav = nav;
 
     this->fromDate = QDate::currentDate().addDays(-1);
@@ -17,20 +17,22 @@ ReportPage::ReportPage(nm *nav, QWidget *parent)
     ui->FromDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
     ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
 
-    connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &ReportPage::onSectionResized);
+    connect(ui->tableView, &QTableView::doubleClicked, this, &GeneralReport::handleDoubleClick);
+    connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &GeneralReport::onSectionResized);
+    connect(ui->tableView->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &GeneralReport::onSortIndicatorChanged);
 
-    connect(ui->tableView->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &ReportPage::onSortIndicatorChanged);
+    connect(ui->FromDateButton, &QPushButton::clicked, this, &GeneralReport::updateFromDate);
+    connect(ui->ToDateButton, &QPushButton::clicked, this, &GeneralReport::updateToDate);
 }
 
-ReportPage::~ReportPage()
+GeneralReport::~GeneralReport()
 {
     delete ui;
 }
 
-void ReportPage::setReport(Report mode, int id, QDate from, QDate to)
+void GeneralReport::setReport(Report mode, int id, QDate from, QDate to)
 {
     this->selectedColumn = -1;
-
     this->mode = mode;
 
     if (!from.isNull())
@@ -63,6 +65,27 @@ void ReportPage::setReport(Report mode, int id, QDate from, QDate to)
     }
 }
 
+void GeneralReport::updateFromDate()
+{
+    QDate newFromDate = QDateDialog::getDate(this, "Выберите начальную дату", this->fromDate);
+    if (newFromDate.isValid() && newFromDate != this->fromDate)
+    {
+        this->fromDate = newFromDate;
+        ui->FromDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
+        setReport(this->mode, this->id, this->fromDate, this->toDate);
+    }
+}
+
+void GeneralReport::updateToDate()
+{
+    QDate newToDate = QDateDialog::getDate(this, "Выберите конечную дату", this->toDate);
+    if (newToDate.isValid() && newToDate != this->toDate)
+    {
+        this->toDate = newToDate;
+        ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
+        setReport(this->mode, this->id, this->fromDate, this->toDate);
+    }
+}
 void ReportPage::setHeader()
 {
     switch (this->mode)
@@ -970,9 +993,9 @@ void ReportPage::setToDate(QDate date)
 
 void ReportPage::on_FilterButton_clicked()
 {
+    setHeader();
     setTable();
     setBottomTable();
-
     setTableSizes();
 }
 

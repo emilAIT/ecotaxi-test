@@ -7,6 +7,9 @@
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
 #include <QMessageBox>
+#include <QDateDialog>
+#include <QDateEdit>    // Alternative if you need date selection
+
 
 #include "../managers/reportoperations.h"
 #include "../managers/operations.h"

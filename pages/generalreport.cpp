@@ -16,6 +16,7 @@ GeneralReport::GeneralReport(nm *nav, QWidget *parent)
     ui->FromDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
     ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
 
+
     connect(ui->tableView, &QTableView::doubleClicked, this, &GeneralReport::handleDoubleClick);
 
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &GeneralReport::onSectionResized);
@@ -1029,9 +1030,9 @@ void GeneralReport::setToDate(QDate date)
 
 void GeneralReport::on_FilterButton_clicked()
 {
+    setHeader();
     setTable();
     setBottomTable();
-
     setTableSizes();
 }
 
