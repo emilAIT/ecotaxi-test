@@ -24,7 +24,7 @@ void CalendarPage::on_confirmButton_clicked()
     emit changeDate(ui->calendarWidget->selectedDate());
     this->close();
 }
-
+//////////////////////////////////////////////////////////////////////////////////
 void CalendarPage::on_cancelButton_clicked()
 {
     this->close();
