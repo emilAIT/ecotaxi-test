@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QDate>
+#include "generalreport.h"  // Добавляем include для GeneralReport
 
 namespace Ui {
 class CalendarPage;
@@ -13,7 +14,7 @@ class CalendarPage : public QWidget
     Q_OBJECT
 
 public:
-    explicit CalendarPage(QDate date, QWidget *parent = nullptr);
+    explicit CalendarPage(QDate date, GeneralReport *report, QWidget *parent = nullptr);  // Передаем указатель на GeneralReport
     ~CalendarPage();
 
 signals:
@@ -25,6 +26,7 @@ private slots:
 
 private:
     Ui::CalendarPage *ui;
+    GeneralReport *generalReport;  // Указатель на GeneralReport
 };
 
 #endif // CALENDARPAGE_H
