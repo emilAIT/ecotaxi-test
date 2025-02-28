@@ -997,20 +997,22 @@ void GeneralReport::setFromDate(QDate date)
 {
     this->fromDate = date;
     ui->FromDateButton->setText(date.toString("dd.MM.yyyy"));
+
+        // Автоматически обновляем таблицы
+        setTable();
+        setBottomTable();
+        setTableSizes();
 }
 
 void GeneralReport::setToDate(QDate date)
 {
     this->toDate = date;
     ui->ToDateButton->setText(date.toString("dd.MM.yyyy"));
-}
 
-void GeneralReport::on_FilterButton_clicked()
-{
-    setTable();
-    setBottomTable();
-
-    setTableSizes();
+        // Автоматически обновляем таблицы
+        setTable();
+        setBottomTable();
+        setTableSizes();
 }
 
 void GeneralReport::on_ToPDFButton_clicked()

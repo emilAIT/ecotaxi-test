@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <QListView>
 
 MainWindow::MainWindow(nm *nav, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
@@ -9,6 +10,24 @@ MainWindow::MainWindow(nm *nav, QWidget *parent)
     this->nav = nav;
     ui->setupUi(this);
     this->setWindowTitle("Главное окно | ECO TAXI");
+
+    ui->ReportsButton->setStyleSheet("QComboBox { combobox-popup: 0; }");
+    ui->SettingsButton->setStyleSheet("QComboBox { combobox-popup: 0; }");
+    ui->FinesButton->setStyleSheet("QComboBox { combobox-popup: 0; }");
+
+    ui->ReportsButton->setView(new QListView()); 
+    ui->SettingsButton->setView(new QListView());
+    ui->FinesButton->setView(new QListView());
+
+    ui->CarsBox->setView(new QListView());
+    ui->CarsBox_2->setView(new QListView());
+    ui->DriversBox->setView(new QListView());
+    ui->DriversBox_2->setView(new QListView());
+    ui->TypesBox->setView(new QListView());
+    ui->LocsBox->setView(new QListView());
+    ui->SettingsButton->setCurrentIndex(-1);
+    ui->ReportsButton->setCurrentIndex(-1);
+    ui->FinesButton->setCurrentIndex(-1);
 
     ui->SettingsButton->setCurrentIndex(-1);
     ui->ReportsButton->setCurrentIndex(-1);

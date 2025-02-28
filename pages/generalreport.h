@@ -42,8 +42,6 @@ private slots:
 
     void on_SecondReportButton_clicked();
 
-    void on_FilterButton_clicked();
-
     void on_FromDateButton_clicked();
     void on_ToDateButton_clicked();
 
