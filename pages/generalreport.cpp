@@ -1,5 +1,7 @@
 #include "generalreport.h"
 #include "pages/ui_generalreport.h"
+#include <QInputDialog>
+
 
 GeneralReport::GeneralReport(nm *nav, QWidget *parent)
     : QWidget(parent), ui(new Ui::GeneralReport)
@@ -21,6 +23,11 @@ GeneralReport::GeneralReport(nm *nav, QWidget *parent)
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sectionResized, this, &GeneralReport::onSectionResized);
 
     connect(ui->tableView->horizontalHeader(), &QHeaderView::sortIndicatorChanged, this, &GeneralReport::onSortIndicatorChanged);
+
+    connect(ui->FromDateButton, &QPushButton::clicked, this, &GeneralReport::selectFromDate);
+    connect(ui->ToDateButton, &QPushButton::clicked, this, &GeneralReport::selectToDate);
+    connect(this, &GeneralReport::dateRangeChanged, this, &GeneralReport::updateReport);
+
 }
 
 GeneralReport::~GeneralReport()
@@ -1012,6 +1019,45 @@ void GeneralReport::on_FilterButton_clicked()
 
     setTableSizes();
 }
+void GeneralReport::selectFromDate()
+{
+    if (this->toDate.isValid() && this->fromDate >= this->toDate)
+    {
+        this->fromDate = this->toDate.addDays(-1);  // Делаем начальную дату за день до конечной
+    }
+
+    ui->FromDateButton->setText(this->fromDate.toString("dd.MM.yyyy"));
+    emit dateRangeChanged();
+}
+
+void GeneralReport::selectToDate()
+{
+    if (this->fromDate.isValid() && this->toDate <= this->fromDate)
+    {
+        this->toDate = this->fromDate.addDays(1);  // Делаем конечную дату на день позже начальной
+    }
+
+    ui->ToDateButton->setText(this->toDate.toString("dd.MM.yyyy"));
+    emit dateRangeChanged();
+}
+
+
+
+void GeneralReport::updateReport()
+{
+    setTable();
+    setBottomTable();
+    setTableSizes();
+}
+
+
+// void GeneralReport::updateReport()
+// {
+//     setTable();
+//     setBottomTable();
+//     setTableSizes();
+// }
+
 
 void GeneralReport::on_ToPDFButton_clicked()
 {

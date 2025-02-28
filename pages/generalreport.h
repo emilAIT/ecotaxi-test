@@ -33,8 +33,17 @@ public:
 
     void setReport(Report mode, QDate from = QDate(), QDate to = QDate());
 
+
+signals:
+    void dateRangeChanged();
+
 private slots:
     void on_BackButton_clicked();
+
+    void updateReport();
+
+
+
 
     void on_SettingsButton_clicked();
 
@@ -43,6 +52,9 @@ private slots:
     void on_SecondReportButton_clicked();
 
     void on_FilterButton_clicked();
+
+    void selectToDate();
+    void selectFromDate();
 
     void on_FromDateButton_clicked();
     void on_ToDateButton_clicked();
