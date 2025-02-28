@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "managers/logger.h"
+
 
 MainWindow::MainWindow(nm *nav, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow)
