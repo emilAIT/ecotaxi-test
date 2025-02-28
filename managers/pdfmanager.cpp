@@ -224,16 +224,30 @@ QString PDFmanager::getFooter(QDateTime time)
 
 void PDFmanager::ToPDF(QString title, QString dates, QList<QAbstractItemModel *> models, int start)
 {
-  QString html = "<h2>" + title + "</h2>";
-  html += "<p>" + dates + "</p><br>";
+    QString html;
+    QDate startDate = QDate::fromString(dates.split(" - ").first(), "dd.MM.yyyy");
+    QDate endDate = QDate::fromString(dates.split(" - ").last(), "dd.MM.yyyy");
 
-  for (int i = 0; i < models.size(); i++)
-  {
-    html += modelToHTML(models[i], start != 0 && i == 0 ? 1 : 0);
-  }
+    for (QDate date = startDate; date <= endDate; date = date.addDays(1))
+    {
+        // Добавляем разрыв страницы перед новой датой (кроме первой)
+        if (!html.isEmpty())
+        {
+            html += "<p style='page-break-before: always;'></p>";
+        }
 
-  createPDF(html, title + " " + dates);
+        // Добавляем заголовок даты
+        html += "<h2>" + date.toString("dd.MM.yyyy") + "</h2>";
+
+        for (int i = 0; i < models.size(); i++)
+        {
+            html += modelToHTML(models[i], start);
+        }
+    }
+
+    createPDF(html, title);
 }
+
 
 QString PDFmanager::modelToHTML(QAbstractItemModel *model, int start)
 {
