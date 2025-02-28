@@ -52,6 +52,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         managers/reportoperations.h managers/reportoperations.cpp
         pages/reportpage.h pages/reportpage.cpp pages/reportpage.ui
         managers/pdfmanager.h managers/pdfmanager.cpp
+
+
+
         icon.rc
         classes/user.h classes/user.cpp
         scripts/hash.h scripts/hash.cpp
